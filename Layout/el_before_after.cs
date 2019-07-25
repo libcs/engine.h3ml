@@ -2,9 +2,8 @@ namespace H3ml.Layout
 {
     public class el_before_after_base : html_tag
     {
-        public el_before_after_base(document doc, bool before)
+        public el_before_after_base(document doc, bool before) : base(doc)
         {
-            html_tag = doc;
             if (before) set_tagName("::before");
             else set_tagName("::after");
         }

@@ -9,9 +9,8 @@ namespace H3ml.Layout
 		protected bool _use_transformed;
 		protected bool _draw_spaces;
 
-		public el_text(string text, document doc)
+		public el_text(string text, document doc) : base(doc)
 		{
-			element = doc;
 			if (text)
 			{
 				m_text = text;

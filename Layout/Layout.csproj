@@ -8,7 +8,6 @@
     <Compile Remove="AutomaClient.cs" />
     <Compile Remove="Background.cs" />
     <Compile Remove="ccCss_length.cs" />
-    <Compile Remove="html_tag.cs" />
     <Compile Remove="types.cs" />
   </ItemGroup>
 

@@ -2,7 +2,7 @@ namespace H3ml.Layout
 {
 	public class el_base : html_tag
 	{
-		public el_base(document doc) => html_tag = doc;
+		public el_base(document doc) : base(doc) { }
 
         public override void parse_attributes()
         {

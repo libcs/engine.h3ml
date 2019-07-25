@@ -4,12 +4,7 @@ namespace H3ml.Layout
 	{
 		string	_src;
 
-		public el_image(document doc)
-		{
-			html_tag = doc;
-			_display = display_inline_block;
-		}
-
+		public el_image(document doc) : base(doc) => _display = display_inline_block;
 
 		public override int line_height() => height();
 		public override bool is_replaced() => true;

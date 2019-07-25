@@ -2,9 +2,9 @@ namespace H3ml.Layout
 {
 	public class el_tr : html_tag
 	{
-		public el_tr(document doc) => html_tag = doc;
+		public el_tr(document doc) : base(doc) { }
 
-		public override void parse_attributes()
+        public override void parse_attributes()
 		{
 			const tchar_t* str = get_attr(_t("align"));
 			if (str)

@@ -4,11 +4,7 @@ namespace H3ml.Layout
     {
         string _text;
 
-        public el_comment(document doc)
-        {
-            element = doc;
-            _skip = true;
-        }
+        public el_comment(document doc) : base(doc) => _skip = true;
 
         public override void get_text(ref string text)
         {

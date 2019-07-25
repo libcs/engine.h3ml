@@ -4,19 +4,18 @@ namespace H3ml.Layout
 	{
 		string _text;
 	
-		public el_script(document doc) = > element = doc;
-		
+		public el_script(document doc) : base(doc) { }
 
-		public override void parse_attributes()
+        public override void parse_attributes()
 		{
 			//TODO: pass script text to document container
 		}
 		public override bool appendChild(ptr el) 
 		{
-			el.get_text(m_text);
+			el.get_text(_text);
 			return true;
 		}
 
-		public override string get_tagName() = > "script";
+		public override string get_tagName() => "script";
 	}
 }

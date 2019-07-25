@@ -2,9 +2,9 @@ namespace H3ml.Layout
 {
 	public class el_font : html_tag
 	{
-		public el_font(document doc) = > html_tag = doc;
+		public el_font(document doc) : base(doc) { }
 
-		public override void parse_attributes()
+        public override void parse_attributes()
 		{
 			const tchar_t* str = get_attr(_t("color"));
 			if (str)

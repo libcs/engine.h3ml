@@ -1,8 +1,8 @@
 namespace H3ml.Layout
 {
-	public class el_anchor : html_tag
-	{
-        public el_anchor(document doc) => html_tag = doc;
+    public class el_anchor : html_tag
+    {
+        public el_anchor(document doc) : base(doc) { }
 
         public override void on_click()
         {

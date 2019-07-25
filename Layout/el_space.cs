@@ -2,7 +2,7 @@ namespace H3ml.Layout
 {
 	public class el_space : el_text
 	{
-	public el_space(string text, document doc) : base(text, doc) {}
+	public el_space(string text, document doc) : base(text, doc) { }
  
 
 		public override bool is_white_space()
