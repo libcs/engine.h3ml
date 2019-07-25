@@ -1,0 +1,96 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AutomaClient.cs" />
+    <Compile Remove="Background.cs" />
+    <Compile Remove="ccCss_length.cs" />
+    <Compile Remove="html_tag.cs" />
+    <Compile Remove="types.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="box.h" />
+    <None Remove="context.h" />
+    <None Remove="css_length.h" />
+    <None Remove="css_margins.h" />
+    <None Remove="css_offsets.h" />
+    <None Remove="css_position.h" />
+    <None Remove="css_selector.cpp" />
+    <None Remove="css_selector.h" />
+    <None Remove="document.cpp" />
+    <None Remove="document.h" />
+    <None Remove="element.cpp" />
+    <None Remove="element.h" />
+    <None Remove="el_anchor.cpp" />
+    <None Remove="el_anchor.h" />
+    <None Remove="el_base.cpp" />
+    <None Remove="el_base.h" />
+    <None Remove="el_before_after.cpp" />
+    <None Remove="el_before_after.h" />
+    <None Remove="el_body.cpp" />
+    <None Remove="el_body.h" />
+    <None Remove="el_cdata.cpp" />
+    <None Remove="el_cdata.h" />
+    <None Remove="el_comment.cpp" />
+    <None Remove="el_comment.h" />
+    <None Remove="el_div.cpp" />
+    <None Remove="el_div.h" />
+    <None Remove="el_font.cpp" />
+    <None Remove="el_font.h" />
+    <None Remove="el_image.cpp" />
+    <None Remove="el_image.h" />
+    <None Remove="el_link.cpp" />
+    <None Remove="el_link.h" />
+    <None Remove="el_para.cpp" />
+    <None Remove="el_para.h" />
+    <None Remove="el_script.cpp" />
+    <None Remove="el_script.h" />
+    <None Remove="el_space.cpp" />
+    <None Remove="el_space.h" />
+    <None Remove="el_style.cpp" />
+    <None Remove="el_style.h" />
+    <None Remove="el_table.cpp" />
+    <None Remove="el_table.h" />
+    <None Remove="el_td.cpp" />
+    <None Remove="el_td.h" />
+    <None Remove="el_text.cpp" />
+    <None Remove="el_text.h" />
+    <None Remove="el_title.cpp" />
+    <None Remove="el_title.h" />
+    <None Remove="el_tr.cpp" />
+    <None Remove="el_tr.h" />
+    <None Remove="html.cpp" />
+    <None Remove="html.h" />
+    <None Remove="html_tag.cpp" />
+    <None Remove="html_tag.h" />
+    <None Remove="iterators.cpp" />
+    <None Remove="iterators.h" />
+    <None Remove="media_query.cpp" />
+    <None Remove="media_query.h" />
+    <None Remove="os_types.h" />
+    <None Remove="style.cpp" />
+    <None Remove="style.h" />
+    <None Remove="stylesheet.cpp" />
+    <None Remove="stylesheet.h" />
+    <None Remove="table.cpp" />
+    <None Remove="table.h" />
+    <None Remove="utf8_strings.cpp" />
+    <None Remove="utf8_strings.h" />
+    <None Remove="web_color.cpp" />
+    <None Remove="web_color.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="background.cs" />
+    <None Include="types.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>
