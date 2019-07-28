@@ -1,3 +1,5 @@
+using System;
+
 namespace H3ml.Layout
 {
     public class el_before_after_base : html_tag
@@ -10,61 +12,42 @@ namespace H3ml.Layout
 
         public override void add_style(style st)
         {
-            html_tag.add_style(st);
-
+            add_style(st);
             var content = get_style_property("content", false, "");
-            if (!content.empty())
+            if (!string.IsNullOrEmpty(content))
             {
-                var idx = value_index(content, content_property_string);
+                var idx = html.value_index(content, types.content_property_string);
                 if (idx < 0)
                 {
-                    string fnc;
+                    var fnc = string.Empty;
                     var i = 0;
-                    while (i < content.length() && i != -1)
-                    {
-                        if (content.at(i) == '"')
+                    while (i < content.Length && i != -1)
+                        if (content[i] == '"')
                         {
-                            fnc.clear();
+                            fnc = string.Empty;
                             i++;
-                            tstring::size_type pos = content.find('"', i);
-                            tstring txt;
-                            if (pos == -1)
-                            {
-                                txt = content.substr(i);
-                                i = -1;
-                            }
-                            else
-                            {
-                                txt = content.substr(i, pos - i);
-                                i = pos + 1;
-                            }
+                            var pos = content.IndexOf('"', i);
+                            string txt;
+                            if (pos == -1) { txt = content.Substring(i); i = -1; }
+                            else { txt = content.Substring(i, pos - i); i = pos + 1; }
                             add_text(txt);
                         }
-                        else if (content.at(i) == '(')
+                        else if (content[i] == '(')
                         {
                             i++;
                             fnc = fnc.Trim().ToLowerInvariant();
-                            var pos = content.find(')', i);
-                            string params_;
-                            if (pos == -1)
-                            {
-                                params_ = content.substr(i);
-                                i = -1;
-                            }
-                            else
-                            {
-                                params_ = content.substr(i, pos - i);
-                                i = pos + 1;
-                            }
-                            add_function(fnc, params_);
-                            fnc.clear();
+                            var pos = content.IndexOf(')', i);
+                            string args;
+                            if (pos == -1) { args = content.Substring(i); i = -1; }
+                            else { args = content.Substring(i, pos - i); i = pos + 1; }
+                            add_function(fnc, args);
+                            fnc = string.Empty;
                         }
                         else
                         {
-                            fnc += content.at(i);
+                            fnc += content[i];
                             i++;
                         }
-                    }
                 }
             }
         }
@@ -125,21 +108,22 @@ namespace H3ml.Layout
                 word.clear();
             }
         }
-        void add_function(string fnc, string params)
+
+        void add_function(string fnc, string args)
         {
-            int idx = value_index(fnc.c_str(), _t("attr;counter;url"));
+            var idx = html.value_index(fnc, "attr;counter;url");
             switch (idx)
             {
                 // attr
                 case 0:
                     {
-                        tstring p_name = params;
+                        tstring p_name = args;
                         trim(p_name);
                         lcase(p_name);
                         element::ptr el_parent = parent();
                         if (el_parent)
                         {
-                            const tchar_t* attr_value = el_parent->get_attr(p_name.c_str());
+                            const tchar_t* attr_value = el_parent.get_attr(p_name.c_str());
                             if (attr_value)
                             {
                                 add_text(attr_value);
@@ -172,21 +156,18 @@ namespace H3ml.Layout
                         if (!p_url.empty())
                         {
                             element::ptr el = std::make_shared<el_image>(get_document());
-                            el->set_attr(_t("src"), p_url.c_str());
-                            el->set_attr(_t("style"), _t("display:inline-block"));
-                            el->set_tagName(_t("img"));
+                            el.set_attr(_t("src"), p_url.c_str());
+                            el.set_attr(_t("style"), _t("display:inline-block"));
+                            el.set_tagName(_t("img"));
                             appendChild(el);
-                            el->parse_attributes();
+                            el.parse_attributes();
                         }
                     }
                     break;
             }
         }
-        char convert_escape(string txt)
-        {
-            tchar_t* sss = 0;
-            return (tchar_t)t_strtol(txt, &sss, 16);
-        }
+
+        char convert_escape(string txt) => (char)Convert.ToInt64(txt, 16);
     }
 
     public class el_before : el_before_after_base
@@ -196,6 +177,6 @@ namespace H3ml.Layout
 
     public class el_after : el_before_after_base
     {
-        public el_after(document& doc) : base(doc, false) { }
+        public el_after(document doc) : base(doc, false) { }
     }
 }

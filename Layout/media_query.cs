@@ -297,7 +297,8 @@ namespace H3ml.Layout
         public static media_query_list create_from_string(string str, document doc)
         {
             var list = new media_query_list();
-            html.split_string(str, out var tokens, ",");
+            var tokens = new List<string>();
+            html.split_string(str, out tokens, ",");
             foreach (var tok in tokens)
             {
                 trim(tok);

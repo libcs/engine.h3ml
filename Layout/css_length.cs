@@ -1,3 +1,6 @@
+using System;
+using System.Globalization;
+
 namespace H3ml.Layout
 {
     public class css_length
@@ -7,11 +10,11 @@ namespace H3ml.Layout
         css_units _units;
         bool _is_predefined;
 
-        public css_length()
+        public css_length(Exception o = null)
         {
             _value = 0;
             _predef = 0;
-            _units = css_units_none;
+            _units = css_units.none;
             _is_predefined = false;
         }
         public css_length(css_length val)
@@ -21,17 +24,7 @@ namespace H3ml.Layout
             _units = val._units;
             _is_predefined = val._is_predefined;
         }
-
-        //public css_length operator=(css_length val)
-        //{
-        //    if (val.is_predefined) _predef = val._predef;
-        //    else _value = val._value;
-        //    _units = val.m_units;
-        //    _is_predefined = val._is_predefined;
-        //    return this;
-        //}
-
-        //public css_length operator=(float val)
+        //public css_length assignTo(float val)
         //{
         //    _value = val;
         //    _units = css_units_px;
@@ -59,7 +52,7 @@ namespace H3ml.Layout
         }
         public float val => !_is_predefined ? _value : 0;
         public css_units units => _units;
-        public int calc_percent(int width) => !is_predefined ? units == css_units_percentage ? (int)((double)width * (double)_value / 100.0) : (int)val : 0;
+        public int calc_percent(int width) => !is_predefined ? units == css_units.percentage ? (int)(width * (double)_value / 100.0) : (int)val : 0;
 
         public void fromString(string str, string predefs = "", int defValue = 0)
         {
@@ -71,7 +64,7 @@ namespace H3ml.Layout
                 return;
             }
 
-            var predef = value_index(str, predefs, -1);
+            var predef = html.value_index(str, predefs, -1);
             if (predef >= 0)
             {
                 _is_predefined = true;
@@ -80,24 +73,13 @@ namespace H3ml.Layout
             else
             {
                 _is_predefined = false;
-
-                var num = new List<char>();
-                var un = new List<char>();
-                var is_unit = false;
-                foreach (var chr in str)
+                var i = 0; for (var chr = '\0'; i < str.Length && (chr = str[i]) != 0 && (char.IsDigit(chr) || chr == '.' || chr == '+' || chr == '-'); i++) { }
+                var num = str.Substring(0, i);
+                var un = str.Substring(i);
+                if (num.Length != 0)
                 {
-                    if (!is_unit)
-                    {
-                        if (t_isdigit( chr) || chr == '.' || chr == '+' || chr == '-') num.Add(chr);
-                        else is_unit = true;
-                    }
-                    if (is_unit)
-                        un.Add(chr);
-                }
-                if (!num.empty())
-                {
-                    _value = (float)t_strtod(num.ToString(), 0);
-                    _units = (css_units)value_index(un.ToString(), css_units_strings, css_units_none);
+                    _value = float.Parse(num, CultureInfo.InvariantCulture);
+                    _units = (css_units)html.value_index(un, types.css_units_strings, (int)css_units.none);
                 }
                 else
                 {

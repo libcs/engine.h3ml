@@ -1,11 +1,15 @@
+using System;
 using System.ComponentModel;
 
 namespace H3ml.Layout
 {
-    const uint font_decoration_none = 0x00;
-    const uint font_decoration_underline = 0x01;
-    const uint font_decoration_linethrough = 0x02;
-    const uint font_decoration_overline = 0x04;
+    public partial class types
+    {
+        public const uint font_decoration_none = 0x00;
+        public const uint font_decoration_underline = 0x01;
+        public const uint font_decoration_linethrough = 0x02;
+        public const uint font_decoration_overline = 0x04;
+    }
 
     public struct margins
     {
@@ -31,10 +35,10 @@ namespace H3ml.Layout
         public int width;
         public int height;
 
-        public position()
-        {
-            x = y = width = height = 0;
-        }
+        //public position()
+        //{
+        //    x = y = width = height = 0;
+        //}
 
         public position(int x, int y, int width, int height)
         {
@@ -49,19 +53,21 @@ namespace H3ml.Layout
         public int left => x;
         public int top => y;
 
-        public static void operator +(margins t, margins mg)
+        public static position operator +(position t, margins mg)
         {
             t.x -= mg.left;
             t.y -= mg.top;
             t.width += mg.left + mg.right;
             t.height += mg.top + mg.bottom;
+            return t;
         }
-        public static void operator -(margins t, margins mg)
+        public static position operator -(position t, margins mg)
         {
             t.x += mg.left;
             t.y += mg.top;
             t.width -= mg.left + mg.right;
             t.height -= mg.top + mg.bottom;
+            return t;
         }
 
         public void clear()
@@ -69,11 +75,11 @@ namespace H3ml.Layout
             x = y = width = height = 0;
         }
 
-        // public void operator=(size sz) //: sky
-        //{
-        //	width = sz.width;
-        //	height = sz.height;
-        //}
+        public void assignTo(size sz)
+        {
+        	width = sz.width;
+        	height = sz.height;
+        }
 
         public void move_to(int x, int y)
         {
@@ -83,12 +89,12 @@ namespace H3ml.Layout
 
         public bool does_intersect(position val)
         {
-            if (!val) return true;
+            //if (val == null) return true;
             return (left <= val.right && right >= val.left && bottom >= val.top && top <= val.bottom)
             || (val.left <= right && val.right >= left && val.bottom >= top && val.top <= bottom);
         }
 
-        public bool empty => !width && !height;
+        public bool empty => width == 0 && height == 0;
 
         public bool is_point_inside(int x, int y) => x >= left && x <= right && y >= top && y <= bottom;
     }
@@ -101,7 +107,7 @@ namespace H3ml.Layout
         public int x_height;
         public bool draw_spaces;
 
-        public font_metrics()
+        public font_metrics(Exception o = null)
         {
             height = 0;
             ascent = 0;
@@ -114,297 +120,401 @@ namespace H3ml.Layout
 
     public struct font_item
     {
-        public uint_ptr font;
+        public IntPtr font;
         public font_metrics metrics;
     }
 
     public enum draw_flag
     {
-        draw_root,
-        draw_block,
-        draw_floats,
-        draw_inlines,
-        draw_positioned,
+        root,
+        block,
+        floats,
+        inlines,
+        positioned,
     }
 
+    partial class types
+    {
+        public const string style_display_strings = "none;block;inline;inline-block;inline-table;list-item;table;table-caption;table-cell;table-column;table-column-group;table-footer-group;table-header-group;table-row;table-row-group;inline-text";
+    }
     public enum style_display
     {
-        [DisplayName("none")] display_none,
-        [DisplayName("block")] display_block,
-        [DisplayName("inline")] display_inline,
-        [DisplayName("inline-block")] display_inline_block,
-        [DisplayName("inline-table")] display_inline_table,
-        [DisplayName("list-item")] display_list_item,
-        [DisplayName("table")] display_table,
-        [DisplayName("table-caption")] display_table_caption,
-        [DisplayName("table-cell")] display_table_cell,
-        [DisplayName("table-column")] display_table_column,
-        [DisplayName("table-column-group")] display_table_column_group,
-        [DisplayName("table-footer-group")] display_table_footer_group,
-        [DisplayName("table-header-group")] display_table_header_group,
-        [DisplayName("table-row")] display_table_row,
-        [DisplayName("table-row-group")] display_table_row_group,
-        [DisplayName("inline-text")] display_inline_text,
+        [Description("none")] none,
+        [Description("block")] block,
+        [Description("inline")] inline,
+        [Description("inline-block")] inline_block,
+        [Description("inline-table")] inline_table,
+        [Description("list-item")] list_item,
+        [Description("table")] table,
+        [Description("table-caption")] table_caption,
+        [Description("table-cell")] table_cell,
+        [Description("table-column")] table_column,
+        [Description("table-column-group")] table_column_group,
+        [Description("table-footer-group")] table_footer_group,
+        [Description("table-header-group")] table_header_group,
+        [Description("table-row")] table_row,
+        [Description("table-row-group")] table_row_group,
+        [Description("inline-text")] inline_text,
     }
 
     public enum style_border
     {
-        borderNope,
-        borderNone,
-        borderHidden,
-        borderDotted,
-        borderDashed,
-        borderSolid,
-        borderDouble
+        nope,
+        none,
+        hidden,
+        dotted,
+        dashed,
+        solid,
+        @double
     }
 
+    partial class types
+    {
+        public const string font_size_strings = "xx-small;x-small;small;medium;large;x-large;xx-large;smaller;larger";
+    }
     public enum font_size
     {
-        [DisplayName("xx-small")] fontSize_xx_small,
-        [DisplayName("x-small")] fontSize_x_small,
-        [DisplayName("small")] fontSize_small,
-        [DisplayName("medium")] fontSize_medium,
-        [DisplayName("large")] fontSize_large,
-        [DisplayName("x-large")] fontSize_x_large,
-        [DisplayName("xx-large")] fontSize_xx_large,
-        [DisplayName("smaller")] fontSize_smaller,
-        [DisplayName("larger")] fontSize_larger,
+        [Description("xx-small")] xx_small,
+        [Description("x-small")] x_small,
+        [Description("small")] small,
+        [Description("medium")] medium,
+        [Description("large")] large,
+        [Description("x-large")] x_large,
+        [Description("xx-large")] xx_large,
+        [Description("smaller")] smaller,
+        [Description("larger")] larger,
     }
 
+    partial class types
+    {
+        public const string font_style_strings = "normal;italic";
+    }
     public enum font_style
     {
-        [DisplayName("normal")] fontStyleNormal,
-        [DisplayName("italic")] fontStyleItalic
+        [Description("normal")] normal,
+        [Description("italic")] italic
     }
 
+    partial class types
+    {
+        public const string font_variant_strings = "normal;small-caps";
+    }
     public enum font_variant
     {
-        [DisplayName("normal")] font_variant_normal,
-        [DisplayName("small-caps")] font_variant_italic
+        [Description("normal")] normal,
+        [Description("small-caps")] italic
     }
 
+    partial class types
+    {
+        public const string font_weight_strings = "normal;bold;bolder;lighter;100;200;300;400;500;600;700";
+    }
     public enum font_weight
     {
-        [DisplayName("normal")] fontWeightNormal,
-        [DisplayName("bold")] fontWeightBold,
-        [DisplayName("bolder")] fontWeightBolder,
-        [DisplayName("lighter")] fontWeightLighter,
-        [DisplayName("100")] fontWeight100,
-        [DisplayName("200")] fontWeight200,
-        [DisplayName("300")] fontWeight300,
-        [DisplayName("400")] fontWeight400,
-        [DisplayName("500")] fontWeight500,
-        [DisplayName("600")] fontWeight600,
-        [DisplayName("700")] fontWeight700
+        [Description("normal")] normal,
+        [Description("bold")] bold,
+        [Description("bolder")] bolder,
+        [Description("lighter")] lighter,
+        [Description("100")] w100,
+        [Description("200")] w200,
+        [Description("300")] w300,
+        [Description("400")] w400,
+        [Description("500")] w500,
+        [Description("600")] w600,
+        [Description("700")] w700
     }
 
+    partial class types
+    {
+        public const string list_style_type_strings = "none;circle;disc;square;armenian;cjk-ideographic;decimal;decimal-leading-zero;georgian;hebrew;hiragana;hiragana-iroha;katakana;katakana-iroha;lower-alpha;lower-greek;lower-latin;lower-roman;upper-alpha;upper-latin;upper-roman";
+    }
     public enum list_style_type
     {
-        [DisplayName("none")] list_style_type_none,
-        [DisplayName("circle")] list_style_type_circle,
-        [DisplayName("disc")] list_style_type_disc,
-        [DisplayName("square")] list_style_type_square,
-        [DisplayName("armenian")] list_style_type_armenian,
-        [DisplayName("cjk-ideographic")] list_style_type_cjk_ideographic,
-        [DisplayName("decimal")] list_style_type_decimal,
-        [DisplayName("decimal-leading-zero")] list_style_type_decimal_leading_zero,
-        [DisplayName("georgian")] list_style_type_georgian,
-        [DisplayName("hebrew")] list_style_type_hebrew,
-        [DisplayName("hiragana")] list_style_type_hiragana,
-        [DisplayName("hiragana-iroha")] list_style_type_hiragana_iroha,
-        [DisplayName("katakana")] list_style_type_katakana,
-        [DisplayName("katakana-iroha")] list_style_type_katakana_iroha,
-        [DisplayName("lower-alpha")] list_style_type_lower_alpha,
-        [DisplayName("lower-greek")] list_style_type_lower_greek,
-        [DisplayName("lower-latin")] list_style_type_lower_latin,
-        [DisplayName("lower-roman")] list_style_type_lower_roman,
-        [DisplayName("upper-alpha")] list_style_type_upper_alpha,
-        [DisplayName("upper-latin")] list_style_type_upper_latin,
-        [DisplayName("upper-roman")] list_style_type_upper_roman,
+        [Description("none")] none,
+        [Description("circle")] circle,
+        [Description("disc")] disc,
+        [Description("square")] square,
+        [Description("armenian")] armenian,
+        [Description("cjk-ideographic")] cjk_ideographic,
+        [Description("decimal")] @decimal,
+        [Description("decimal-leading-zero")] decimal_leading_zero,
+        [Description("georgian")] georgian,
+        [Description("hebrew")] hebrew,
+        [Description("hiragana")] hiragana,
+        [Description("hiragana-iroha")] hiragana_iroha,
+        [Description("katakana")] katakana,
+        [Description("katakana-iroha")] katakana_iroha,
+        [Description("lower-alpha")] lower_alpha,
+        [Description("lower-greek")] lower_greek,
+        [Description("lower-latin")] lower_latin,
+        [Description("lower-roman")] lower_roman,
+        [Description("upper-alpha")] upper_alpha,
+        [Description("upper-latin")] upper_latin,
+        [Description("upper-roman")] upper_roman,
     }
 
+    partial class types
+    {
+        public const string list_style_position_strings = "inside;outside";
+    }
     public enum list_style_position
     {
-        [DisplayName("inside")] list_style_position_inside,
-        [DisplayName("outside")] list_style_position_outside
+        [Description("inside")] inside,
+        [Description("outside")] outside
     }
 
+    partial class types
+    {
+        public const string vertical_align_strings = "baseline;sub;super;top;text-top;middle;bottom;text-bottom";
+    }
     public enum vertical_align
     {
-        [DisplayName("baseline")] va_baseline,
-        [DisplayName("sub")] va_sub,
-        [DisplayName("super")] va_super,
-        [DisplayName("top")] va_top,
-        [DisplayName("text-top")] va_text_top,
-        [DisplayName("middle")] va_middle,
-        [DisplayName("bottom")] va_bottom,
-        [DisplayName("text-bottom")] va_text_bottom
+        [Description("baseline")] baseline,
+        [Description("sub")] sub,
+        [Description("super")] super,
+        [Description("top")] top,
+        [Description("text-top")] text_top,
+        [Description("middle")] middle,
+        [Description("bottom")] bottom,
+        [Description("text-bottom")] text_bottom
     }
 
+    partial class types
+    {
+        public const string border_width_strings = "thin;medium;thick";
+    }
     public enum border_width
     {
-        [DisplayName("thin")] border_width_thin,
-        [DisplayName("medium")] border_width_medium,
-        [DisplayName("thick")] border_width_thick
+        [Description("thin")] thin,
+        [Description("medium")] medium,
+        [Description("thick")] thick
     }
 
+    partial class types
+    {
+        public const string border_style_strings = "none;hidden;dotted;dashed;solid;double;groove;ridge;inset;outset";
+    }
     public enum border_style
     {
-        [DisplayName("none")] border_style_none,
-        [DisplayName("hidden")] border_style_hidden,
-        [DisplayName("dotted")] border_style_dotted,
-        [DisplayName("dashed")] border_style_dashed,
-        [DisplayName("solid")] border_style_solid,
-        [DisplayName("double")] border_style_double,
-        [DisplayName("groove")] border_style_groove,
-        [DisplayName("ridge")] border_style_ridge,
-        [DisplayName("inset")] border_style_inset,
-        [DisplayName("outset")] border_style_outset
+        [Description("none")] none,
+        [Description("hidden")] hidden,
+        [Description("dotted")] dotted,
+        [Description("dashed")] dashed,
+        [Description("solid")] solid,
+        [Description("double")] @double,
+        [Description("groove")] groove,
+        [Description("ridge")] ridge,
+        [Description("inset")] inset,
+        [Description("outset")] outset
     }
 
+    partial class types
+    {
+        public const string element_float_strings = "none;left;right";
+    }
     public enum element_float
     {
-        [DisplayName("none")] float_none,
-        [DisplayName("left")] float_left,
-        [DisplayName("right")] float_right
+        [Description("none")] none,
+        [Description("left")] left,
+        [Description("right")] right
     }
 
+    partial class types
+    {
+        public const string element_clear_strings = "none;left;right;both";
+    }
     public enum element_clear
     {
-        [DisplayName("none")] clear_none,
-        [DisplayName("left")] clear_left,
-        [DisplayName("right")] clear_right,
-        [DisplayName("both")] clear_both
+        [Description("none")] none,
+        [Description("left")] left,
+        [Description("right")] right,
+        [Description("both")] both
     }
 
+    partial class types
+    {
+        public const string css_units_strings = "none;%;in;cm;mm;em;ex;pt;pc;px;dpi;dpcm;vw;vh;vmin;vmax";
+    }
     public enum css_units
     {
-        [DisplayName("none")] css_units_none,
-        [DisplayName("%")] css_units_percentage,
-        [DisplayName("in")] css_units_in,
-        [DisplayName("cm")] css_units_cm,
-        [DisplayName("mm")] css_units_mm,
-        [DisplayName("em")] css_units_em,
-        [DisplayName("ex")] css_units_ex,
-        [DisplayName("pt")] css_units_pt,
-        [DisplayName("pc")] css_units_pc,
-        [DisplayName("px")] css_units_px,
-        [DisplayName("dpi")] css_units_dpi,
-        [DisplayName("dpcm")] css_units_dpcm,
-        [DisplayName("vw")] css_units_vw,
-        [DisplayName("vh")] css_units_vh,
-        [DisplayName("vmin")] css_units_vmin,
-        [DisplayName("vmax")] css_units_vmax,
+        [Description("none")] none,
+        [Description("%")] percentage,
+        [Description("in")] @in,
+        [Description("cm")] cm,
+        [Description("mm")] mm,
+        [Description("em")] em,
+        [Description("ex")] ex,
+        [Description("pt")] pt,
+        [Description("pc")] pc,
+        [Description("px")] px,
+        [Description("dpi")] dpi,
+        [Description("dpcm")] dpcm,
+        [Description("vw")] vw,
+        [Description("vh")] vh,
+        [Description("vmin")] vmin,
+        [Description("vmax")] vmax,
     }
 
+    partial class types
+    {
+        public const string background_attachment_strings = "scroll;fixed";
+    }
     public enum background_attachment
     {
-        [DisplayName("scroll")] background_attachment_scroll,
-        [DisplayName("fixed")] background_attachment_fixed
+        [Description("scroll")] scroll,
+        [Description("fixed")] @fixed
     }
 
+    partial class types
+    {
+        public const string background_repeat_strings = "repeat;repeat-x;repeat-y;no-repeat";
+    }
     public enum background_repeat
     {
-        [DisplayName("repeat")] background_repeat_repeat,
-        [DisplayName("repeat-x")] background_repeat_repeat_x,
-        [DisplayName("repeat-y")] background_repeat_repeat_y,
-        [DisplayName("no-repeat")] background_repeat_no_repeat
+        [Description("repeat")] repeat,
+        [Description("repeat-x")] repeat_x,
+        [Description("repeat-y")] repeat_y,
+        [Description("no-repeat")] no_repeat
     }
 
+    partial class types
+    {
+        public const string background_box_strings = "border-box;padding-box;content-box";
+    }
     public enum background_box
     {
-        [DisplayName("border-box")] background_box_border,
-        [DisplayName("padding-box")] background_box_padding,
-        [DisplayName("content-box")] background_box_content
+        [Description("border-box")] border_box,
+        [Description("padding-box")] padding_box,
+        [Description("content-box")] content_box
     }
 
+    partial class types
+    {
+        public const string element_position_strings = "static;relative;absolute;fixed";
+    }
     public enum element_position
     {
-        [DisplayName("static")] element_position_static,
-        [DisplayName("relative")] element_position_relative,
-        [DisplayName("absolute")] element_position_absolute,
-        [DisplayName("fixed")] element_position_fixed,
+        [Description("static")] @static,
+        [Description("relative")] relative,
+        [Description("absolute")] absolute,
+        [Description("fixed")] @fixed,
     }
 
+    partial class types
+    {
+        public const string text_align_strings = "left;right;center;justify";
+    }
     public enum text_align
     {
-        [DisplayName("left")] text_align_left,
-        [DisplayName("right")] text_align_right,
-        [DisplayName("center")] text_align_center,
-        [DisplayName("justify")] text_align_justify
+        [Description("left")] left,
+        [Description("right")] right,
+        [Description("center")] center,
+        [Description("justify")] justify
     }
 
+    partial class types
+    {
+        public const string text_transform_strings = "none;capitalize;uppercase;lowercase";
+    }
     public enum text_transform
     {
-        [DisplayName("none")] text_transform_none,
-        [DisplayName("capitalize")] text_transform_capitalize,
-        [DisplayName("uppercase")] text_transform_uppercase,
-        [DisplayName("lowercase")] text_transform_lowercase
+        [Description("none")] none,
+        [Description("capitalize")] capitalize,
+        [Description("uppercase")] uppercase,
+        [Description("lowercase")] lowercase
     }
 
+    partial class types
+    {
+        public const string white_space_strings = "normal;nowrap;pre;pre-line;pre-wrap";
+    }
     public enum white_space
     {
-        [DisplayName("normal")] white_space_normal,
-        [DisplayName("nowrap")] white_space_nowrap,
-        [DisplayName("pre")] white_space_pre,
-        [DisplayName("pre-line")] white_space_pre_line,
-        [DisplayName("pre-wrap")] white_space_pre_wrap
+        [Description("normal")] normal,
+        [Description("nowrap")] nowrap,
+        [Description("pre")] pre,
+        [Description("pre-line")] pre_line,
+        [Description("pre-wrap")] pre_wrap
     }
 
+    partial class types
+    {
+        public const string overflow_strings = "visible;hidden;scroll;auto;no-display;no-content";
+    }
     public enum overflow
     {
-        [DisplayName("visible")] overflow_visible,
-        [DisplayName("hidden")] overflow_hidden,
-        [DisplayName("scroll")] overflow_scroll,
-        [DisplayName("auto")] overflow_auto,
-        [DisplayName("no-display")] overflow_no_display,
-        [DisplayName("no-content")] overflow_no_content
+        [Description("visible")] visible,
+        [Description("hidden")] hidden,
+        [Description("scroll")] scroll,
+        [Description("auto")] auto,
+        [Description("no-display")] no_display,
+        [Description("no-content")] no_content
     }
 
+    partial class types
+    {
+        public const string background_size_strings = "auto;cover;contain";
+    }
     public enum background_size
     {
-        [DisplayName("auto")] background_size_auto,
-        [DisplayName("cover")] background_size_cover,
-        [DisplayName("contain")] background_size_contain,
+        [Description("auto")] auto,
+        [Description("cover")] cover,
+        [Description("contain")] contain,
     }
 
+    partial class types
+    {
+        public const string visibility_strings = "visible;hidden;collapse";
+    }
     public enum visibility
     {
-        [DisplayName("visible")] visibility_visible,
-        [DisplayName("hidden")] visibility_hidden,
-        [DisplayName("collapse")] visibility_collapse,
+        [Description("visible")] visible,
+        [Description("hidden")] hidden,
+        [Description("collapse")] collapse,
     }
 
+    partial class types
+    {
+        public const string border_collapse_strings = "collapse;separate";
+    }
     public enum border_collapse
     {
-        [DisplayName("collapse")] border_collapse_collapse,
-        [DisplayName("separate")] border_collapse_separate,
+        [Description("collapse")] collapse,
+        [Description("separate")] separate,
     }
 
+    partial class types
+    {
+        public const string pseudo_class_strings = "only-child;only-of-type;first-child;first-of-type;last-child;last-of-type;nth-child;nth-of-type;nth-last-child;nth-last-of-type;not;lang";
+    }
     public enum pseudo_class
     {
-        [DisplayName("only-child")] pseudo_class_only_child,
-        [DisplayName("only-of-type")] pseudo_class_only_of_type,
-        [DisplayName("first-child")] pseudo_class_first_child,
-        [DisplayName("first-of-type")] pseudo_class_first_of_type,
-        [DisplayName("last-child")] pseudo_class_last_child,
-        [DisplayName("last-of-type")] pseudo_class_last_of_type,
-        [DisplayName("nth-child")] pseudo_class_nth_child,
-        [DisplayName("nth-of-type")] pseudo_class_nth_of_type,
-        [DisplayName("nth-last-child")] pseudo_class_nth_last_child,
-        [DisplayName("nth-last-of-type")] pseudo_class_nth_last_of_type,
-        [DisplayName("not")] pseudo_class_not,
-        [DisplayName("lang")] pseudo_class_lang,
+        [Description("only-child")] only_child,
+        [Description("only-of-type")] only_of_type,
+        [Description("first-child")] first_child,
+        [Description("first-of-type")] first_of_type,
+        [Description("last-child")] last_child,
+        [Description("last-of-type")] last_of_type,
+        [Description("nth-child")] nth_child,
+        [Description("nth-of-type")] nth_of_type,
+        [Description("nth-last-child")] nth_last_child,
+        [Description("nth-last-of-type")] nth_last_of_type,
+        [Description("not")] not,
+        [Description("lang")] lang,
     }
 
+    partial class types
+    {
+        public const string content_property_string = "none;normal;open-quote;close-quote;no-open-quote;no-close-quote";
+    }
     public enum content_property
     {
-        [DisplayName("none")] content_property_none,
-        [DisplayName("normal")] content_property_normal,
-        [DisplayName("open-quote")] content_property_open_quote,
-        [DisplayName("close-quote")] content_property_close_quote,
-        [DisplayName("no-open-quote")] content_property_no_open_quote,
-        [DisplayName("no-close-quote")] content_property_no_close_quote,
+        [Description("none")] none,
+        [Description("normal")] normal,
+        [Description("open-quote")] open_quote,
+        [Description("close-quote")] close_quote,
+        [Description("no-open-quote")] no_open_quote,
+        [Description("no-close-quote")] no_close_quote,
     }
 
     public struct floated_box
@@ -414,7 +524,7 @@ namespace H3ml.Layout
         public element_clear clear_floats;
         public element el;
 
-        public floated_box() { }
+        //public floated_box() { }
         public floated_box(floated_box val)
         {
             pos = val.pos;
@@ -422,28 +532,6 @@ namespace H3ml.Layout
             clear_floats = val.clear_floats;
             el = val.el;
         }
-        //floated_box operator=(floated_box val)
-        //{
-        //    pos = val.pos;
-        //    float_side = val.float_side;
-        //    clear_floats = val.clear_floats;
-        //    el = val.el;
-        //    return this;
-        //}
-        //floated_box(floated_box val)
-        //{
-        //    pos = val.pos;
-        //    float_side = val.float_side;
-        //    clear_floats = val.clear_floats;
-        //    el = val.el;
-        //}
-        //void operator=(floated_box val)
-        //{
-        //    pos = val.pos;
-        //    float_side = val.float_side;
-        //    clear_floats = val.clear_floats;
-        //    el = val.el;
-        //}
     }
 
     public struct int_int_cache
@@ -452,14 +540,6 @@ namespace H3ml.Layout
         public int val;
         public bool is_valid;
         public bool is_default;
-
-        public int_int_cache()
-        {
-            hash = 0;
-            val = 0;
-            is_valid = false;
-            is_default = false;
-        }
 
         public void invalidate()
         {
@@ -475,13 +555,14 @@ namespace H3ml.Layout
         }
     }
 
+    [Flags]
     public enum select_result
     {
-        select_no_match = 0x00,
-        select_match = 0x01,
-        select_match_pseudo_class = 0x02,
-        select_match_with_before = 0x10,
-        select_match_with_after = 0x20,
+        no_match = 0x00,
+        match = 0x01,
+        match_pseudo_class = 0x02,
+        match_with_before = 0x10,
+        match_with_after = 0x20,
     }
 
     public class def_value<T>
@@ -500,7 +581,7 @@ namespace H3ml.Layout
             _val = def_val;
         }
         public bool is_default => _isDefault;
-        //public T operator=(T new_val)
+        //public T assignTo(T new_val)
         //{
         //    m_val = new_val;
         //    m_is_default = false;
@@ -509,78 +590,94 @@ namespace H3ml.Layout
         //public operator T() => m_val;
     }
 
+    partial class types
+    {
+        public const string media_orientation_strings = "portrait;landscape";
+    }
     public enum media_orientation
     {
-        [DisplayName("portrait")] media_orientation_portrait,
-        [DisplayName("landscape")] media_orientation_landscape,
+        [Description("portrait")] portrait,
+        [Description("landscape")] landscape,
     }
 
+    partial class types
+    {
+        public const string media_feature_strings = "none;width;min-width;max-width;height;min-height;max-height;device-width;min-device-width;max-device-width;device-height;min-device-height;max-device-height;orientation;aspect-ratio;min-aspect-ratio;max-aspect-ratio;device-aspect-ratio;min-device-aspect-ratio;max-device-aspect-ratio;color;min-color;max-color;color-index;min-color-index;max-color-index;monochrome;min-monochrome;max-monochrome;resolution;min-resolution;max-resolution";
+    }
     public enum media_feature
     {
-        [DisplayName("none")] media_feature_none,
+        [Description("none")] none,
 
-        [DisplayName("width")] media_feature_width,
-        [DisplayName("min-width")] media_feature_min_width,
-        [DisplayName("max-width")] media_feature_max_width,
+        [Description("width")] width,
+        [Description("min-width")] min_width,
+        [Description("max-width")] max_width,
 
-        [DisplayName("height")] media_feature_height,
-        [DisplayName("min-height")] media_feature_min_height,
-        [DisplayName("max-height")] media_feature_max_height,
+        [Description("height")] height,
+        [Description("min-height")] min_height,
+        [Description("max-height")] max_height,
 
-        [DisplayName("device-width")] media_feature_device_width,
-        [DisplayName("min-device-width")] media_feature_min_device_width,
-        [DisplayName("max-device-width")] media_feature_max_device_width,
+        [Description("device-width")] device_width,
+        [Description("min-device-width")] min_device_width,
+        [Description("max-device-width")] max_device_width,
 
-        [DisplayName("device-height")] media_feature_device_height,
-        [DisplayName("min-device-height")] media_feature_min_device_height,
-        [DisplayName("max-device-height")] media_feature_max_device_height,
+        [Description("device-height")] device_height,
+        [Description("min-device-height")] min_device_height,
+        [Description("max-device-height")] max_device_height,
 
-        [DisplayName("orientation")] media_feature_orientation,
+        [Description("orientation")] orientation,
 
-        [DisplayName("aspect-ratio")] media_feature_aspect_ratio,
-        [DisplayName("min-aspect-ratio")] media_feature_min_aspect_ratio,
-        [DisplayName("max-aspect-ratio")] media_feature_max_aspect_ratio,
+        [Description("aspect-ratio")] aspect_ratio,
+        [Description("min-aspect-ratio")] min_aspect_ratio,
+        [Description("max-aspect-ratio")] max_aspect_ratio,
 
-        [DisplayName("device-aspect-ratio")] media_feature_device_aspect_ratio,
-        [DisplayName("min-device-aspect-ratio")] media_feature_min_device_aspect_ratio,
-        [DisplayName("max-device-aspect-ratio")] media_feature_max_device_aspect_ratio,
+        [Description("device-aspect-ratio")] device_aspect_ratio,
+        [Description("min-device-aspect-ratio")] min_device_aspect_ratio,
+        [Description("max-device-aspect-ratio")] max_device_aspect_ratio,
 
-        [DisplayName("color")] media_feature_color,
-        [DisplayName("min-color")] media_feature_min_color,
-        [DisplayName("max-color")] media_feature_max_color,
+        [Description("color")] color,
+        [Description("min-color")] min_color,
+        [Description("max-color")] max_color,
 
-        [DisplayName("color-index")] media_feature_color_index,
-        [DisplayName("min-color-index")] media_feature_min_color_index,
-        [DisplayName("max-color-index")] media_feature_max_color_index,
+        [Description("color-index")] color_index,
+        [Description("min-color-index")] min_color_index,
+        [Description("max-color-index")] max_color_index,
 
-        [DisplayName("monochrome")] media_feature_monochrome,
-        [DisplayName("min-monochrome")] media_feature_min_monochrome,
-        [DisplayName("max-monochrome")] media_feature_max_monochrome,
+        [Description("monochrome")] monochrome,
+        [Description("min-monochrome")] min_monochrome,
+        [Description("max-monochrome")] max_monochrome,
 
-        [DisplayName("resolution")] media_feature_resolution,
-        [DisplayName("min-resolution")] media_feature_min_resolution,
-        [DisplayName("max-resolution")] media_feature_max_resolution,
+        [Description("resolution")] resolution,
+        [Description("min-resolution")] min_resolution,
+        [Description("max-resolution")] max_resolution,
     }
 
+    partial class types
+    {
+        public const string box_sizing_strings = "content-box;border-box";
+    }
     public enum box_sizing
     {
-        [DisplayName("content-box")] box_sizing_content_box,
-        [DisplayName("border-box")] box_sizing_border_box,
+        [Description("content-box")] content_box,
+        [Description("border-box")] border_box,
     }
 
+    partial class types
+    {
+        public const string media_type_strings = "none;all;screen;print;braille;embossed;handheld;projection;speech;tty;tv";
+    }
     public enum media_type
     {
-        [DisplayName("none")] media_type_none,
-        [DisplayName("all")] media_type_all,
-        [DisplayName("screen")] media_type_screen,
-        [DisplayName("print")] media_type_print,
-        [DisplayName("braille")] media_type_braille,
-        [DisplayName("embossed")] media_type_embossed,
-        [DisplayName("handheld")] media_type_handheld,
-        [DisplayName("projection")] media_type_projection,
-        [DisplayName("speech")] media_type_speech,
-        [DisplayName("tty")] media_type_tty,
-        [DisplayName("tv")] media_type_tv,
+        [Description("none")] none,
+        [Description("all")] all,
+        [Description("screen")] screen,
+        [Description("print")] print,
+        [Description("braille")] braille,
+        [Description("embossed")] embossed,
+        [Description("handheld")] handheld,
+        [Description("projection")] projection,
+        [Description("speech")] speech,
+        [Description("tty")] tty,
+        [Description("tv")] tv,
     }
 
     public struct media_features
@@ -598,11 +695,14 @@ namespace H3ml.Layout
 
     public enum render_type
     {
-        render_all,
-        render_no_fixed,
-        render_fixed_only,
+        all,
+        no_fixed,
+        fixed_only,
     }
 
-    // List of the Void Elements (can't have any contents)
-    public const string[] void_elements = new[] { "area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr" };
+    public partial class types
+    {
+        // List of the Void Elements (can't have any contents)
+        public static readonly string[] void_elements = new[] { "area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr" };
+    }
 }

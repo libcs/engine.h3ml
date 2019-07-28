@@ -1,17 +1,13 @@
 namespace H3ml.Layout
 {
-	public class el_div : html_tag
-	{
-		public el_div(document doc) : base(doc) { }
+    public class el_div : html_tag
+    {
+        public el_div(document doc) : base(doc) { }
 
         public override void parse_attributes()
-		{
-			const tchar_t* str = get_attr(_t("align"));
-			if (str)
-			{
-				m_style.add_property(_t("text-align"), str, 0, false);
-			}
-			html_tag::parse_attributes();
-		}
-	}
+        {
+            var str = get_attr("align"); if (str != null) _style.add_property("text-align", str, null, false);
+            parse_attributes();
+        }
+    }
 }

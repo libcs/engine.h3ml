@@ -14,10 +14,10 @@ namespace H3ml.Layout
 
         public background()
         {
-            _attachment = background_attachment_scroll;
-            _repeat = background_repeat_repeat;
-            _clip = background_box_border;
-            _origin = background_box_padding;
+            _attachment = background_attachment.scroll;
+            _repeat = background_repeat.repeat;
+            _clip = background_box.border_box;
+            _origin = background_box.padding_box;
             _color.alpha = 0;
             _color.red = 0;
             _color.green = 0;
@@ -36,7 +36,7 @@ namespace H3ml.Layout
             _origin = val._origin;
         }
 
-        //public background operator=(background val)
+        //public background assignTo(background val)
         //{
         //    _image = val._image;
         //    _baseurl = val._baseurl;
@@ -71,8 +71,8 @@ namespace H3ml.Layout
             color = new web_color(0, 0, 0, 0);
             position_x = 0;
             position_y = 0;
-            attachment = background_attachment_scroll;
-            repeat = background_repeat_repeat;
+            attachment = background_attachment.scroll;
+            repeat = background_repeat.repeat;
             is_root = false;
         }
         public background_paint(background_paint val)
@@ -91,7 +91,8 @@ namespace H3ml.Layout
             position_y = val.position_y;
             is_root = val.is_root;
         }
-        //public void operator=(background val)
+
+        //public void assignTo(background val)
         //{
         //    attachment = val._attachment;
         //    baseurl = val._baseurl;

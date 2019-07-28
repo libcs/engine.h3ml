@@ -1,57 +1,28 @@
 namespace H3ml.Layout
 {
-	public class el_font : html_tag
-	{
-		public el_font(document doc) : base(doc) { }
+    public class el_font : html_tag
+    {
+        public el_font(document doc) : base(doc) { }
 
         public override void parse_attributes()
-		{
-			const tchar_t* str = get_attr(_t("color"));
-			if (str)
-			{
-				m_style.add_property(_t("color"), str, 0, false);
-			}
-
-			str = get_attr(_t("face"));
-			if (str)
-			{
-				m_style.add_property(_t("font-face"), str, 0, false);
-			}
-
-			str = get_attr(_t("size"));
-			if (str)
-			{
-				int sz = t_atoi(str);
-				if (sz <= 1)
-				{
-					m_style.add_property(_t("font-size"), _t("x-small"), 0, false);
-				}
-				else if (sz >= 6)
-				{
-					m_style.add_property(_t("font-size"), _t("xx-large"), 0, false);
-				}
-				else
-				{
-					switch (sz)
-					{
-					case 2:
-						m_style.add_property(_t("font-size"), _t("small"), 0, false);
-						break;
-					case 3:
-						m_style.add_property(_t("font-size"), _t("medium"), 0, false);
-						break;
-					case 4:
-						m_style.add_property(_t("font-size"), _t("large"), 0, false);
-						break;
-					case 5:
-						m_style.add_property(_t("font-size"), _t("x-large"), 0, false);
-						break;
-					}
-				}
-			}
-
-			html_tag::parse_attributes();
-		}
-
-	}
+        {
+            var str = get_attr("color"); if (str != null) _style.add_property("color", str, null, false);
+            str = get_attr("face");
+            if (str != null) _style.add_property("font-face", str, null, false);
+            str = get_attr("size"); if (str != null)
+            {
+                var sz = int.Parse(str);
+                if (sz <= 1) _style.add_property("font-size", "x-small", null, false);
+                else if (sz >= 6) _style.add_property("font-size", "xx-large", null, false);
+                else switch (sz)
+                {
+                    case 2: _style.add_property("font-size", "small", null, false); break;
+                    case 3: _style.add_property("font-size", "medium", null, false); break;
+                    case 4: _style.add_property("font-size", "large", null, false); break;
+                    case 5: _style.add_property("font-size", "x-large", null, false); break;
+                }
+            }
+            parse_attributes();
+        }
+    }
 }

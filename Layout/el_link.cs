@@ -4,32 +4,28 @@ namespace H3ml.Layout
     {
         public el_link(document doc) : base(doc) { }
 
-        protected override void parse_attributes()
+        public override void parse_attributes()
         {
             var processed = false;
-
             var doc = get_document();
-
-            var rel = get_attr("rel");
-            if (rel != null && rel == "stylesheet")
+            var rel = get_attr("rel"); if (rel != null && rel == "stylesheet")
             {
                 var media = get_attr("media");
                 var href = get_attr("href");
-                if (href && href[0])
+                if (!string.IsNullOrEmpty(href))
                 {
-                    tstring css_text;
-                    tstring css_baseurl;
-                    doc->container()->import_css(css_text, href, css_baseurl);
-                    if (!css_text.empty())
+                    string css_text;
+                    string css_baseurl;
+                    doc.container.import_css(css_text, href, css_baseurl);
+                    if (!string.IsNullOrEmpty(css_text))
                     {
-                        doc->add_stylesheet(css_text.c_str(), css_baseurl.c_str(), media);
+                        doc.add_stylesheet(css_text, css_baseurl, media);
                         processed = true;
                     }
                 }
             }
-
             if (!processed)
-                doc->container()->link(doc, shared_from_this());
+                doc.container.link(doc, this);
         }
     }
 }

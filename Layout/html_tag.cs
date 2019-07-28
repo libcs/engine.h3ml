@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace H3ml.Layout
 {
@@ -28,17 +30,17 @@ namespace H3ml.Layout
         protected white_space _white_space;
         protected element_float _float;
         protected element_clear _clear;
-        protected IList<floated_box> _floats_left;
-        protected IList<floated_box> _floats_right;
-        protected IList<element> _positioned;
+        protected List<floated_box> _floats_left = new List<floated_box>();
+        protected List<floated_box> _floats_right = new List<floated_box>();
+        protected List<element> _positioned = new List<element>();
         protected background _bg;
         protected element_position _el_position;
         protected int _line_height;
         protected bool _lh_predefined;
-        protected IList<string> _pseudo_classes;
-        protected IList<used_selector> _used_styles;
+        protected List<string> _pseudo_classes = new List<string>();
+        protected List<used_selector> _used_styles = new List<used_selector>();
 
-        protected uint_ptr _font;
+        protected IntPtr _font;
         protected int _font_size;
         protected font_metrics _font_metrics;
 
@@ -70,63 +72,44 @@ namespace H3ml.Layout
         protected int _border_spacing_y;
         protected border_collapse _border_collapse;
 
-        protected override void select_all(css_selector selector, IList<element> res)
-        {
-            if (select(selector))
-                res.Add(shared_from_this());
-            foreach (var el in _children)
-                el.select_all(selector, res);
-        }
-
         public html_tag(document doc) : base(doc)
         {
-            _box_sizing = box_sizing_content_box;
+            _box_sizing = box_sizing.content_box;
             _z_index = 0;
-            _overflow = overflow_visible;
-            _box = 0;
-            _text_align = text_align_left;
-            _el_position = element_position_static;
-            _display = display_inline;
-            _vertical_align = va_baseline;
-            _list_style_type = list_style_type_none;
-            _list_style_position = list_style_position_outside;
-            _float = float_none;
-            _clear = clear_none;
-            _font = 0;
+            _overflow = overflow.visible;
+            _box = null;
+            _text_align = text_align.left;
+            _el_position = element_position.@static;
+            _display = style_display.inline;
+            _vertical_align = vertical_align.baseline;
+            _list_style_type = list_style_type.none;
+            _list_style_position = list_style_position.outside;
+            _float = element_float.none;
+            _clear = element_clear.none;
+            _font = IntPtr.Zero;
             _font_size = 0;
-            _white_space = white_space_normal;
+            _white_space = white_space.normal;
             _lh_predefined = false;
             _line_height = 0;
-            _visibility = visibility_visible;
+            _visibility = visibility.visible;
             _border_spacing_x = 0;
             _border_spacing_y = 0;
-            _border_collapse = border_collapse_separate;
+            _border_collapse = border_collapse.separate;
         }
 
         /* render functions */
 
-        public virtual int render(int x, int y, int max_width, bool second_pass = false)
-        {
-            if (_display == display_table || _display == display_inline_table)
-                return render_table(x, y, max_width, second_pass);
-            return render_box(x, y, max_width, second_pass);
-        }
+        public override int render(int x, int y, int max_width, bool second_pass = false) => _display == style_display.table || _display == style_display.inline_table
+            ? render_table(x, y, max_width, second_pass)
+            : render_box(x, y, max_width, second_pass);
 
-        public virtual int render_inline(element container, int max_width)
+        public override int render_inline(element container, int max_width)
         {
             var ret_width = 0;
             var rw = 0;
-
-            var ws = get_white_space();
-            var skip_spaces = false;
-            if (ws == white_space_normal ||
-                ws == white_space_nowrap ||
-                ws == white_space_pre_line)
-            {
-                skip_spaces = true;
-            }
+            var ws = get_white_space;
+            var skip_spaces = ws == white_space.normal || ws == white_space.nowrap || ws == white_space.pre_line;
             var was_space = false;
-
             foreach (var el in _children)
             {
                 // skip spaces to make rendering a bit faster
@@ -136,264 +119,202 @@ namespace H3ml.Layout
                     {
                         if (was_space)
                         {
-                            el.skip(true);
+                            el.skip = true;
                             continue;
                         }
                         else was_space = true;
                     }
                     else was_space = false;
                 }
-
                 rw = container.place_element(el, max_width);
                 if (rw > ret_width)
                     ret_width = rw;
             }
             return ret_width;
         }
-        public virtual int place_element(element el, int max_width)
+        public override int place_element(element el, int max_width)
         {
-            if (el.get_display() == display_none) return 0;
+            if (el.get_display == style_display.none) return 0;
+            if (el.get_display == style_display.inline)
+                return el.render_inline(this, max_width);
 
-            if (el.get_display() == display_inline)
-                return el.render_inline(shared_from_this(), max_width);
-
-            var el_position = el.get_element_position();
-
-            if (el_position == element_position_absolute || el_position == element_position_fixed)
+            var el_position = el.get_element_position(out var junk);
+            if (el_position == element_position.absolute || el_position == element_position.@fixed)
             {
                 var line_top = 0;
-                if (!_boxes.empty())
+                if (_boxes.Count != 0)
                 {
-                    if (_boxes.Last().get_type() == box_line)
+                    if (_boxes.Last().get_type == box_type.line)
                     {
-                        line_top = _boxes.back().top();
-                        if (!_boxes.Last().is_empty())
-                            line_top += line_height();
+                        line_top = _boxes.Last().top;
+                        if (!_boxes.Last().is_empty)
+                            line_top += line_height;
                     }
-                    else
-                    {
-                        line_top = _boxes.Last().bottom();
-                    }
+                    else line_top = _boxes.Last().bottom;
                 }
-
                 el.render(0, line_top, max_width);
-                el._pos.x += el.content_margins_left();
-                el._pos.y += el.content_margins_top();
-
+                el._pos.x += el.content_margins_left;
+                el._pos.y += el.content_margins_top;
                 return 0;
             }
 
             var ret_width = 0;
-
-            switch (el.get_float())
+            switch (el.get_float)
             {
-                case float_left:
+                case element_float.left:
                     {
-                        int line_top = 0;
-                        if (!m_boxes.empty())
-                        {
-                            if (m_boxes.back().get_type() == box_line)
-                            {
-                                line_top = m_boxes.back().top();
-                            }
-                            else
-                            {
-                                line_top = m_boxes.back().bottom();
-                            }
-                        }
+                        var line_top = 0;
+                        if (_boxes.Count != 0)
+                            line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
                         line_top = get_cleared_top(el, line_top);
-                        int line_left = 0;
-                        int line_right = max_width;
-                        get_line_left_right(line_top, max_width, line_left, line_right);
+                        var line_left = 0;
+                        var line_right = max_width;
+                        get_line_left_right(line_top, max_width, ref line_left, ref line_right);
 
                         el.render(line_left, line_top, line_right);
-                        if (el.right() > line_right)
+
+                        if (el.right > line_right)
                         {
-                            int new_top = find_next_line_top(el.top(), el.width(), max_width);
-                            el.m_pos.x = get_line_left(new_top) + el.content_margins_left();
-                            el.m_pos.y = new_top + el.content_margins_top();
+                            var new_top = find_next_line_top(el.top, el.width, max_width);
+                            el._pos.x = get_line_left(new_top) + el.content_margins_left;
+                            el._pos.y = new_top + el.content_margins_top;
                         }
                         add_float(el, 0, 0);
-                        ret_width = fix_line_width(max_width, float_left);
-                        if (!ret_width)
-                        {
-                            ret_width = el.right();
-                        }
+                        ret_width = fix_line_width(max_width, element_float.left);
+                        if (ret_width == 0)
+                            ret_width = el.right;
                     }
                     break;
-                case float_right:
+                case element_float.right:
                     {
-                        int line_top = 0;
-                        if (!m_boxes.empty())
-                        {
-                            if (m_boxes.back().get_type() == box_line)
-                            {
-                                line_top = m_boxes.back().top();
-                            }
-                            else
-                            {
-                                line_top = m_boxes.back().bottom();
-                            }
-                        }
+                        var line_top = 0;
+                        if (_boxes.Count != 0)
+                            line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
                         line_top = get_cleared_top(el, line_top);
-                        int line_left = 0;
-                        int line_right = max_width;
-                        get_line_left_right(line_top, max_width, line_left, line_right);
+                        var line_left = 0;
+                        var line_right = max_width;
+                        get_line_left_right(line_top, max_width, ref line_left, ref line_right);
 
                         el.render(0, line_top, line_right);
 
-                        if (line_left + el.width() > line_right)
+                        if (line_left + el.width > line_right)
                         {
-                            int new_top = find_next_line_top(el.top(), el.width(), max_width);
-                            el.m_pos.x = get_line_right(new_top, max_width) - el.width() + el.content_margins_left();
-                            el.m_pos.y = new_top + el.content_margins_top();
+                            var new_top = find_next_line_top(el.top, el.width, max_width);
+                            el._pos.x = get_line_right(new_top, max_width) - el.width + el.content_margins_left;
+                            el._pos.y = new_top + el.content_margins_top;
                         }
                         else
-                        {
-                            el.m_pos.x = line_right - el.width() + el.content_margins_left();
-                        }
+                            el._pos.x = line_right - el.width + el.content_margins_left;
                         add_float(el, 0, 0);
-                        ret_width = fix_line_width(max_width, float_right);
-
-                        if (!ret_width)
+                        ret_width = fix_line_width(max_width, element_float.right);
+                        if (ret_width == 0)
                         {
                             line_left = 0;
                             line_right = max_width;
-                            get_line_left_right(line_top, max_width, line_left, line_right);
-
+                            get_line_left_right(line_top, max_width, ref line_left, ref line_right);
                             ret_width = ret_width + (max_width - line_right);
                         }
                     }
                     break;
                 default:
                     {
-                        line_context line_ctx;
+                        var line_ctx = new line_context();
                         line_ctx.top = 0;
-                        if (!m_boxes.empty())
-                        {
-                            line_ctx.top = m_boxes.back().top();
-                        }
+                        if (_boxes.Count != 0)
+                            line_ctx.top = _boxes.Last().top;
                         line_ctx.left = 0;
                         line_ctx.right = max_width;
                         line_ctx.fix_top();
-                        get_line_left_right(line_ctx.top, max_width, line_ctx.left, line_ctx.right);
+                        get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
 
-                        switch (el.get_display())
+                        switch (el.get_display)
                         {
-                            case display_inline_block:
+                            case style_display.inline_block:
                                 ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.right);
                                 break;
-                            case display_block:
-                                if (el.is_replaced() || el.is_floats_holder())
+                            case style_display.block:
+                                if (el.is_replaced || el.is_floats_holder)
                                 {
-                                    element::ptr el_parent = el.parent();
-                                    el.m_pos.width = el.get_css_width().calc_percent(line_ctx.right - line_ctx.left);
-                                    el.m_pos.height = el.get_css_height().calc_percent(el_parent ? el_parent.m_pos.height : 0);
+                                    var el_parent = el.parent();
+                                    el._pos.width = el.get_css_width().calc_percent(line_ctx.right - line_ctx.left);
+                                    el._pos.height = el.get_css_height().calc_percent(el_parent != null ? el_parent._pos.height : 0);
                                 }
                                 el.calc_outlines(line_ctx.right - line_ctx.left);
                                 break;
-                            case display_inline_text:
+                            case style_display.inline_text:
                                 {
-                                    litehtml::size sz;
-                                    el.get_content_size(sz, line_ctx.right);
-                                    el.m_pos = sz;
+                                    el.get_content_size(out var sz, line_ctx.right);
+                                    el._pos.assignTo(sz);
                                 }
                                 break;
-                            default:
-                                ret_width = 0;
-                                break;
+                            default: ret_width = 0; break;
                         }
 
-                        bool add_box = true;
-                        if (!m_boxes.empty())
-                        {
-                            if (m_boxes.back().can_hold(el, m_white_space))
-                            {
+                        var add_box = true;
+                        if (_boxes.Count != 0)
+                            if (_boxes.Last().can_hold(el, _white_space))
                                 add_box = false;
-                            }
-                        }
                         if (add_box)
-                        {
                             new_box(el, max_width, line_ctx);
-                        }
-                        else if (!m_boxes.empty())
-                        {
-                            line_ctx.top = m_boxes.back().top();
-                        }
-
+                        else if (_boxes.Count != 0)
+                            line_ctx.top = _boxes.Last().top;
                         if (line_ctx.top != line_ctx.calculatedTop)
                         {
                             line_ctx.left = 0;
                             line_ctx.right = max_width;
                             line_ctx.fix_top();
-                            get_line_left_right(line_ctx.top, max_width, line_ctx.left, line_ctx.right);
+                            get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
                         }
 
-                        if (!el.is_inline_box())
+                        if (!el.is_inline_box)
                         {
-                            if (m_boxes.size() == 1)
+                            if (_boxes.Count == 1)
                             {
-                                if (collapse_top_margin())
+                                if (collapse_top_margin)
                                 {
-                                    int shift = el.margin_top();
+                                    var shift = el.margin_top;
                                     if (shift >= 0)
                                     {
                                         line_ctx.top -= shift;
-                                        m_boxes.back().y_shift(-shift);
+                                        _boxes.Last().y_shift(-shift);
                                     }
                                 }
                             }
                             else
                             {
-                                int shift = 0;
-                                int prev_margin = m_boxes[m_boxes.size() - 2].bottom_margin();
-
-                                if (prev_margin > el.margin_top())
-                                {
-                                    shift = el.margin_top();
-                                }
-                                else
-                                {
-                                    shift = prev_margin;
-                                }
+                                var shift = 0;
+                                var prev_margin = _boxes[_boxes.Count - 2].bottom_margin;
+                                shift = prev_margin > el.margin_top ? el.margin_top : prev_margin;
                                 if (shift >= 0)
                                 {
                                     line_ctx.top -= shift;
-                                    m_boxes.back().y_shift(-shift);
+                                    _boxes.Last().y_shift(-shift);
                                 }
                             }
                         }
 
-                        switch (el.get_display())
+                        switch (el.get_display)
                         {
-                            case display_table:
-                            case display_list_item:
-                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.width());
+                            case style_display.table:
+                            case style_display.list_item:
+                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.width);
                                 break;
-                            case display_block:
-                            case display_table_cell:
-                            case display_table_caption:
-                            case display_table_row:
-                                if (el.is_replaced() || el.is_floats_holder())
-                                {
-                                    ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.width()) + line_ctx.left + (max_width - line_ctx.right);
-                                }
-                                else
-                                {
-                                    ret_width = el.render(0, line_ctx.top, max_width);
-                                }
+                            case style_display.block:
+                            case style_display.table_cell:
+                            case style_display.table_caption:
+                            case style_display.table_row:
+                                ret_width = el.is_replaced || el.is_floats_holder
+                                    ? el.render(line_ctx.left, line_ctx.top, line_ctx.width) + line_ctx.left + (max_width - line_ctx.right)
+                                    : el.render(0, line_ctx.top, max_width);
                                 break;
                             default:
                                 ret_width = 0;
                                 break;
                         }
 
-                        m_boxes.back().add_element(el);
-
-                        if (el.is_inline_box() && !el.skip())
-                        {
-                            ret_width = el.right() + (max_width - line_ctx.right);
-                        }
+                        _boxes.Last().add_element(el);
+                        if (el.is_inline_box && !el.skip)
+                            ret_width = el.right + (max_width - line_ctx.right);
                     }
                     break;
             }
@@ -401,202 +322,170 @@ namespace H3ml.Layout
             return ret_width;
         }
 
-        public virtual bool fetch_positioned()
+        public override bool fetch_positioned()
         {
-            bool ret = false;
-
-            m_positioned.clear();
-
-            litehtml::element_position el_pos;
-
-            for (auto & el : m_children)
+            var ret = false;
+            _positioned.Clear();
+            element_position el_pos;
+            foreach (var el in _children)
             {
-                el_pos = el.get_element_position();
-                if (el_pos != element_position_static)
-                {
+                el_pos = el.get_element_position(out var junk);
+                if (el_pos != element_position.@static)
                     add_positioned(el);
-                }
-                if (!ret && (el_pos == element_position_absolute || el_pos == element_position_fixed))
-                {
+                if (!ret && (el_pos == element_position.absolute || el_pos == element_position.@fixed))
                     ret = true;
-                }
                 if (el.fetch_positioned())
-                {
                     ret = true;
-                }
             }
             return ret;
         }
-        public virtual void render_positioned(render_type rt = render_all)
+        public override void render_positioned(render_type rt = render_type.all)
         {
-            position wnd_position;
-            get_document().container().get_client_rect(wnd_position);
-
+            get_document().container.get_client_rect(out var wnd_position);
             element_position el_position;
             bool process;
-            for (auto & el : m_positioned)
+            foreach (var el in _positioned)
             {
-                el_position = el.get_element_position();
-
+                el_position = el.get_element_position(out var junk);
                 process = false;
-                if (el.get_display() != display_none)
+                if (el.get_display != style_display.none)
                 {
-                    if (el_position == element_position_absolute)
+                    if (el_position == element_position.absolute)
                     {
-                        if (rt != render_fixed_only)
-                        {
+                        if (rt != render_type.fixed_only)
                             process = true;
-                        }
                     }
-                    else if (el_position == element_position_fixed)
+                    else if (el_position == element_position.@fixed)
                     {
-                        if (rt != render_no_fixed)
-                        {
+                        if (rt != render_type.no_fixed)
                             process = true;
-                        }
                     }
                 }
 
                 if (process)
                 {
-                    int parent_height = 0;
-                    int parent_width = 0;
-                    int client_x = 0;
-                    int client_y = 0;
-                    if (el_position == element_position_fixed)
+                    var parent_height = 0;
+                    var parent_width = 0;
+                    var client_x = 0;
+                    var client_y = 0;
+                    if (el_position == element_position.@fixed)
                     {
                         parent_height = wnd_position.height;
                         parent_width = wnd_position.width;
-                        client_x = wnd_position.left();
-                        client_y = wnd_position.top();
+                        client_x = wnd_position.left;
+                        client_y = wnd_position.top;
                     }
                     else
                     {
-                        element::ptr el_parent = el.parent();
-                        if (el_parent)
+                        var el_parent = el.parent();
+                        if (el_parent != null)
                         {
-                            parent_height = el_parent.height();
-                            parent_width = el_parent.width();
+                            parent_height = el_parent.height;
+                            parent_width = el_parent.width;
                         }
                     }
 
-                    css_length css_left = el.get_css_left();
-                    css_length css_right = el.get_css_right();
-                    css_length css_top = el.get_css_top();
-                    css_length css_bottom = el.get_css_bottom();
+                    var css_left = el.get_css_left();
+                    var css_right = el.get_css_right();
+                    var css_top = el.get_css_top();
+                    var css_bottom = el.get_css_bottom();
 
-                    bool need_render = false;
+                    var need_render = false;
 
-                    css_length el_w = el.get_css_width();
-                    css_length el_h = el.get_css_height();
+                    var el_w = el.get_css_width();
+                    var el_h = el.get_css_height();
 
-                    int new_width = -1;
-                    int new_height = -1;
-                    if (el_w.units() == css_units_percentage && parent_width)
+                    var new_width = -1;
+                    var new_height = -1;
+                    if (el_w.units == css_units.percentage && parent_width != 0)
                     {
                         new_width = el_w.calc_percent(parent_width);
-                        if (el.m_pos.width != new_width)
+                        if (el._pos.width != new_width)
                         {
                             need_render = true;
-                            el.m_pos.width = new_width;
+                            el._pos.width = new_width;
                         }
                     }
 
-                    if (el_h.units() == css_units_percentage && parent_height)
+                    if (el_h.units == css_units.percentage && parent_height != 0)
                     {
                         new_height = el_h.calc_percent(parent_height);
-                        if (el.m_pos.height != new_height)
+                        if (el._pos.height != new_height)
                         {
                             need_render = true;
-                            el.m_pos.height = new_height;
+                            el._pos.height = new_height;
                         }
                     }
 
-                    bool cvt_x = false;
-                    bool cvt_y = false;
+                    var cvt_x = false;
+                    var cvt_y = false;
 
-                    if (el_position == element_position_fixed)
+                    if (el_position == element_position.@fixed)
                     {
-                        if (!css_left.is_predefined() || !css_right.is_predefined())
+                        if (!css_left.is_predefined || !css_right.is_predefined)
                         {
-                            if (!css_left.is_predefined() && css_right.is_predefined())
-                            {
-                                el.m_pos.x = css_left.calc_percent(parent_width) + el.content_margins_left();
-                            }
-                            else if (css_left.is_predefined() && !css_right.is_predefined())
-                            {
-                                el.m_pos.x = parent_width - css_right.calc_percent(parent_width) - el.m_pos.width - el.content_margins_right();
-                            }
+                            if (!css_left.is_predefined && css_right.is_predefined)
+                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left;
+                            else if (css_left.is_predefined && !css_right.is_predefined)
+                                el._pos.x = parent_width - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
                             else
                             {
-                                el.m_pos.x = css_left.calc_percent(parent_width) + el.content_margins_left();
-                                el.m_pos.width = parent_width - css_left.calc_percent(parent_width) - css_right.calc_percent(parent_width) - (el.content_margins_left() + el.content_margins_right());
+                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left;
+                                el._pos.width = parent_width - css_left.calc_percent(parent_width) - css_right.calc_percent(parent_width) - (el.content_margins_left + el.content_margins_right);
                                 need_render = true;
                             }
                         }
 
-                        if (!css_top.is_predefined() || !css_bottom.is_predefined())
+                        if (!css_top.is_predefined || !css_bottom.is_predefined)
                         {
-                            if (!css_top.is_predefined() && css_bottom.is_predefined())
-                            {
-                                el.m_pos.y = css_top.calc_percent(parent_height) + el.content_margins_top();
-                            }
-                            else if (css_top.is_predefined() && !css_bottom.is_predefined())
-                            {
-                                el.m_pos.y = parent_height - css_bottom.calc_percent(parent_height) - el.m_pos.height - el.content_margins_bottom();
-                            }
+                            if (!css_top.is_predefined && css_bottom.is_predefined)
+                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top;
+                            else if (css_top.is_predefined && !css_bottom.is_predefined)
+                                el._pos.y = parent_height - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
                             else
                             {
-                                el.m_pos.y = css_top.calc_percent(parent_height) + el.content_margins_top();
-                                el.m_pos.height = parent_height - css_top.calc_percent(parent_height) - css_bottom.calc_percent(parent_height) - (el.content_margins_top() + el.content_margins_bottom());
+                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top;
+                                el._pos.height = parent_height - css_top.calc_percent(parent_height) - css_bottom.calc_percent(parent_height) - (el.content_margins_top + el.content_margins_bottom);
                                 need_render = true;
                             }
                         }
                     }
                     else
                     {
-                        if (!css_left.is_predefined() || !css_right.is_predefined())
+                        if (!css_left.is_predefined || !css_right.is_predefined)
                         {
-                            if (!css_left.is_predefined() && css_right.is_predefined())
-                            {
-                                el.m_pos.x = css_left.calc_percent(parent_width) + el.content_margins_left() - m_padding.left;
-                            }
-                            else if (css_left.is_predefined() && !css_right.is_predefined())
-                            {
-                                el.m_pos.x = m_pos.width + m_padding.right - css_right.calc_percent(parent_width) - el.m_pos.width - el.content_margins_right();
-                            }
+                            if (!css_left.is_predefined && css_right.is_predefined)
+                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left - _padding.left;
+                            else if (css_left.is_predefined && !css_right.is_predefined)
+                                el._pos.x = _pos.width + _padding.right - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
                             else
                             {
-                                el.m_pos.x = css_left.calc_percent(parent_width) + el.content_margins_left() - m_padding.left;
-                                el.m_pos.width = m_pos.width + m_padding.left + m_padding.right - css_left.calc_percent(parent_width) - css_right.calc_percent(parent_width) - (el.content_margins_left() + el.content_margins_right());
+                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left - _padding.left;
+                                el._pos.width = _pos.width + _padding.left + _padding.right - css_left.calc_percent(parent_width) - css_right.calc_percent(parent_width) - (el.content_margins_left + el.content_margins_right);
                                 if (new_width != -1)
                                 {
-                                    el.m_pos.x += (el.m_pos.width - new_width) / 2;
-                                    el.m_pos.width = new_width;
+                                    el._pos.x += (el._pos.width - new_width) / 2;
+                                    el._pos.width = new_width;
                                 }
                                 need_render = true;
                             }
                             cvt_x = true;
                         }
 
-                        if (!css_top.is_predefined() || !css_bottom.is_predefined())
+                        if (!css_top.is_predefined || !css_bottom.is_predefined)
                         {
-                            if (!css_top.is_predefined() && css_bottom.is_predefined())
-                            {
-                                el.m_pos.y = css_top.calc_percent(parent_height) + el.content_margins_top() - m_padding.top;
-                            }
-                            else if (css_top.is_predefined() && !css_bottom.is_predefined())
-                            {
-                                el.m_pos.y = m_pos.height + m_padding.bottom - css_bottom.calc_percent(parent_height) - el.m_pos.height - el.content_margins_bottom();
-                            }
+                            if (!css_top.is_predefined && css_bottom.is_predefined)
+                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top - _padding.top;
+                            else if (css_top.is_predefined && !css_bottom.is_predefined)
+                                el._pos.y = _pos.height + _padding.bottom - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
                             else
                             {
-                                el.m_pos.y = css_top.calc_percent(parent_height) + el.content_margins_top() - m_padding.top;
-                                el.m_pos.height = m_pos.height + m_padding.top + m_padding.bottom - css_top.calc_percent(parent_height) - css_bottom.calc_percent(parent_height) - (el.content_margins_top() + el.content_margins_bottom());
+                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top - _padding.top;
+                                el._pos.height = _pos.height + _padding.top + _padding.bottom - css_top.calc_percent(parent_height) - css_bottom.calc_percent(parent_height) - (el.content_margins_top + el.content_margins_bottom);
                                 if (new_height != -1)
                                 {
-                                    el.m_pos.y += (el.m_pos.height - new_height) / 2;
-                                    el.m_pos.height = new_height;
+                                    el._pos.y += (el._pos.height - new_height) / 2;
+                                    el._pos.height = new_height;
                                 }
                                 need_render = true;
                             }
@@ -608,29 +497,29 @@ namespace H3ml.Layout
                     {
                         int offset_x = 0;
                         int offset_y = 0;
-                        element::ptr cur_el = el.parent();
-                        element::ptr this_el = shared_from_this();
-                        while (cur_el && cur_el != this_el)
+                        var cur_el = el.parent();
+                        var this_el = (element)this;
+                        while (cur_el != null && cur_el != this_el)
                         {
-                            offset_x += cur_el.m_pos.x;
-                            offset_y += cur_el.m_pos.y;
+                            offset_x += cur_el._pos.x;
+                            offset_y += cur_el._pos.y;
                             cur_el = cur_el.parent();
                         }
-                        if (cvt_x) el.m_pos.x -= offset_x;
-                        if (cvt_y) el.m_pos.y -= offset_y;
+                        if (cvt_x) el._pos.x -= offset_x;
+                        if (cvt_y) el._pos.y -= offset_y;
                     }
 
                     if (need_render)
                     {
-                        position pos = el.m_pos;
-                        el.render(el.left(), el.top(), el.width(), true);
-                        el.m_pos = pos;
+                        var pos = el._pos;
+                        el.render(el.left, el.top, el.width, true);
+                        el._pos = pos;
                     }
 
-                    if (el_position == element_position_fixed)
+                    if (el_position == element_position.@fixed)
                     {
-                        position fixed_pos;
-                        el.get_redraw_box(fixed_pos);
+                        var fixed_pos = new position();
+                        el.get_redraw_box(ref fixed_pos);
                         get_document().add_fixed_box(fixed_pos);
                     }
                 }
@@ -638,15 +527,9 @@ namespace H3ml.Layout
                 el.render_positioned();
             }
 
-            if (!m_positioned.empty())
-            {
-                std::stable_sort(m_positioned.begin(), m_positioned.end(), [](const litehtml::element::ptr&_Left, const litehtml::element::ptr&_Right)
-		{
-                    return (_Left.get_zindex() < _Right.get_zindex());
-                });
-            }
+            if (_positioned.Count != 0)
+                _positioned.Sort((left, right) => left.get_zindex < right.get_zindex ? 1 : 0);
         }
-
 
         public int new_box(element el, int max_width, line_context line_ctx)
         {
@@ -655,99 +538,75 @@ namespace H3ml.Layout
             line_ctx.left = 0;
             line_ctx.right = max_width;
             line_ctx.fix_top();
-            get_line_left_right(line_ctx.top, max_width, line_ctx.left, line_ctx.right);
+            get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
 
-            if (el.is_inline_box() || el.is_floats_holder())
-            {
-                if (el.width() > line_ctx.right - line_ctx.left)
+            if (el.is_inline_box || el.is_floats_holder)
+                if (el.width > line_ctx.right - line_ctx.left)
                 {
-                    line_ctx.top = find_next_line_top(line_ctx.top, el.width(), max_width);
+                    line_ctx.top = find_next_line_top(line_ctx.top, el.width, max_width);
                     line_ctx.left = 0;
                     line_ctx.right = max_width;
                     line_ctx.fix_top();
-                    get_line_left_right(line_ctx.top, max_width, line_ctx.left, line_ctx.right);
+                    get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
                 }
-            }
 
-            int first_line_margin = 0;
-            if (m_boxes.empty() && m_list_style_type != list_style_type_none && m_list_style_position == list_style_position_inside)
-            {
-                int sz_font = get_font_size();
-                first_line_margin = sz_font;
-            }
+            var first_line_margin = 0;
+            if (_boxes.Count == 0 && _list_style_type != list_style_type.none && _list_style_position == list_style_position.inside)
+                first_line_margin = get_font_size;
 
-            if (el.is_inline_box())
+            if (el.is_inline_box)
             {
-                int text_indent = 0;
-                if (m_css_text_indent.val() != 0)
+                var text_indent = 0;
+                if (_css_text_indent.val != 0)
                 {
-                    bool line_box_found = false;
-                    for (box::vector::iterator iter = m_boxes.begin(); iter != m_boxes.end(); iter++)
-                    {
-                        if ((*iter).get_type() == box_line)
+                    var line_box_found = false;
+                    foreach (var iter in _boxes)
+                        if (iter.get_type == box_type.line)
                         {
                             line_box_found = true;
                             break;
                         }
-                    }
                     if (!line_box_found)
-                    {
-                        text_indent = m_css_text_indent.calc_percent(max_width);
-                    }
+                        text_indent = _css_text_indent.calc_percent(max_width);
                 }
-
-                font_metrics fm;
-                get_font(&fm);
-                m_boxes.emplace_back(std::unique_ptr<line_box>(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.right, line_height(), fm, m_text_align)));
+                get_font(out var fm);
+                _boxes.emplace_back(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.right, line_height, fm, _text_align));
             }
-            else
-            {
-                m_boxes.emplace_back(std::unique_ptr<block_box>(new block_box(line_ctx.top, line_ctx.left, line_ctx.right)));
-            }
-
+            else _boxes.emplace_back(new block_box(line_ctx.top, line_ctx.left, line_ctx.right));
             return line_ctx.top;
         }
 
-
         public int get_cleared_top(element el, int line_top)
         {
-            switch (el.get_clear())
+            switch (el.get_clear)
             {
-                case clear_left:
+                case element_clear.left:
                     {
-                        int fh = get_left_floats_height();
-                        if (fh && fh > line_top)
-                        {
+                        var fh = get_left_floats_height();
+                        if (fh != 0 && fh > line_top)
                             line_top = fh;
-                        }
                     }
                     break;
-                case clear_right:
+                case element_clear.right:
                     {
-                        int fh = get_right_floats_height();
-                        if (fh && fh > line_top)
-                        {
+                        var fh = get_right_floats_height();
+                        if (fh != 0 && fh > line_top)
                             line_top = fh;
-                        }
                     }
                     break;
-                case clear_both:
+                case element_clear.both:
                     {
-                        int fh = get_floats_height();
-                        if (fh && fh > line_top)
-                        {
+                        var fh = get_floats_height();
+                        if (fh != 0 && fh > line_top)
                             line_top = fh;
-                        }
                     }
                     break;
                 default:
-                    if (el.get_float() != float_none)
+                    if (el.get_float != element_float.none)
                     {
-                        int fh = get_floats_height(el.get_float());
-                        if (fh && fh > line_top)
-                        {
+                        var fh = get_floats_height(el.get_float);
+                        if (fh != 0 && fh > line_top)
                             line_top = fh;
-                        }
                     }
                     break;
             }
@@ -755,439 +614,345 @@ namespace H3ml.Layout
         }
         public int finish_last_box(bool end_of_render = false)
         {
-            int line_top = 0;
-
-            if (!m_boxes.empty())
+            var line_top = 0;
+            if (_boxes.Count != 0)
             {
-                m_boxes.back().finish(end_of_render);
-
-                if (m_boxes.back().is_empty())
+                _boxes.Last().finish(end_of_render);
+                if (_boxes.Last().is_empty)
                 {
-                    line_top = m_boxes.back().top();
-                    m_boxes.pop_back();
+                    line_top = _boxes.Last().top;
+                    _boxes.RemoveAt(_boxes.Count - 1);
                 }
-
-                if (!m_boxes.empty())
-                {
-                    line_top = m_boxes.back().bottom();
-                }
+                if (_boxes.Count != 0)
+                    line_top = _boxes.Last().bottom;
             }
             return line_top;
         }
 
-        public virtual bool appendChild(element el)
+        public override bool appendChild(element el)
         {
-            if (el)
+            if (el != null)
             {
-                el.parent(shared_from_this());
-                m_children.push_back(el);
+                el.parent(this);
+                _children.Add(el);
                 return true;
             }
             return false;
         }
-        public virtual bool removeChild(element el)
+        public override bool removeChild(element el)
         {
-            if (el && el.parent() == shared_from_this())
+            if (el != null && el.parent() == this)
             {
-                el.parent(nullptr);
-                m_children.erase(std::remove(m_children.begin(), m_children.end(), el), m_children.end());
+                el.parent(null);
+                throw new NotImplementedException("SKY:TODO");
+                //_children.erase(std::remove(m_children.begin(), m_children.end(), el), m_children.end());
                 return true;
             }
             return false;
         }
-        public virtual void clearRecursive()
+        public override void clearRecursive()
         {
-            for (auto & el : m_children)
+            foreach (var el in _children)
             {
                 el.clearRecursive();
-                el.parent(nullptr);
+                el.parent(null);
             }
-            m_children.clear();
+            _children.Clear();
         }
-        public virtual string get_tagName() => _tag;
-        public virtual void set_tagName(string tag)
+        public override string get_tagName() => _tag;
+        public override void set_tagName(string tag) => _tag = tag.ToLowerInvariant();
+        public override void set_data(string data) { }
+        public override element_float get_float => _float;
+        public override vertical_align get_vertical_align => _vertical_align;
+        public override css_length get_css_left() => _css_offsets.left;
+        public override css_length get_css_right() => _css_offsets.right;
+        public override css_length get_css_top() => _css_offsets.top;
+        public override css_length get_css_bottom() => _css_offsets.bottom;
+        public override css_length get_css_width() => _css_width;
+        public override css_offsets get_css_offsets() => _css_offsets;
+        public override void set_css_width(css_length w) => _css_width = w;
+        public override css_length get_css_height() => _css_height;
+        public override element_clear get_clear => _clear;
+        public override int get_children_count => _children.Count;
+        public override element get_child(int idx) => _children[idx];
+        public override element_position get_element_position(out css_offsets offsets)
         {
-            tstring s_val = tag;
-            for (size_t i = 0; i < s_val.length(); i++)
-            {
-                s_val[i] = std::tolower(s_val[i], std::locale::classic());
-            }
-            m_tag = s_val;
-        }
-        public virtual void set_data(string data) { }
-        public virtual element_float get_float => _float;
-        public virtual vertical_align get_vertical_align => _vertical_align;
-        public virtual css_length get_css_left => _css_offsets.left;
-        public virtual css_length get_css_right => _css_offsets.right;
-        public virtual css_length get_css_top => _css_offsets.top;
-        public virtual css_length get_css_bottom => _css_offsets.bottom;
-        public virtual css_length get_css_width() => _css_width;
-        public virtual css_offsets get_css_offsets => _css_offsets;
-        public virtual void set_css_width(css_length w) => _css_width = w;
-        public virtual css_length get_css_height => _css_height;
-        public virtual element_clear get_clear => _clear;
-        public virtual int get_children_count => _children.Count;
-        public virtual element get_child(int idx) => _children[idx];
-        public virtual element_position get_element_position(out css_offsets offsets)
-        {
-            if (_el_position != element_position_static)
-                offsets = m_css_offsets;
+            if (_el_position != element_position.@static) offsets = _css_offsets;
+            else offsets = default(css_offsets);
             return _el_position;
         }
-        public virtual overflow get_overflow => _overflow;
-        public virtual void set_attr(string name, string val)
+        public override overflow get_overflow => _overflow;
+        public override void set_attr(string name, string val)
         {
-            if (name && val)
+            if (name != null && val != null)
             {
-                tstring s_val = name;
-                for (size_t i = 0; i < s_val.length(); i++)
+                _attrs[name.ToLowerInvariant()] = val;
+                if (string.Equals(name, "class", StringComparison.OrdinalIgnoreCase))
                 {
-                    s_val[i] = std::tolower(s_val[i], std::locale::classic());
-                }
-                m_attrs[s_val] = val;
-
-                if (t_strcasecmp(name, _t("class")) == 0)
-                {
-                    m_class_values.resize(0);
-                    split_string(val, m_class_values, _t(" "));
+                    _class_values.Clear();
+                    html.split_string(val, _class_values, " ");
                 }
             }
         }
-        public virtual string get_attr(string name, string def = null)
-        {
-            string_map::const_iterator attr = m_attrs.find(name);
-            if (attr != m_attrs.end())
-            {
-                return attr.second.c_str();
-            }
-            return def;
-        }
-        public virtual void apply_stylesheet(css stylesheet)
+        public override string get_attr(string name, string def = null) => _attrs.TryGetValue(name, out var attr) ? attr : def;
+        public override void apply_stylesheet(css stylesheet)
         {
             remove_before_after();
-
-            for (const auto&sel : stylesheet.selectors())
-	{
-                int apply = select(*sel, false);
-
-                if (apply != select_no_match)
+            foreach (var sel in stylesheet.selectors())
+            {
+                var apply = select(sel, false);
+                if (apply != select_result.no_match)
                 {
-                    used_selector::ptr us = std::unique_ptr<used_selector>(new used_selector(sel, false));
-
-                    if (sel.is_media_valid())
+                    var us = new used_selector(sel, false);
+                    if (sel.is_media_valid)
                     {
-                        if (apply & select_match_pseudo_class)
+                        if ((apply & select_result.match_pseudo_class) != 0)
                         {
-                            if (select(*sel, true))
+                            if (select(sel, true) != 0)
                             {
-                                if (apply & select_match_with_after)
+                                if ((apply & select_result.match_with_after) != 0)
                                 {
-                                    element::ptr el = get_element_after();
-                                    if (el)
-                                    {
-                                        el.add_style(*sel.m_style);
-                                    }
+                                    var el = get_element_after();
+                                    if (el != null)
+                                        el.add_style(sel._style);
                                 }
-                                else if (apply & select_match_with_before)
+                                else if ((apply & select_result.match_with_before) != 0)
                                 {
-                                    element::ptr el = get_element_before();
-                                    if (el)
-                                    {
-                                        el.add_style(*sel.m_style);
-                                    }
+                                    var el = get_element_before();
+                                    if (el != null)
+                                        el.add_style(sel._style);
                                 }
                                 else
                                 {
-                                    add_style(*sel.m_style);
-                                    us.m_used = true;
+                                    add_style(sel._style);
+                                    us._used = true;
                                 }
                             }
                         }
-                        else if (apply & select_match_with_after)
+                        else if ((apply & select_result.match_with_after) != 0)
                         {
-                            element::ptr el = get_element_after();
-                            if (el)
-                            {
-                                el.add_style(*sel.m_style);
-                            }
+                            var el = get_element_after();
+                            if (el != null)
+                                el.add_style(sel._style);
                         }
-                        else if (apply & select_match_with_before)
+                        else if ((apply & select_result.match_with_before) != 0)
                         {
-                            element::ptr el = get_element_before();
-                            if (el)
-                            {
-                                el.add_style(*sel.m_style);
-                            }
+                            var el = get_element_before();
+                            if (el != null)
+                                el.add_style(sel._style);
                         }
                         else
                         {
-                            add_style(*sel.m_style);
-                            us.m_used = true;
+                            add_style(sel._style);
+                            us._used = true;
                         }
                     }
-                    m_used_styles.push_back(std::move(us));
+                    _used_styles.Add(us);
                 }
             }
-
-            for (auto & el : m_children)
-            {
-                if (el.get_display() != display_inline_text)
-                {
+            foreach (var el in _children)
+                if (el.get_display != style_display.inline_text)
                     el.apply_stylesheet(stylesheet);
-                }
-            }
         }
-        public virtual void refresh_styles()
+        public override void refresh_styles()
         {
             remove_before_after();
-
-            for (auto & el : m_children)
-            {
-                if (el.get_display() != display_inline_text)
-                {
+            foreach (var el in _children)
+                if (el.get_display != style_display.inline_text)
                     el.refresh_styles();
-                }
-            }
-
-            m_style.clear();
-
-            for (auto & usel : m_used_styles)
+            _style.clear();
+            foreach (var usel in _used_styles)
             {
-                usel.m_used = false;
-
-                if (usel.m_selector.is_media_valid())
+                usel._used = false;
+                if (usel._selector.is_media_valid)
                 {
-                    int apply = select(*usel.m_selector, false);
-
-                    if (apply != select_no_match)
+                    var apply = select(usel._selector, false);
+                    if (apply != select_result.no_match)
                     {
-                        if (apply & select_match_pseudo_class)
+                        if ((apply & select_result.match_pseudo_class) != 0)
                         {
-                            if (select(*usel.m_selector, true))
+                            if (select(usel._selector, true) != 0)
                             {
-                                if (apply & select_match_with_after)
+                                if ((apply & select_result.match_with_after) != 0)
                                 {
-                                    element::ptr el = get_element_after();
-                                    if (el)
-                                    {
-                                        el.add_style(*usel.m_selector.m_style);
-                                    }
+                                    var el = get_element_after();
+                                    if (el != null)
+                                        el.add_style(usel._selector._style);
                                 }
-                                else if (apply & select_match_with_before)
+                                else if ((apply & select_result.match_with_before) != 0)
                                 {
-                                    element::ptr el = get_element_before();
-                                    if (el)
-                                    {
-                                        el.add_style(*usel.m_selector.m_style);
-                                    }
+                                    var el = get_element_before();
+                                    if (el != null)
+                                        el.add_style(usel._selector._style);
                                 }
                                 else
                                 {
-                                    add_style(*usel.m_selector.m_style);
-                                    usel.m_used = true;
+                                    add_style(usel._selector._style);
+                                    usel._used = true;
                                 }
                             }
                         }
-                        else if (apply & select_match_with_after)
+                        else if ((apply & select_result.match_with_after) != 0)
                         {
-                            element::ptr el = get_element_after();
-                            if (el)
-                            {
-                                el.add_style(*usel.m_selector.m_style);
-                            }
+                            var el = get_element_after();
+                            if (el != null)
+                                el.add_style(usel._selector._style);
                         }
-                        else if (apply & select_match_with_before)
+                        else if ((apply & select_result.match_with_before) != 0)
                         {
-                            element::ptr el = get_element_before();
-                            if (el)
-                            {
-                                el.add_style(*usel.m_selector.m_style);
-                            }
+                            var el = get_element_before();
+                            if (el != null)
+                                el.add_style(usel._selector._style);
                         }
                         else
                         {
-                            add_style(*usel.m_selector.m_style);
-                            usel.m_used = true;
+                            add_style(usel._selector._style);
+                            usel._used = true;
                         }
                     }
                 }
             }
         }
 
-        public virtual bool is_white_space() => false;
-        public virtual bool is_body() => false;
-        public virtual bool is_break() => false;
-        public virtual int get_base_line()
+        public override bool is_white_space() => false;
+        public override bool is_body() => false;
+        public override bool is_break() => false;
+        public override int get_base_line()
         {
-            if (is_replaced())
-            {
+            if (is_replaced)
                 return 0;
-            }
-            int bl = 0;
-            if (!m_boxes.empty())
-            {
-                bl = m_boxes.back().baseline() + content_margins_bottom();
-            }
+            var bl = 0;
+            if (_boxes.Count != 0)
+                bl = _boxes.Last().baseline + content_margins_bottom;
             return bl;
         }
-        public virtual bool on_mouse_over()
+        public override bool on_mouse_over()
         {
-            bool ret = false;
-
-            element::ptr el = shared_from_this();
-            while (el)
+            var ret = false;
+            var el = (element)this;
+            while (el != null)
             {
-                if (el.set_pseudo_class(_t("hover"), true))
-                {
-                    ret = true;
-                }
+                if (el.set_pseudo_class("hover", true)) ret = true;
                 el = el.parent();
             }
-
             return ret;
         }
-        public virtual bool on_mouse_leave()
+        public override bool on_mouse_leave()
         {
-            bool ret = false;
-
-            element::ptr el = shared_from_this();
-            while (el)
+            var ret = false;
+            var el = (element)this;
+            while (el != null)
             {
-                if (el.set_pseudo_class(_t("hover"), false))
-                {
-                    ret = true;
-                }
-                if (el.set_pseudo_class(_t("active"), false))
-                {
-                    ret = true;
-                }
+                if (el.set_pseudo_class("hover", false)) ret = true;
+                if (el.set_pseudo_class("active", false)) ret = true;
                 el = el.parent();
             }
-
             return ret;
         }
-        public virtual bool on_lbutton_down()
+        public override bool on_lbutton_down()
         {
-            bool ret = false;
-
-            element::ptr el = shared_from_this();
-            while (el)
+            var ret = false;
+            var el = (element)this;
+            while (el != null)
             {
-                if (el.set_pseudo_class(_t("active"), true))
-                {
-                    ret = true;
-                }
+                if (el.set_pseudo_class("active", true)) ret = true;
                 el = el.parent();
             }
-
             return ret;
         }
-        public virtual bool on_lbutton_up()
+        public override bool on_lbutton_up()
         {
-            bool ret = false;
-
-            element::ptr el = shared_from_this();
-            while (el)
+            var ret = false;
+            var el = (element)this;
+            while (el != null)
             {
-                if (el.set_pseudo_class(_t("active"), false))
-                {
-                    ret = true;
-                }
+                if (el.set_pseudo_class("active", false)) ret = true;
                 el = el.parent();
             }
-
             on_click();
-
             return ret;
         }
 
-        public virtual void on_click()
+        public override void on_click()
         {
-            if (have_parent())
+            if (have_parent)
             {
-                element::ptr el_parent = parent();
-                if (el_parent)
-                {
+                var el_parent = parent();
+                if (el_parent != null)
                     el_parent.on_click();
-                }
             }
         }
-        public virtual bool find_styles_changes(IList<position> redraw_boxes, int x, int y)
+        public override bool find_styles_changes(IList<position> redraw_boxes, int x, int y)
         {
-            if (m_display == display_inline_text)
-            {
+            if (_display == style_display.inline_text)
                 return false;
-            }
-
-            bool ret = false;
-            bool apply = false;
-            for (used_selector::vector::iterator iter = m_used_styles.begin(); iter != m_used_styles.end() && !apply; iter++)
+            var ret = false;
+            var apply = false;
+            foreach (var iter in _used_styles)
             {
-                if ((*iter).m_selector.is_media_valid())
+                if (iter._selector.is_media_valid)
                 {
-                    int res = select(*((*iter).m_selector), true);
-                    if ((res == select_no_match && (*iter).m_used) || (res == select_match && !(*iter).m_used))
+                    var res = select(iter._selector, true);
+                    if ((res == select_result.no_match && iter._used) || (res == select_result.match && !iter._used))
                     {
                         apply = true;
+                        break;
                     }
                 }
             }
 
             if (apply)
             {
-                if (m_display == display_inline || m_display == display_table_row)
+                if (_display == style_display.inline || _display == style_display.table_row)
                 {
-                    position::vector boxes;
+                    var boxes = new List<position>();
                     get_inline_boxes(boxes);
-                    for (position::vector::iterator pos = boxes.begin(); pos != boxes.end(); pos++)
+                    for (var i = 0; i < boxes.Count; i++)
                     {
+                        var pos = boxes[i];
                         pos.x += x;
                         pos.y += y;
-                        redraw_boxes.push_back(*pos);
+                        redraw_boxes.Add(pos);
                     }
                 }
                 else
                 {
-                    position pos = m_pos;
-                    if (m_el_position != element_position_fixed)
+                    var pos = _pos;
+                    if (_el_position != element_position.@fixed)
                     {
                         pos.x += x;
                         pos.y += y;
                     }
-                    pos += m_padding;
-                    pos += m_borders;
-                    redraw_boxes.push_back(pos);
+                    pos += _padding;
+                    pos += _borders;
+                    redraw_boxes.Add(pos);
                 }
 
                 ret = true;
                 refresh_styles();
                 parse_styles();
             }
-            for (auto & el : m_children)
+            foreach (var el in _children)
             {
-                if (!el.skip())
+                if (!el.skip)
                 {
-                    if (m_el_position != element_position_fixed)
+                    if (_el_position != element_position.@fixed)
                     {
-                        if (el.find_styles_changes(redraw_boxes, x + m_pos.x, y + m_pos.y))
-                        {
+                        if (el.find_styles_changes(redraw_boxes, x + _pos.x, y + _pos.y))
                             ret = true;
-                        }
                     }
                     else
                     {
-                        if (el.find_styles_changes(redraw_boxes, m_pos.x, m_pos.y))
-                        {
+                        if (el.find_styles_changes(redraw_boxes, _pos.x, _pos.y))
                             ret = true;
-                        }
                     }
                 }
             }
             return ret;
         }
 
-        public virtual string get_cursor() => get_style_property("cursor", true, 0);
-        static const int[][] font_size_table =
+        public override string get_cursor() => get_style_property("cursor", true, null);
+        static readonly int[][] font_size_table =
         {
             new int[]{ 9,    9,     9,     9,    11,    14,    18},
             new int[]{ 9,    9,     9,    10,    12,    15,    20},
@@ -1198,10 +963,10 @@ namespace H3ml.Layout
             new int[]{ 9,   10,    12,    15,    17,    23,    30},
             new int[]{ 9,   10,    13,    16,    18,    24,    32}
         };
-        public virtual void init_font()
+        public override void init_font()
         {
             // initialize font size
-            const tchar_t* str = get_style_property(_t("font-size"), false, 0);
+            var str = get_style_property("font-size", false, null);
 
             int parent_sz = 0;
             int doc_font_size = get_document().container().get_default_font_size();
@@ -1573,7 +1338,7 @@ namespace H3ml.Layout
                 }
             }
         }
-        public virtual void draw(uint_ptr hdc, int x, int y, position clip)
+        public virtual void draw(IntPtr hdc, int x, int y, position clip)
         {
             position pos = m_pos;
             pos.x += x;
@@ -1605,7 +1370,7 @@ namespace H3ml.Layout
                 }
             }
         }
-        public virtual void draw_background(uint_ptr hdc, int x, int y, position clip)
+        public virtual void draw_background(IntPtr hdc, int x, int y, position clip)
         {
             position pos = m_pos;
             pos.x += x;
@@ -1699,62 +1464,51 @@ namespace H3ml.Layout
                         if (bg)
                         {
                             bg_paint.border_radius = bdr.radius.calc_percents(bg_paint.border_box.width, bg_paint.border_box.width);
-                            get_document().container().draw_background(hdc, bg_paint);
+                            get_document().container.draw_background(hdc, bg_paint);
                         }
                         borders b = bdr;
                         b.radius = bdr.radius.calc_percents(box.width, box.height);
-                        get_document().container().draw_borders(hdc, b, *box, false);
+                        get_document().container.draw_borders(hdc, b, *box, false);
                     }
                 }
             }
         }
 
-        public virtual string get_style_property(string name, bool inherited, string def = null)
+        public override string get_style_property(string name, bool inherited, string def = null)
         {
-            const tchar_t* ret = m_style.get_property(name);
-            element::ptr el_parent = parent();
-            if (el_parent)
-            {
-                if ((ret && !t_strcasecmp(ret, _t("inherit"))) || (!ret && inherited))
-                {
+            var ret = _style.get_property(name);
+            var el_parent = parent();
+            if (el_parent != null)
+                if ((ret != null && string.Equals(ret, "inherit", StringComparison.OrdinalIgnoreCase)) || (ret == null && inherited))
                     ret = el_parent.get_style_property(name, inherited, def);
-                }
-            }
-
-            if (!ret)
-            {
+            if (ret == null)
                 ret = def;
-            }
-
             return ret;
         }
-        public virtual uint_ptr get_font(font_metrics fm = null)
+        public override IntPtr get_font(out font_metrics fm)
         {
-            if (fm)
-            {
-                *fm = m_font_metrics;
-            }
-            return m_font;
+            fm = _font_metrics;
+            return _font;
         }
-        public virtual int get_font_size() => _font_size;
+        public override int get_font_size => _font_size;
 
         public IList<element> children() => _children;
-        public virtual void calc_outlines(int parent_width)
+        public override void calc_outlines(int parent_width)
         {
-            m_padding.left = m_css_padding.left.calc_percent(parent_width);
-            m_padding.right = m_css_padding.right.calc_percent(parent_width);
+            _padding.left = _css_padding.left.calc_percent(parent_width);
+            _padding.right = _css_padding.right.calc_percent(parent_width);
 
-            m_borders.left = m_css_borders.left.width.calc_percent(parent_width);
-            m_borders.right = m_css_borders.right.width.calc_percent(parent_width);
+            _borders.left = _css_borders.left.width.calc_percent(parent_width);
+            _borders.right = _css_borders.right.width.calc_percent(parent_width);
 
-            m_margins.left = m_css_margins.left.calc_percent(parent_width);
-            m_margins.right = m_css_margins.right.calc_percent(parent_width);
+            _margins.left = _css_margins.left.calc_percent(parent_width);
+            _margins.right = _css_margins.right.calc_percent(parent_width);
 
-            m_margins.top = m_css_margins.top.calc_percent(parent_width);
-            m_margins.bottom = m_css_margins.bottom.calc_percent(parent_width);
+            _margins.top = _css_margins.top.calc_percent(parent_width);
+            _margins.bottom = _css_margins.bottom.calc_percent(parent_width);
 
-            m_padding.top = m_css_padding.top.calc_percent(parent_width);
-            m_padding.bottom = m_css_padding.bottom.calc_percent(parent_width);
+            _padding.top = _css_padding.top.calc_percent(parent_width);
+            _padding.bottom = _css_padding.bottom.calc_percent(parent_width);
         }
         public virtual void calc_auto_margins(int parent_width)
         {
@@ -1790,13 +1544,11 @@ namespace H3ml.Layout
         }
 
 
-        public virtual int select(css_selector selector, bool apply_pseudo = true)
+        public override select_result select(css_selector selector, bool apply_pseudo = true)
         {
-            int right_res = select(selector.m_right, apply_pseudo);
-            if (right_res == select_no_match)
-            {
-                return select_no_match;
-            }
+            var right_res = select(selector.m_right, apply_pseudo);
+            if (right_res == select_result.no_match)
+                return select_result.no_match;
             element::ptr el_parent = parent();
             if (selector.m_left)
             {
@@ -1920,7 +1672,7 @@ namespace H3ml.Layout
                                     bool f = false;
                                     for (string_vector::const_iterator str2 = tokens1.begin(); str2 != tokens1.end() && !f; str2++)
                                     {
-                                        if (!t_strcasecmp(str1.c_str(), str2.c_str()))
+                                        if (string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase))
                                         {
                                             f = true;
                                         }
@@ -1937,7 +1689,7 @@ namespace H3ml.Layout
                             }
                             else
                             {
-                                if (t_strcasecmp(i.val.c_str(), attr_value))
+                                if (!string.Equals(i.val, attr_value, StringComparison.OrdinalIgnoreCase))
                                 {
                                     return select_no_match;
                                 }
@@ -2149,9 +1901,17 @@ namespace H3ml.Layout
         }
         public virtual IList<element> select_all(css_selector selector)
         {
-            litehtml::elements_vector res;
+            litehtml::IList<element> res;
             select_all(selector, res);
             return res;
+        }
+
+        protected override void select_all(css_selector selector, IList<element> res)
+        {
+            if (select(selector) != 0)
+                res.Add(this);
+            foreach (var el in _children)
+                el.select_all(selector, res);
         }
 
         public virtual element select_one(string selector)
@@ -2959,7 +2719,7 @@ namespace H3ml.Layout
             }
         }
 
-        public virtual void draw_children(uint_ptr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        public virtual void draw_children(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             if (m_display == display_table || m_display == display_inline_table)
             {
@@ -2971,14 +2731,14 @@ namespace H3ml.Layout
             }
         }
         public virtual int get_zindex => _z_index;
-        public virtual void draw_stacking_context(uint_ptr hdc, int x, int y, position clip, bool with_positioned)
+        public virtual void draw_stacking_context(IntPtr hdc, int x, int y, position clip, bool with_positioned)
         {
             if (!is_visible()) return;
 
             std::map<int, bool> zindexes;
             if (with_positioned)
             {
-                for (elements_vector::iterator i = m_positioned.begin(); i != m_positioned.end(); i++)
+                for (IList<element>::iterator i = m_positioned.begin(); i != m_positioned.end(); i++)
                 {
                     zindexes[(*i).get_zindex()];
                 }
@@ -3064,7 +2824,7 @@ namespace H3ml.Layout
 
             std::map<int, bool> zindexes;
 
-            for (elements_vector::iterator i = m_positioned.begin(); i != m_positioned.end(); i++)
+            for (IList<element>::iterator i = m_positioned.begin(); i != m_positioned.end(); i++)
             {
                 zindexes[(*i).get_zindex()];
             }
@@ -3139,7 +2899,7 @@ namespace H3ml.Layout
             pos.x = x - pos.x;
             pos.y = y - pos.y;
 
-            for (elements_vector::reverse_iterator i = m_children.rbegin(); i != m_children.rend() && !ret; i++)
+            for (IList<element>::reverse_iterator i = m_children.rbegin(); i != m_children.rend() && !ret; i++)
             {
                 element::ptr el = (*i);
 
@@ -3272,7 +3032,7 @@ namespace H3ml.Layout
         public virtual bool is_nth_last_child(element el, int num, int off, bool of_type)
         {
             int idx = 1;
-            for (elements_vector::const_reverse_iterator child = m_children.rbegin(); child != m_children.rend(); child++)
+            for (IList<element>::const_reverse_iterator child = m_children.rbegin(); child != m_children.rend(); child++)
             {
                 if ((*child).get_display() != display_inline_text)
                 {
@@ -3367,7 +3127,7 @@ namespace H3ml.Layout
         }
 
 
-        protected void draw_children_box(uint_ptr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_box(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             position pos = m_pos;
             pos.x += x;
@@ -3472,7 +3232,7 @@ namespace H3ml.Layout
                 doc.container().del_clip();
             }
         }
-        protected void draw_children_table(uint_ptr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_table(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             if (!m_grid) return;
 
@@ -4117,7 +3877,7 @@ namespace H3ml.Layout
             int ret_width = 0;
             if (!m_boxes.empty())
             {
-                elements_vector els;
+                IList<element> els;
                 m_boxes.back().get_elements(els);
                 bool was_cleared = false;
                 if (!els.empty() && els.front().get_clear() != clear_none)
@@ -4140,7 +3900,7 @@ namespace H3ml.Layout
                 {
                     m_boxes.pop_back();
 
-                    for (elements_vector::iterator i = els.begin(); i != els.end(); i++)
+                    for (IList<element>::iterator i = els.begin(); i != els.end(); i++)
                     {
                         int rw = place_element((*i), max_width);
                         if (rw > ret_width)
@@ -4192,7 +3952,7 @@ namespace H3ml.Layout
 
                     }
 
-                    elements_vector els;
+                    IList<element> els;
                     m_boxes.back().new_width(line_left, line_right, els);
                     for (auto & el : els)
                     {
@@ -4498,7 +4258,7 @@ namespace H3ml.Layout
     bg_paint.is_root = have_parent() ? false : true;
 }
 
-protected void draw_list_marker(uint_ptr hdc, position pos)
+protected void draw_list_marker(IntPtr hdc, position pos)
 {
     list_marker lm;
 

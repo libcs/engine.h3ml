@@ -59,13 +59,13 @@ namespace H3ml.Layout
                 if (style_start != tstring::npos && style_end != tstring::npos)
                 {
                     style::ptr st = std::make_shared<style>();
-                    st->add(text.substr(style_start + 1, style_end - style_start - 1).c_str(), baseurl);
+                    st.add(text.substr(style_start + 1, style_end - style_start - 1).c_str(), baseurl);
 
                     parse_selectors(text.substr(pos, style_start - pos), st, media);
 
                     if (media && doc)
                     {
-                        doc->add_media_list(media);
+                        doc.add_media_list(media);
                     }
 
                     pos = style_end + 1;
@@ -81,15 +81,11 @@ namespace H3ml.Layout
                 }
             }
         }
-        //public void sort_selectors()
-        //{
-	       // std::sort(m_selectors.begin(), m_selectors.end(),
-		      //   [](const css_selector::ptr& v1, const css_selector::ptr& v2)
-		      //   {
-			     //    return (*v1) < (*v2);
-		      //   }
-	       // );
-        //}
+        public void sort_selectors()
+        {
+            _selectors.Sort((v1, v2) => v1 < v2 ? 1 : 0);
+        }
+
         public static void parse_css_url(string str, string url)
         {
             url = _t("");
@@ -140,7 +136,7 @@ namespace H3ml.Layout
                     tokens.erase(tokens.begin());
                     if (doc)
                     {
-                        document_container* doc_cont = doc->container();
+                        document_container* doc_cont = doc.container();
                         if (doc_cont)
                         {
                             tstring css_text;
@@ -149,7 +145,7 @@ namespace H3ml.Layout
                             {
                                 css_baseurl = baseurl;
                             }
-                            doc_cont->import_css(css_text, url, css_baseurl);
+                            doc_cont.import_css(css_text, url, css_baseurl);
                             if (!css_text.empty())
                             {
                                 media_query_list::ptr new_media = media;
@@ -219,11 +215,11 @@ namespace H3ml.Layout
             for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
             {
                 css_selector::ptr selector = std::make_shared<css_selector>(media);
-                selector->m_style = styles;
+                selector.m_style = styles;
                 trim(*tok);
-                if (selector->parse(*tok))
+                if (selector.parse(*tok))
                 {
-                    selector->calc_specificity();
+                    selector.calc_specificity();
                     add_selector(selector);
                     added_something = true;
                 }

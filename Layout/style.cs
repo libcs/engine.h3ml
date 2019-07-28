@@ -91,30 +91,30 @@ namespace H3ml.Layout
                 tstring str;
                 for (string_vector::const_iterator tok = tokens.begin(); tok != tokens.end(); tok++)
                 {
-                    idx = value_index(tok->c_str(), border_style_strings, -1);
+                    idx = value_index(tok.c_str(), border_style_strings, -1);
                     if (idx >= 0)
                     {
-                        add_property(_t("border-left-style"), tok->c_str(), baseurl, important);
-                        add_property(_t("border-right-style"), tok->c_str(), baseurl, important);
-                        add_property(_t("border-top-style"), tok->c_str(), baseurl, important);
-                        add_property(_t("border-bottom-style"), tok->c_str(), baseurl, important);
+                        add_property(_t("border-left-style"), tok.c_str(), baseurl, important);
+                        add_property(_t("border-right-style"), tok.c_str(), baseurl, important);
+                        add_property(_t("border-top-style"), tok.c_str(), baseurl, important);
+                        add_property(_t("border-bottom-style"), tok.c_str(), baseurl, important);
                     }
                     else
                     {
                         if (t_isdigit((*tok)[0]) || (*tok)[0] == _t('.') ||
                             value_in_list((*tok), _t("thin;medium;thick")))
                         {
-                            add_property(_t("border-left-width"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-right-width"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-top-width"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-bottom-width"), tok->c_str(), baseurl, important);
+                            add_property(_t("border-left-width"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-right-width"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-top-width"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-bottom-width"), tok.c_str(), baseurl, important);
                         }
                         else
                         {
-                            add_property(_t("border-left-color"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-right-color"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-top-color"), tok->c_str(), baseurl, important);
-                            add_property(_t("border-bottom-color"), tok->c_str(), baseurl, important);
+                            add_property(_t("border-left-color"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-right-color"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-top-color"), tok.c_str(), baseurl, important);
+                            add_property(_t("border-bottom-color"), tok.c_str(), baseurl, important);
                         }
                     }
                 }
@@ -130,26 +130,26 @@ namespace H3ml.Layout
                 tstring str;
                 for (string_vector::const_iterator tok = tokens.begin(); tok != tokens.end(); tok++)
                 {
-                    idx = value_index(tok->c_str(), border_style_strings, -1);
+                    idx = value_index(tok.c_str(), border_style_strings, -1);
                     if (idx >= 0)
                     {
                         str = name;
                         str += _t("-style");
-                        add_property(str.c_str(), tok->c_str(), baseurl, important);
+                        add_property(str.c_str(), tok.c_str(), baseurl, important);
                     }
                     else
                     {
-                        if (web_color::is_color(tok->c_str()))
+                        if (web_color::is_color(tok.c_str()))
                         {
                             str = name;
                             str += _t("-color");
-                            add_property(str.c_str(), tok->c_str(), baseurl, important);
+                            add_property(str.c_str(), tok.c_str(), baseurl, important);
                         }
                         else
                         {
                             str = name;
                             str += _t("-width");
-                            add_property(str.c_str(), tok->c_str(), baseurl, important);
+                            add_property(str.c_str(), tok.c_str(), baseurl, important);
                         }
                     }
                 }
@@ -319,14 +319,14 @@ namespace H3ml.Layout
                 split_string(val, tokens, _t(" "), _t(""), _t("("));
                 for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
                 {
-                    int idx = value_index(tok->c_str(), list_style_type_strings, -1);
+                    int idx = value_index(tok.c_str(), list_style_type_strings, -1);
                     if (idx >= 0)
                     {
                         add_parsed_property(_t("list-style-type"), *tok, important);
                     }
                     else
                     {
-                        idx = value_index(tok->c_str(), list_style_position_strings, -1);
+                        idx = value_index(tok.c_str(), list_style_position_strings, -1);
                         if (idx >= 0)
                         {
                             add_parsed_property(_t("list-style-position"), *tok, important);
@@ -469,7 +469,7 @@ namespace H3ml.Layout
         {
             for (props_map::const_iterator i = src.m_properties.begin(); i != src.m_properties.end(); i++)
             {
-                add_parsed_property(i->first.c_str(), i->second.m_value.c_str(), i->second.m_important);
+                add_parsed_property(i.first.c_str(), i.second.m_value.c_str(), i.second.m_important);
             }
         }
 
@@ -569,7 +569,7 @@ namespace H3ml.Layout
             bool origin_found = false;
             for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
             {
-                if (tok->substr(0, 3) == _t("url"))
+                if (tok.substr(0, 3) == _t("url"))
                 {
                     add_parsed_property(_t("background-image"), *tok, important);
                     if (baseurl)
@@ -578,15 +578,15 @@ namespace H3ml.Layout
                     }
 
                 }
-                else if (value_in_list(tok->c_str(), background_repeat_strings))
+                else if (value_in_list(tok.c_str(), background_repeat_strings))
                 {
                     add_parsed_property(_t("background-repeat"), *tok, important);
                 }
-                else if (value_in_list(tok->c_str(), background_attachment_strings))
+                else if (value_in_list(tok.c_str(), background_attachment_strings))
                 {
                     add_parsed_property(_t("background-attachment"), *tok, important);
                 }
-                else if (value_in_list(tok->c_str(), background_box_strings))
+                else if (value_in_list(tok.c_str(), background_box_strings))
                 {
                     if (!origin_found)
                     {
@@ -598,7 +598,7 @@ namespace H3ml.Layout
                         add_parsed_property(_t("background-clip"), *tok, important);
                     }
                 }
-                else if (value_in_list(tok->c_str(), _t("left;right;top;bottom;center")) ||
+                else if (value_in_list(tok.c_str(), _t("left;right;top;bottom;center")) ||
                           iswdigit((*tok)[0]) ||
                           (*tok)[0] == _t('-') ||
                           (*tok)[0] == _t('.') ||
@@ -613,7 +613,7 @@ namespace H3ml.Layout
                         add_parsed_property(_t("background-position"), *tok, important);
                     }
                 }
-                else if (web_color::is_color(tok->c_str()))
+                else if (web_color::is_color(tok.c_str()))
                 {
                     add_parsed_property(_t("background-color"), *tok, important);
                 }
@@ -636,7 +636,7 @@ namespace H3ml.Layout
             tstring font_family;
             for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
             {
-                idx = value_index(tok->c_str(), font_style_strings);
+                idx = value_index(tok.c_str(), font_style_strings);
                 if (!is_family)
                 {
                     if (idx >= 0)
@@ -654,13 +654,13 @@ namespace H3ml.Layout
                     }
                     else
                     {
-                        if (value_in_list(tok->c_str(), font_weight_strings))
+                        if (value_in_list(tok.c_str(), font_weight_strings))
                         {
                             add_parsed_property(_t("font-weight"), *tok, important);
                         }
                         else
                         {
-                            if (value_in_list(tok->c_str(), font_variant_strings))
+                            if (value_in_list(tok.c_str(), font_variant_strings))
                             {
                                 add_parsed_property(_t("font-variant"), *tok, important);
                             }
@@ -700,7 +700,7 @@ namespace H3ml.Layout
             string_map::iterator vals = m_valid_values.find(name);
             if (vals != m_valid_values.end())
             {
-                if (!value_in_list(val, vals->second))
+                if (!value_in_list(val, vals.second))
                 {
                     is_valid = false;
                 }
@@ -711,10 +711,10 @@ namespace H3ml.Layout
                 props_map::iterator prop = m_properties.find(name);
                 if (prop != m_properties.end())
                 {
-                    if (!prop->second.m_important || (important && prop->second.m_important))
+                    if (!prop.second.m_important || (important && prop.second.m_important))
                     {
-                        prop->second.m_value = val;
-                        prop->second.m_important = important;
+                        prop.second.m_value = val;
+                        prop.second.m_important = important;
                     }
                 }
                 else
@@ -728,7 +728,7 @@ namespace H3ml.Layout
             props_map::iterator prop = m_properties.find(name);
             if (prop != m_properties.end())
             {
-                if (!prop->second.m_important || (important && prop->second.m_important))
+                if (!prop.second.m_important || (important && prop.second.m_important))
                 {
                     m_properties.erase(prop);
                 }

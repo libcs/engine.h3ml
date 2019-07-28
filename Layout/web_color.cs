@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace H3ml.Layout
 {
@@ -174,13 +175,13 @@ namespace H3ml.Layout
             alpha = a;
         }
 
-        //public web_color()
-        //{
-        //    blue = 0;
-        //    green = 0;
-        //    red = 0;
-        //    alpha = 0xFF;
-        //}
+        public web_color(Exception o = null)
+        {
+            blue = 0;
+            green = 0;
+            red = 0;
+            alpha = 0xFF;
+        }
 
         public web_color(web_color val)
         {
@@ -189,15 +190,6 @@ namespace H3ml.Layout
             red = val.red;
             alpha = val.alpha;
         }
-
-        //public web_color operator=(web_color val)
-        //{
-        //    blue = val.blue;
-        //    green = val.green;
-        //    red = val.red;
-        //    alpha = val.alpha;
-        //    return this;
-        //}
 
         public static web_color from_string(string str, document_container callback)
         {
@@ -226,11 +218,12 @@ namespace H3ml.Layout
                     blue += str[5];
                     blue += str[6];
                 }
-                var clr = new web_color();
-                clr.red = (byte)Convert.ToInt64(red, 16);
-                clr.green = (byte)Convert.ToInt64(green, 16);
-                clr.blue = (byte)Convert.ToInt64(blue, 16);
-                return clr;
+                return new web_color
+                {
+                    red = (byte)Convert.ToInt64(red, 16),
+                    green = (byte)Convert.ToInt64(green, 16),
+                    blue = (byte)Convert.ToInt64(blue, 16)
+                };
             }
             else if (str.StartsWith("rgb"))
             {
@@ -241,19 +234,19 @@ namespace H3ml.Layout
                 pos = s.IndexOf(")");
                 if (pos != -1)
                     s = s.Remove(pos, s.Length - pos);
-
-                html.split_string(s, out var tokens, ", \t");
+                var tokens = new List<string>();
+                html.split_string(s, tokens, ", \t");
                 var clr = new web_color();
-                if (tokens.length >= 1) clr.red = (byte)int.Parse(tokens[0]);
-                if (tokens.length >= 2) clr.green = (byte)int.Parse(tokens[1]);
-                if (tokens.length >= 3) clr.blue = (byte)int.Parse(tokens[2]);
-                if (tokens.length >= 4) clr.alpha = (byte)(decimal.Parse(tokens[3]) * 255.0);
+                if (tokens.Count >= 1) clr.red = (byte)int.Parse(tokens[0]);
+                if (tokens.Count >= 2) clr.green = (byte)int.Parse(tokens[1]);
+                if (tokens.Count >= 3) clr.blue = (byte)int.Parse(tokens[2]);
+                if (tokens.Count >= 4) clr.alpha = (byte)(double.Parse(tokens[3]) * 255.0);
                 return clr;
             }
             else
             {
                 var rgb = resolve_name(str, callback);
-                if (!rgb.empty())
+                if (!string.IsNullOrEmpty(rgb))
                     return from_string(rgb, callback);
             }
             return new web_color(0, 0, 0);

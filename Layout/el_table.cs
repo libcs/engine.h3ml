@@ -8,100 +8,63 @@ namespace H3ml.Layout
 
     public class el_table : html_tag
     {
-        public el_table(document doc) : base(doc) { }
-{
-	_border_spacing_x = 0;
-	_border_spacing_y = 0;
-	_border_collapse = border_collapse_separate;
-}
-
-    public override bool appendChild(element el)
-    {
-        if (el == null) return false;
-        return el.get_tagName() == "tbody" || el.get_tagName() == "thead" || el.get_tagName() == "tfoot"
-            ? html_tag::appendChild(el)
-            : false;
-    }
-
-    public override void parse_styles(bool is_reparse = false)
-    {
-        html_tag::parse_styles(is_reparse);
-
-        m_border_collapse = (border_collapse)value_index(get_style_property(_t("border-collapse"), true, _t("separate")), border_collapse_strings, border_collapse_separate);
-
-        if (m_border_collapse == border_collapse_separate)
+        public el_table(document doc) : base(doc)
         {
-            m_css_border_spacing_x.fromString(get_style_property(_t("-litehtml-border-spacing-x"), true, _t("0px")));
-            m_css_border_spacing_y.fromString(get_style_property(_t("-litehtml-border-spacing-y"), true, _t("0px")));
-
-            int fntsz = get_font_size();
-            document::ptr doc = get_document();
-            m_border_spacing_x = doc->cvt_units(m_css_border_spacing_x, fntsz);
-            m_border_spacing_y = doc->cvt_units(m_css_border_spacing_y, fntsz);
-        }
-        else
-        {
-            m_border_spacing_x = 0;
-            m_border_spacing_y = 0;
-            m_padding.bottom = 0;
-            m_padding.top = 0;
-            m_padding.left = 0;
-            m_padding.right = 0;
-            m_css_padding.bottom.set_value(0, css_units_px);
-            m_css_padding.top.set_value(0, css_units_px);
-            m_css_padding.left.set_value(0, css_units_px);
-            m_css_padding.right.set_value(0, css_units_px);
-        }
-    }
-
-    public override void parse_attributes()
-    {
-        const tchar_t* str = get_attr(_t("width"));
-        if (str)
-        {
-            m_style.add_property(_t("width"), str, 0, false);
+            _border_spacing_x = 0;
+            _border_spacing_y = 0;
+            _border_collapse = border_collapse.separate;
         }
 
-        str = get_attr(_t("align"));
-        if (str)
+        public override bool appendChild(element el)
         {
-            int align = value_index(str, _t("left;center;right"));
-            switch (align)
+            if (el == null) return false;
+            return el.get_tagName() == "tbody" || el.get_tagName() == "thead" || el.get_tagName() == "tfoot" ? appendChild(el) : false;
+        }
+
+        public override void parse_styles(bool is_reparse = false)
+        {
+            parse_styles(is_reparse);
+            _border_collapse = (border_collapse)html.value_index(get_style_property("border-collapse", true, "separate"), types.border_collapse_strings, (int)border_collapse.separate);
+            if (_border_collapse == border_collapse.separate)
             {
-                case 1:
-                    m_style.add_property(_t("margin-left"), _t("auto"), 0, false);
-                    m_style.add_property(_t("margin-right"), _t("auto"), 0, false);
-                    break;
-                case 2:
-                    m_style.add_property(_t("margin-left"), _t("auto"), 0, false);
-                    m_style.add_property(_t("margin-right"), _t("0"), 0, false);
-                    break;
+                _css_border_spacing_x.fromString(get_style_property("-litehtml-border-spacing-x", true, "0px"));
+                _css_border_spacing_y.fromString(get_style_property("-litehtml-border-spacing-y", true, "0px"));
+                var fntsz = get_font_size();
+                var doc = get_document();
+                _border_spacing_x = doc.cvt_units(_css_border_spacing_x, fntsz);
+                _border_spacing_y = doc.cvt_units(_css_border_spacing_y, fntsz);
+            }
+            else
+            {
+                _border_spacing_x = 0;
+                _border_spacing_y = 0;
+                _padding.bottom = 0;
+                _padding.top = 0;
+                _padding.left = 0;
+                _padding.right = 0;
+                _css_padding.bottom.set_value(0, css_units.px);
+                _css_padding.top.set_value(0, css_units.px);
+                _css_padding.left.set_value(0, css_units.px);
+                _css_padding.right.set_value(0, css_units.px);
             }
         }
 
-        str = get_attr(_t("cellspacing"));
-        if (str)
+        public override void parse_attributes()
         {
-            tstring val = str;
-            val += _t(" ");
-            val += str;
-            m_style.add_property(_t("border-spacing"), val.c_str(), 0, false);
+            var str = get_attr("width"); if (str != null) _style.add_property("width", str, null, false);
+            str = get_attr("align"); if (str != null)
+            {
+                var align = html.value_index(str, "left;center;right");
+                switch (align)
+                {
+                    case 1: _style.add_property("margin-left", "auto", null, false); _style.add_property("margin-right", "auto", null, false); break;
+                    case 2: _style.add_property("margin-left", "auto", null, false); _style.add_property("margin-right", "0", null, false); break;
+                }
+            }
+            str = get_attr("cellspacing"); if (str != null) _style.add_property("border-spacing", $"{str} {str}", null, false);
+            str = get_attr("border"); if (str != null) _style.add_property("border-width", str, null, false);
+            str = get_attr("bgcolor"); if (str != null) _style.add_property("background-color", str, null, false);
+            parse_attributes();
         }
-
-        str = get_attr(_t("border"));
-        if (str)
-        {
-            m_style.add_property(_t("border-width"), str, 0, false);
-        }
-
-        str = get_attr(_t("bgcolor"));
-        if (str)
-        {
-            m_style.add_property(_t("background-color"), str, 0, false);
-        }
-
-        html_tag::parse_attributes();
     }
-
-}
 }

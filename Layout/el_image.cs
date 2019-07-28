@@ -19,7 +19,7 @@ namespace H3ml.Layout
 			document::ptr doc = get_document();
 
 			litehtml::size sz;
-			doc->container()->get_image_size(m_src.c_str(), 0, sz);
+			doc.container().get_image_size(m_src.c_str(), 0, sz);
 
 			m_pos.width = sz.width;
 			m_pos.height = sz.height;
@@ -32,7 +32,7 @@ namespace H3ml.Layout
 				// check for max-height
 				if (!m_css_max_width.is_predefined())
 				{
-					int max_width = doc->cvt_units(m_css_max_width, m_font_size, parent_width);
+					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
 					if (m_pos.width > max_width)
 					{
 						m_pos.width = max_width;
@@ -50,7 +50,7 @@ namespace H3ml.Layout
 				// check for max-height
 				if (!m_css_max_height.is_predefined())
 				{
-					int max_height = doc->cvt_units(m_css_max_height, m_font_size);
+					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
 					if (m_pos.height > max_height)
 					{
 						m_pos.height = max_height;
@@ -75,7 +75,7 @@ namespace H3ml.Layout
 				// check for max-height
 				if (!m_css_max_height.is_predefined())
 				{
-					int max_height = doc->cvt_units(m_css_max_height, m_font_size);
+					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
 					if (m_pos.height > max_height)
 					{
 						m_pos.height = max_height;
@@ -98,7 +98,7 @@ namespace H3ml.Layout
 				// check for max-width
 				if (!m_css_max_width.is_predefined())
 				{
-					int max_width = doc->cvt_units(m_css_max_width, m_font_size, parent_width);
+					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
 					if (m_pos.width > max_width)
 					{
 						m_pos.width = max_width;
@@ -126,7 +126,7 @@ namespace H3ml.Layout
 				// check for max-height
 				if (!m_css_max_height.is_predefined())
 				{
-					int max_height = doc->cvt_units(m_css_max_height, m_font_size);
+					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
 					if (m_pos.height > max_height)
 					{
 						m_pos.height = max_height;
@@ -136,7 +136,7 @@ namespace H3ml.Layout
 				// check for max-height
 				if (!m_css_max_width.is_predefined())
 				{
-					int max_width = doc->cvt_units(m_css_max_width, m_font_size, parent_width);
+					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
 					if (m_pos.width > max_width)
 					{
 						m_pos.width = max_width;
@@ -176,16 +176,16 @@ namespace H3ml.Layout
 			{
 				if (!m_css_height.is_predefined() && !m_css_width.is_predefined())
 				{
-					get_document()->container()->load_image(m_src.c_str(), 0, true);
+					get_document().container().load_image(m_src.c_str(), 0, true);
 				}
 				else
 				{
-					get_document()->container()->load_image(m_src.c_str(), 0, false);
+					get_document().container().load_image(m_src.c_str(), 0, false);
 				}
 			}
 		}
 
-		public override void draw(uint_ptr hdc, int x, int y, position clip)
+		public override void draw(IntPtr hdc, int x, int y, position clip)
 		{
 			position pos = m_pos;
 			pos.x += x;
@@ -204,7 +204,7 @@ namespace H3ml.Layout
 					background_paint bg_paint;
 					init_background_paint(pos, bg_paint, bg);
 
-					get_document()->container()->draw_background(hdc, bg_paint);
+					get_document().container().draw_background(hdc, bg_paint);
 				}
 			}
 
@@ -225,7 +225,7 @@ namespace H3ml.Layout
 					bg.border_radius = m_css_borders.radius.calc_percents(bg.border_box.width, bg.border_box.height);
 					bg.position_x = pos.x;
 					bg.position_y = pos.y;
-					get_document()->container()->draw_background(hdc, bg);
+					get_document().container().draw_background(hdc, bg);
 				}
 			}
 
@@ -239,7 +239,7 @@ namespace H3ml.Layout
 				borders bdr = m_css_borders;
 				bdr.radius = m_css_borders.radius.calc_percents(border_box.width, border_box.height);
 
-				get_document()->container()->draw_borders(hdc, bdr, border_box, have_parent() ? false : true);
+				get_document().container().draw_borders(hdc, bdr, border_box, have_parent() ? false : true);
 			}
 		}
 
