@@ -20,11 +20,6 @@ namespace H3ml.Layout
                 idx = val.idx;
                 el = val.el;
             }
-            //stack_item(stack_item val)
-            //{
-            //	idx = val.idx;
-            //	el = val.el;
-            //}
         }
 
         Stack<stack_item> _stack = new Stack<stack_item>();
@@ -44,10 +39,10 @@ namespace H3ml.Layout
         public element next(bool ret_parent = true)
         {
             next_idx();
-            while (_idx < _el.get_children_count())
+            while (_idx < _el.get_children_count)
             {
                 var el = _el.get_child(_idx);
-                if (el.get_children_count() != 0 && _go_inside != null && _go_inside.select(el))
+                if (el.get_children_count != 0 && _go_inside != null && _go_inside.select(el))
                 {
                     stack_item si;
                     si.idx = _idx;
@@ -72,7 +67,7 @@ namespace H3ml.Layout
         void next_idx()
         {
             _idx++;
-            while (_idx >= _el.get_children_count() && _stack.Count != 0)
+            while (_idx >= _el.get_children_count && _stack.Count != 0)
             {
                 var si = _stack.Last();
                 _stack.Pop();
@@ -86,24 +81,21 @@ namespace H3ml.Layout
 
     public class go_inside_inline : iterator_selector
     {
-        public bool select(element el) => el.get_display() == display_inline || el.get_display() == display_inline_text;
+        public bool select(element el) => el.get_display == style_display.inline || el.get_display == style_display.inline_text;
     }
 
     public class go_inside_table : iterator_selector
     {
-        public bool select(element el) =>
-            el.get_display() == display_table_row_group ||
-            el.get_display() == display_table_header_group ||
-            el.get_display() == display_table_footer_group;
+        public bool select(element el) => el.get_display == style_display.table_row_group || el.get_display == style_display.table_header_group || el.get_display == style_display.table_footer_group;
     }
 
     public class table_rows_selector : iterator_selector
     {
-        public bool select(element el) => el.get_display() == display_table_row;
+        public bool select(element el) => el.get_display == style_display.table_row;
     }
 
     public class table_cells_selector : iterator_selector
     {
-        public bool select(element el) => el.get_display() == display_table_cell;
+        public bool select(element el) => el.get_display == style_display.table_cell;
     }
 }

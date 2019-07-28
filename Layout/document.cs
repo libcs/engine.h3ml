@@ -108,7 +108,7 @@ namespace H3ml.Layout
                     }
                     _size.width = 0;
                     _size.height = 0;
-                    _root.calc_document_size(_size);
+                    _root.calc_document_size(ref _size);
                 }
             }
             return ret;

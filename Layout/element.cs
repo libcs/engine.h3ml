@@ -375,7 +375,7 @@ namespace H3ml.Layout
             p_height = get_document().cvt_units(h, get_font_size);
             return true;
         }
-        public virtual void calc_document_size(size sz, int x = 0, int y = 0)
+        public virtual void calc_document_size(ref size sz, int x = 0, int y = 0)
         {
             if (is_visible)
             {

@@ -34,7 +34,7 @@ namespace H3ml.Layout
         void on_anchor_click(string url, element el);
         void set_cursor(string cursor);
         void transform_text(string text, text_transform tt);
-        void import_css(string text, string url, string baseurl);
+        void import_css(out string text, string url, string baseurl);
         void set_clip(position pos, border_radiuses bdr_radius, bool valid_x, bool valid_y);
         void del_clip();
         void get_client_rect(out position client);
@@ -128,7 +128,7 @@ namespace H3ml.Layout
             }
         }
 
-        public static void join_string(string str, IList<string> tokens, string delims) => string.Join(delims, tokens);
+        //public static void join_string(string str, IList<string> tokens, string delims) => string.Join(delims, tokens);
 
         public static int FindFirstNotOf(this string source, string chars, int pos = 0)
         {

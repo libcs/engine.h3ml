@@ -24,7 +24,7 @@ namespace H3ml.Layout
             border_top = 0;
             height = 0;
             el_row = null;
-            css_height.predef(0);
+            css_height.predef = 0;
         }
 
         public table_row(int h, element row)
@@ -51,18 +51,6 @@ namespace H3ml.Layout
             css_height = val.css_height;
             el_row = val.el_row;
         }
-
-        //public table_row(table_row val)
-        //{
-        //	min_height = val.min_height;
-        //	top = val.top;
-        //	bottom = val.bottom;
-        //	border_bottom = val.border_bottom;
-        //	border_top = val.border_top;
-        //	height = val.height;
-        //	css_height = val.css_height;
-        //	el_row = std::move(val.el_row);
-        //}
     }
 
     public class table_column
@@ -85,7 +73,7 @@ namespace H3ml.Layout
             min_width = 0;
             max_width = 0;
             width = 0;
-            css_width.predef(0);
+            css_width.predef = 0;
         }
 
         public table_column(int min_w, int max_w)
@@ -97,7 +85,7 @@ namespace H3ml.Layout
             max_width = max_w;
             min_width = min_w;
             width = 0;
-            css_width.predef(0);
+            css_width.predef = 0;
         }
 
         public table_column(table_column val)
@@ -182,20 +170,6 @@ namespace H3ml.Layout
             max_height = val.max_height;
             borders = val.borders;
         }
-
-        //public table_cell(table_cell val)
-        //{
-        //    el = val.el;
-        //    colspan = val.colspan;
-        //    rowspan = val.rowspan;
-        //    width = val.width;
-        //    height = val.height;
-        //    min_width = val.min_width;
-        //    min_height = val.min_height;
-        //    max_width = val.max_width;
-        //    max_height = val.max_height;
-        //    borders = val.borders;
-        //}
     }
 
     public class table_grid
@@ -234,12 +208,10 @@ namespace H3ml.Layout
                 el = el,
                 colspan = int.Parse(el.get_attr("colspan", "1")),
                 rowspan = int.Parse(el.get_attr("rowspan", "1")),
-                borders = el.get_borders()
+                borders = el.get_borders,
             };
-
             while (is_rowspanned(_cells.Count - 1, _cells.Last().Count))
                 _cells.Last().Add(new table_cell());
-
             _cells.Last().Add(cell);
             for (var i = 1; i < cell.colspan; i++)
                 _cells.Last().Add(new table_cell());
@@ -395,6 +367,7 @@ namespace H3ml.Layout
                     width -= added_width;
             }
         }
+
         public void distribute_width(int width, int start, int end, table_column_accessor acc)
         {
             if (!(start >= 0 && start < _cols_count && end >= 0 && end < _cols_count))
@@ -416,6 +389,7 @@ namespace H3ml.Layout
             if (added_width < width)
                 acc.set(_columns[start], acc.get(_columns[start]) + width - added_width);
         }
+
         public int calc_table_width(int block_width, bool is_auto, int min_table_width, int max_table_width)
         {
             min_table_width = 0; // MIN
@@ -469,12 +443,12 @@ namespace H3ml.Layout
             }
             else
             {
-                int fixed_width = 0;
-                float percent = 0;
+                var fixed_width = 0;
+                var percent = 0F;
                 for (int col = 0; col < _cols_count; col++)
                 {
-                    if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units_percentage)
-                        percent += _columns[col].css_width.val();
+                    if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units.percentage)
+                        percent += _columns[col].css_width.val;
                     else
                         fixed_width += _columns[col].width;
                 }
@@ -482,10 +456,10 @@ namespace H3ml.Layout
                 cur_width = 0;
                 for (var col = 0; col < _cols_count; col++)
                 {
-                    if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units_percentage)
+                    if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units.percentage)
                     {
                         var w = new css_length();
-                        w.set_value(_columns[col].css_width.val * scale, css_units_percentage);
+                        w.set_value(_columns[col].css_width.val * scale, css_units.percentage);
                         _columns[col].width = w.calc_percent(block_width - fixed_width);
                         if (_columns[col].width < _columns[col].min_width)
                             _columns[col].width = _columns[col].min_width;
@@ -495,9 +469,10 @@ namespace H3ml.Layout
             }
             return cur_width;
         }
+
         public void calc_horizontal_positions(margins table_borders, border_collapse bc, int bdr_space_x)
         {
-            if (bc == border_collapse_separate)
+            if (bc == border_collapse.separate)
             {
                 var left = bdr_space_x;
                 for (var i = 0; i < _cols_count; i++)
@@ -526,7 +501,7 @@ namespace H3ml.Layout
 
         public void calc_vertical_positions(margins table_borders, border_collapse bc, int bdr_space_y)
         {
-            if (bc == border_collapse_separate)
+            if (bc == border_collapse.separate)
             {
                 var top = bdr_space_y;
                 for (var i = 0; i < _rows_count; i++)
@@ -552,6 +527,7 @@ namespace H3ml.Layout
                 }
             }
         }
+
         public void calc_rows_height(int blockHeight, int borderSpacingY)
         {
             var min_table_height = 0;
@@ -560,7 +536,7 @@ namespace H3ml.Layout
             foreach (var row in _rows)
             {
                 if (!row.css_height.is_predefined)
-                    if (row.css_height.units != css_units_percentage)
+                    if (row.css_height.units != css_units.percentage)
                         if (row.height < (int)row.css_height.val)
                             row.height = (int)row.css_height.val;
                 row.min_height = row.height;
@@ -575,7 +551,7 @@ namespace H3ml.Layout
                 var auto_count = 0; // number of rows with height=auto
                 foreach (var row in _rows)
                 {
-                    if (!row.css_height.is_predefined && row.css_height.units == css_units_percentage)
+                    if (!row.css_height.is_predefined && row.css_height.units == css_units.percentage)
                     {
                         row.height = row.css_height.calc_percent(blockHeight);
                         if (row.height < row.min_height)

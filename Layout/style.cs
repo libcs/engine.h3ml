@@ -21,323 +21,271 @@ namespace H3ml.Layout
             _value = val._value;
             _important = val._important;
         }
-
-        //public property_value operator=(property_value val)
-        //{
-        //	_value		= val._value;
-        //	_important	= val._important;
-        //	return this;
-        //}
     }
 
     public class style
     {
         Dictionary<string, property_value> _properties = new Dictionary<string, property_value>();
-        static Dictionary<string, string> _valid_values = new Dictionary<string, string>() { "white-space", html.white_space_strings };
+        static Dictionary<string, string> _valid_values = new Dictionary<string, string> { { "white-space", types.white_space_strings } };
 
         public style() { }
         public style(style val) => _properties = val._properties;
-
-        //public void operator=(style val)
-        //{
-        //	_properties = val._properties;
-        //}
 
         public void add(string txt, string baseurl) => parse(txt, baseurl);
 
         public void add_property(string name, string val, string baseurl, bool important)
         {
-            if (!name || !val)
-            {
+            if (name == null || val == null)
                 return;
-            }
 
             // Add baseurl for background image 
-            if (!t_strcmp(name, _t("background-image")))
+            if (name == "background-image")
             {
                 add_parsed_property(name, val, important);
-                if (baseurl)
-                {
-                    add_parsed_property(_t("background-image-baseurl"), baseurl, important);
-                }
+                if (baseurl != null)
+                    add_parsed_property("background-image-baseurl", baseurl, important);
             }
             else
 
             // Parse border spacing properties 
-            if (!t_strcmp(name, _t("border-spacing")))
+            if (name == "border-spacing")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() == 1)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count == 1)
                 {
-                    add_property(_t("-litehtml-border-spacing-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("-litehtml-border-spacing-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("-litehtml-border-spacing-x", tokens[0], baseurl, important);
+                    add_property("-litehtml-border-spacing-y", tokens[0], baseurl, important);
                 }
-                else if (tokens.size() == 2)
+                else if (tokens.Count == 2)
                 {
-                    add_property(_t("-litehtml-border-spacing-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("-litehtml-border-spacing-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("-litehtml-border-spacing-x", tokens[0], baseurl, important);
+                    add_property("-litehtml-border-spacing-y", tokens[1], baseurl, important);
                 }
             }
             else
 
             // Parse borders shorthand properties 
-
-            if (!t_strcmp(name, _t("border")))
+            if (name == "border")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "), _t(""), _t("("));
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ", "", "(");
                 int idx;
-                tstring str;
-                for (string_vector::const_iterator tok = tokens.begin(); tok != tokens.end(); tok++)
+                foreach (var tok in tokens)
                 {
-                    idx = value_index(tok.c_str(), border_style_strings, -1);
+                    idx = html.value_index(tok, types.border_style_strings, -1);
                     if (idx >= 0)
                     {
-                        add_property(_t("border-left-style"), tok.c_str(), baseurl, important);
-                        add_property(_t("border-right-style"), tok.c_str(), baseurl, important);
-                        add_property(_t("border-top-style"), tok.c_str(), baseurl, important);
-                        add_property(_t("border-bottom-style"), tok.c_str(), baseurl, important);
+                        add_property("border-left-style", tok, baseurl, important);
+                        add_property("border-right-style", tok, baseurl, important);
+                        add_property("border-top-style", tok, baseurl, important);
+                        add_property("border-bottom-style", tok, baseurl, important);
                     }
                     else
                     {
-                        if (t_isdigit((*tok)[0]) || (*tok)[0] == _t('.') ||
-                            value_in_list((*tok), _t("thin;medium;thick")))
+                        if (char.IsDigit(tok[0]) || tok[0] == '.' || html.value_in_list(tok, "thin;medium;thick"))
                         {
-                            add_property(_t("border-left-width"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-right-width"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-top-width"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-bottom-width"), tok.c_str(), baseurl, important);
+                            add_property("border-left-width", tok, baseurl, important);
+                            add_property("border-right-width", tok, baseurl, important);
+                            add_property("border-top-width", tok, baseurl, important);
+                            add_property("border-bottom-width", tok, baseurl, important);
                         }
                         else
                         {
-                            add_property(_t("border-left-color"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-right-color"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-top-color"), tok.c_str(), baseurl, important);
-                            add_property(_t("border-bottom-color"), tok.c_str(), baseurl, important);
+                            add_property("border-left-color", tok, baseurl, important);
+                            add_property("border-right-color", tok, baseurl, important);
+                            add_property("border-top-color", tok, baseurl, important);
+                            add_property("border-bottom-color", tok, baseurl, important);
                         }
                     }
                 }
             }
-            else if (!t_strcmp(name, _t("border-left")) ||
-              !t_strcmp(name, _t("border-right")) ||
-              !t_strcmp(name, _t("border-top")) ||
-              !t_strcmp(name, _t("border-bottom")))
+            else if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "), _t(""), _t("("));
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ", "", "(");
                 int idx;
-                tstring str;
-                for (string_vector::const_iterator tok = tokens.begin(); tok != tokens.end(); tok++)
+                foreach (var tok in tokens)
                 {
-                    idx = value_index(tok.c_str(), border_style_strings, -1);
-                    if (idx >= 0)
-                    {
-                        str = name;
-                        str += _t("-style");
-                        add_property(str.c_str(), tok.c_str(), baseurl, important);
-                    }
-                    else
-                    {
-                        if (web_color::is_color(tok.c_str()))
-                        {
-                            str = name;
-                            str += _t("-color");
-                            add_property(str.c_str(), tok.c_str(), baseurl, important);
-                        }
-                        else
-                        {
-                            str = name;
-                            str += _t("-width");
-                            add_property(str.c_str(), tok.c_str(), baseurl, important);
-                        }
-                    }
+                    idx = html.value_index(tok, types.border_style_strings, -1);
+                    add_property($"{name}-{(idx >= 0 ? "style" : web_color.is_color(tok) ? "color" : "width")}", tok, baseurl, important);
                 }
             }
             else
 
-          // Parse border radius shorthand properties 
-          if (!t_strcmp(name, _t("border-bottom-left-radius")))
+            // Parse border radius shorthand properties 
+            if (name == "border-bottom-left-radius")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 2)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 2)
                 {
-                    add_property(_t("border-bottom-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 1)
+                else if (tokens.Count == 1)
                 {
-                    add_property(_t("border-bottom-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[0], baseurl, important);
+                }
+            }
+            else if (name == "border-bottom-right-radius")
+            {
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 2)
+                {
+                    add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[1], baseurl, important);
+                }
+                else if (tokens.Count == 1)
+                {
+                    add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[0], baseurl, important);
                 }
 
             }
-            else if (!t_strcmp(name, _t("border-bottom-right-radius")))
+            else if (name == "border-top-right-radius")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 2)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 2)
                 {
-                    add_property(_t("border-bottom-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 1)
+                else if (tokens.Count == 1)
                 {
-                    add_property(_t("border-bottom-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[0], baseurl, important);
                 }
 
             }
-            else if (!t_strcmp(name, _t("border-top-right-radius")))
+            else if (name == "border-top-left-radius")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 2)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 2)
                 {
-                    add_property(_t("border-top-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 1)
+                else if (tokens.Count == 1)
                 {
-                    add_property(_t("border-top-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[0], baseurl, important);
                 }
-
-            }
-            else if (!t_strcmp(name, _t("border-top-left-radius")))
-            {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 2)
-                {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-left-radius-y"), tokens[1].c_str(), baseurl, important);
-                }
-                else if (tokens.size() == 1)
-                {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-left-radius-y"), tokens[0].c_str(), baseurl, important);
-                }
-
             }
             else
 
-          // Parse border-radius shorthand properties 
-          if (!t_strcmp(name, _t("border-radius")))
+            // Parse border-radius shorthand properties 
+            if (name == "border-radius")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t("/"));
-                if (tokens.size() == 1)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, "/");
+                if (tokens.Count == 1)
                 {
-                    add_property(_t("border-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-radius-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-radius-x", tokens[0], baseurl, important);
+                    add_property("border-radius-y", tokens[0], baseurl, important);
                 }
-                else if (tokens.size() >= 2)
+                else if (tokens.Count >= 2)
                 {
-                    add_property(_t("border-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-radius-x", tokens[0], baseurl, important);
+                    add_property("border-radius-y", tokens[1], baseurl, important);
                 }
             }
-            else if (!t_strcmp(name, _t("border-radius-x")))
+            else if (!t_strcmp(name, "border-radius-x")))
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() == 1)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count == 1)
                 {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-x"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
                 }
-                else if (tokens.size() == 2)
+                else if (tokens.Count == 2)
                 {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-x"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-x"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 3)
+                else if (tokens.Count == 3)
                 {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-x"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-x"), tokens[2].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-x"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-x", tokens[2], baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 4)
+                else if (tokens.Count == 4)
                 {
-                    add_property(_t("border-top-left-radius-x"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-x"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-x"), tokens[2].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-x"), tokens[3].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-x", tokens[2], baseurl, important);
+                    add_property("border-bottom-left-radius-x", tokens[3], baseurl, important);
                 }
             }
-            else if (!t_strcmp(name, _t("border-radius-y")))
+            else if (name == "border-radius-y")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() == 1)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count == 1)
                 {
-                    add_property(_t("border-top-left-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[0].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[0], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[0], baseurl, important);
                 }
-                else if (tokens.size() == 2)
+                else if (tokens.Count == 2)
                 {
-                    add_property(_t("border-top-left-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 3)
+                else if (tokens.Count == 3)
                 {
-                    add_property(_t("border-top-left-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[2].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[1].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[2], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.size() == 4)
+                else if (tokens.Count == 4)
                 {
-                    add_property(_t("border-top-left-radius-y"), tokens[0].c_str(), baseurl, important);
-                    add_property(_t("border-top-right-radius-y"), tokens[1].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-right-radius-y"), tokens[2].c_str(), baseurl, important);
-                    add_property(_t("border-bottom-left-radius-y"), tokens[3].c_str(), baseurl, important);
+                    add_property("border-top-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-y", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-y", tokens[2], baseurl, important);
+                    add_property("border-bottom-left-radius-y", tokens[3], baseurl, important);
                 }
             }
-
 
             // Parse list-style shorthand properties 
-            if (!t_strcmp(name, _t("list-style")))
+            if (name == "list-style")
             {
-                add_parsed_property(_t("list-style-type"), _t("disc"), important);
-                add_parsed_property(_t("list-style-position"), _t("outside"), important);
-                add_parsed_property(_t("list-style-image"), _t(""), important);
-                add_parsed_property(_t("list-style-image-baseurl"), _t(""), important);
+                add_parsed_property("list-style-type", "disc", important);
+                add_parsed_property("list-style-position", "outside", important);
+                add_parsed_property("list-style-image", "", important);
+                add_parsed_property("list-style-image-baseurl", "", important);
 
-                string_vector tokens;
-                split_string(val, tokens, _t(" "), _t(""), _t("("));
-                for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ", "", "(");
+                foreach (var tok in tokens)
                 {
-                    int idx = value_index(tok.c_str(), list_style_type_strings, -1);
+                    var idx = html.value_index(tok, types.list_style_type_strings, -1);
                     if (idx >= 0)
-                    {
-                        add_parsed_property(_t("list-style-type"), *tok, important);
-                    }
+                        add_parsed_property("list-style-type", tok, important);
                     else
                     {
-                        idx = value_index(tok.c_str(), list_style_position_strings, -1);
+                        idx = html.value_index(tok, types.list_style_position_strings, -1);
                         if (idx >= 0)
+                            add_parsed_property("list-style-position", tok, important);
+                        else if (val.StartsWith("url"))
                         {
-                            add_parsed_property(_t("list-style-position"), *tok, important);
-                        }
-                        else if (!t_strncmp(val, _t("url"), 3))
-                        {
-                            add_parsed_property(_t("list-style-image"), *tok, important);
-                            if (baseurl)
-                            {
-                                add_parsed_property(_t("list-style-image-baseurl"), baseurl, important);
-                            }
+                            add_parsed_property("list-style-image", tok, important);
+                            if (baseurl != null)
+                                add_parsed_property("list-style-image-baseurl", baseurl, important);
                         }
                     }
                 }
@@ -345,169 +293,136 @@ namespace H3ml.Layout
             else
 
             // Add baseurl for background image 
-            if (!t_strcmp(name, _t("list-style-image")))
+            if (name == "list-style-image")
             {
                 add_parsed_property(name, val, important);
-                if (baseurl)
-                {
-                    add_parsed_property(_t("list-style-image-baseurl"), baseurl, important);
-                }
+                if (baseurl != null)
+                    add_parsed_property("list-style-image-baseurl", baseurl, important);
             }
             else
 
             // Parse background shorthand properties 
-            if (!t_strcmp(name, _t("background")))
-            {
+            if (name == "background")
                 parse_short_background(val, baseurl, important);
-
-            }
             else
 
             // Parse margin and padding shorthand properties 
-            if (!t_strcmp(name, _t("margin")) || !t_strcmp(name, _t("padding")))
+            if (name == "margin" || name == "padding")
             {
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 4)
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 4)
                 {
-                    add_parsed_property(tstring(name) + _t("-top"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-right"), tokens[1], important);
-                    add_parsed_property(tstring(name) + _t("-bottom"), tokens[2], important);
-                    add_parsed_property(tstring(name) + _t("-left"), tokens[3], important);
+                    add_parsed_property($"{name}-top", tokens[0], important);
+                    add_parsed_property($"{name}-right", tokens[1], important);
+                    add_parsed_property($"{name}-bottom", tokens[2], important);
+                    add_parsed_property($"{name}-left", tokens[3], important);
                 }
-                else if (tokens.size() == 3)
+                else if (tokens.Count == 3)
                 {
-                    add_parsed_property(tstring(name) + _t("-top"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-right"), tokens[1], important);
-                    add_parsed_property(tstring(name) + _t("-left"), tokens[1], important);
-                    add_parsed_property(tstring(name) + _t("-bottom"), tokens[2], important);
+                    add_parsed_property($"{name}-top", tokens[0], important);
+                    add_parsed_property($"{name}-right", tokens[1], important);
+                    add_parsed_property($"{name}-left", tokens[1], important);
+                    add_parsed_property($"{name}-bottom", tokens[2], important);
                 }
-                else if (tokens.size() == 2)
+                else if (tokens.Count == 2)
                 {
-                    add_parsed_property(tstring(name) + _t("-top"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-bottom"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-right"), tokens[1], important);
-                    add_parsed_property(tstring(name) + _t("-left"), tokens[1], important);
+                    add_parsed_property($"{name}-top", tokens[0], important);
+                    add_parsed_property($"{name}-bottom", tokens[0], important);
+                    add_parsed_property($"{name}-right", tokens[1], important);
+                    add_parsed_property($"{name}-left", tokens[1], important);
                 }
-                else if (tokens.size() == 1)
+                else if (tokens.Count == 1)
                 {
-                    add_parsed_property(tstring(name) + _t("-top"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-bottom"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-right"), tokens[0], important);
-                    add_parsed_property(tstring(name) + _t("-left"), tokens[0], important);
+                    add_parsed_property($"{name}-top", tokens[0], important);
+                    add_parsed_property($"{name}-bottom", tokens[0], important);
+                    add_parsed_property($"{name}-right", tokens[0], important);
+                    add_parsed_property($"{name}-left", tokens[0], important);
                 }
             }
             else
 
-
             // Parse border-* shorthand properties 
-            if (!t_strcmp(name, _t("border-left")) ||
-                !t_strcmp(name, _t("border-right")) ||
-                !t_strcmp(name, _t("border-top")) ||
-                !t_strcmp(name, _t("border-bottom")))
-            {
+            if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom")
                 parse_short_border(name, val, important);
-            }
             else
 
             // Parse border-width/style/color shorthand properties 
-            if (!t_strcmp(name, _t("border-width")) ||
-                !t_strcmp(name, _t("border-style")) ||
-                !t_strcmp(name, _t("border-color")))
+            if (name == "border-width" || name == "border-style" || name == "border-color")
             {
-                string_vector nametokens;
-                split_string(name, nametokens, _t("-"));
-
-                string_vector tokens;
-                split_string(val, tokens, _t(" "));
-                if (tokens.size() >= 4)
+                var nametokens = new List<string>();
+                html.split_string(name, nametokens, "-");
+                var tokens = new List<string>();
+                html.split_string(val, tokens, " ");
+                if (tokens.Count >= 4)
                 {
-                    add_parsed_property(nametokens[0] + _t("-top-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-right-") + nametokens[1], tokens[1], important);
-                    add_parsed_property(nametokens[0] + _t("-bottom-") + nametokens[1], tokens[2], important);
-                    add_parsed_property(nametokens[0] + _t("-left-") + nametokens[1], tokens[3], important);
+                    add_parsed_property($"{nametokens[0]}-top-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-right-{nametokens[1]}", tokens[1], important);
+                    add_parsed_property($"{nametokens[0]}-bottom-{nametokens[1]}", tokens[2], important);
+                    add_parsed_property($"{nametokens[0]}-left-{nametokens[1]}", tokens[3], important);
                 }
-                else if (tokens.size() == 3)
+                else if (tokens.Count == 3)
                 {
-                    add_parsed_property(nametokens[0] + _t("-top-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-right-") + nametokens[1], tokens[1], important);
-                    add_parsed_property(nametokens[0] + _t("-left-") + nametokens[1], tokens[1], important);
-                    add_parsed_property(nametokens[0] + _t("-bottom-") + nametokens[1], tokens[2], important);
+                    add_parsed_property($"{nametokens[0]}-top-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-right-{nametokens[1]}", tokens[1], important);
+                    add_parsed_property($"{nametokens[0]}-left-{nametokens[1]}", tokens[1], important);
+                    add_parsed_property($"{nametokens[0]}-bottom-{nametokens[1]}", tokens[2], important);
                 }
-                else if (tokens.size() == 2)
+                else if (tokens.Count == 2)
                 {
-                    add_parsed_property(nametokens[0] + _t("-top-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-bottom-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-right-") + nametokens[1], tokens[1], important);
-                    add_parsed_property(nametokens[0] + _t("-left-") + nametokens[1], tokens[1], important);
+                    add_parsed_property($"{nametokens[0]}-top-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-bottom-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-right-{nametokens[1]}", tokens[1], important);
+                    add_parsed_property($"{nametokens[0]}-left-{nametokens[1]}", tokens[1], important);
                 }
-                else if (tokens.size() == 1)
+                else if (tokens.Count == 1)
                 {
-                    add_parsed_property(nametokens[0] + _t("-top-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-bottom-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-right-") + nametokens[1], tokens[0], important);
-                    add_parsed_property(nametokens[0] + _t("-left-") + nametokens[1], tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-top-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-bottom-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-right-{nametokens[1]}", tokens[0], important);
+                    add_parsed_property($"{nametokens[0]}-left-{nametokens[1]}", tokens[0], important);
                 }
             }
             else
 
             // Parse font shorthand properties 
-            if (!t_strcmp(name, _t("font")))
-            {
+            if (name == "font")
                 parse_short_font(val, important);
-            }
             else
-            {
                 add_parsed_property(name, val, important);
-            }
         }
-
 
         public string get_property(string name) => name != null && _properties.TryGetValue(name, out var f) ? f._value : null;
 
         public void combine(style src)
         {
-            for (props_map::const_iterator i = src.m_properties.begin(); i != src.m_properties.end(); i++)
-            {
-                add_parsed_property(i.first.c_str(), i.second.m_value.c_str(), i.second.m_important);
-            }
+            foreach (var i in src._properties)
+                add_parsed_property(i.Key, i.Value._value, i.Value._important);
         }
 
         public void clear() => _properties.Clear();
 
         void parse_property(string txt, string baseurl)
         {
-            tstring::size_type pos = txt.find_first_of(_t(":"));
-            if (pos != tstring::npos)
+            var pos = txt.IndexOf(":");
+            if (pos != -1)
             {
-                tstring name = txt.substr(0, pos);
-                tstring val = txt.substr(pos + 1);
-
-                trim(name);
-                trim(val);
-
-                lcase(name);
-
-                if (!name.empty() && !val.empty())
+                var name = txt.Substring(0, pos).Trim().ToLowerInvariant();
+                var val = txt.Substring(pos + 1).Trim();
+                if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(val))
                 {
-                    string_vector vals;
-                    split_string(val, vals, _t("!"));
-                    if (vals.size() == 1)
+                    var vals = new List<string>();
+                    html.split_string(val, vals, "!");
+                    if (vals.Count == 1)
+                        add_property(name, val, baseurl, false);
+                    else if (vals.Count > 1)
                     {
-                        add_property(name.c_str(), val.c_str(), baseurl, false);
-                    }
-                    else if (vals.size() > 1)
-                    {
-                        trim(vals[0]);
-                        lcase(vals[1]);
-                        if (vals[1] == _t("important"))
-                        {
-                            add_property(name.c_str(), vals[0].c_str(), baseurl, true);
-                        }
+                        vals[0] = vals[0].Trim();
+                        vals[1] = vals[1].ToLowerInvariant();
+                        if (vals[1] == "important")
+                            add_property(name, vals[0], baseurl, true);
                         else
-                        {
-                            add_property(name.c_str(), vals[0].c_str(), baseurl, false);
-                        }
+                            add_property(name, vals[0], baseurl, false);
                     }
                 }
             }
@@ -515,225 +430,166 @@ namespace H3ml.Layout
 
         void parse(string txt, string baseurl)
         {
-            std::vector<tstring> properties;
-            split_string(txt, properties, _t(";"), _t(""), _t("\"'"));
-
-            for (std::vector<tstring>::const_iterator i = properties.begin(); i != properties.end(); i++)
-            {
-                parse_property(*i, baseurl);
-            }
+            var properties = new List<string>();
+            html.split_string(txt, properties, ";", "", "\"'");
+            foreach (var i in properties)
+                parse_property(i, baseurl);
         }
 
         void parse_short_border(string prefix, string val, bool important)
         {
-            string_vector tokens;
-            split_string(val, tokens, _t(" "), _t(""), _t("("));
-            if (tokens.size() >= 3)
+            var tokens = new List<string>();
+            html.split_string(val, tokens, " ", "", "(");
+            if (tokens.Count >= 3)
             {
-                add_parsed_property(prefix + _t("-width"), tokens[0], important);
-                add_parsed_property(prefix + _t("-style"), tokens[1], important);
-                add_parsed_property(prefix + _t("-color"), tokens[2], important);
+                add_parsed_property($"{prefix}-width", tokens[0], important);
+                add_parsed_property($"{prefix}-style", tokens[1], important);
+                add_parsed_property($"{prefix}-color", tokens[2], important);
             }
-            else if (tokens.size() == 2)
+            else if (tokens.Count == 2)
             {
-                if (iswdigit(tokens[0][0]) || value_index(val.c_str(), border_width_strings) >= 0)
+                if (char.IsDigit(tokens[0][0]) || html.value_index(val, types.border_width_strings) >= 0)
                 {
-                    add_parsed_property(prefix + _t("-width"), tokens[0], important);
-                    add_parsed_property(prefix + _t("-style"), tokens[1], important);
+                    add_parsed_property($"{prefix}-width", tokens[0], important);
+                    add_parsed_property($"{prefix}-style", tokens[1], important);
                 }
                 else
                 {
-                    add_parsed_property(prefix + _t("-style"), tokens[0], important);
-                    add_parsed_property(prefix + _t("-color"), tokens[1], important);
+                    add_parsed_property($"{prefix}-style", tokens[0], important);
+                    add_parsed_property($"{prefix}-color", tokens[1], important);
                 }
             }
         }
 
         void parse_short_background(string val, string baseurl, bool important)
         {
-            add_parsed_property(_t("background-color"), _t("transparent"), important);
-            add_parsed_property(_t("background-image"), _t(""), important);
-            add_parsed_property(_t("background-image-baseurl"), _t(""), important);
-            add_parsed_property(_t("background-repeat"), _t("repeat"), important);
-            add_parsed_property(_t("background-origin"), _t("padding-box"), important);
-            add_parsed_property(_t("background-clip"), _t("border-box"), important);
-            add_parsed_property(_t("background-attachment"), _t("scroll"), important);
+            add_parsed_property("background-color", "transparent", important);
+            add_parsed_property("background-image", "", important);
+            add_parsed_property("background-image-baseurl", "", important);
+            add_parsed_property("background-repeat", "repeat", important);
+            add_parsed_property("background-origin", "padding-box", important);
+            add_parsed_property("background-clip", "border-box", important);
+            add_parsed_property("background-attachment", "scroll", important);
 
-            if (val == _t("none"))
-            {
+            if (val == "none")
                 return;
-            }
 
-            string_vector tokens;
-            split_string(val, tokens, _t(" "), _t(""), _t("("));
-            bool origin_found = false;
-            for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
+            var tokens = new List<string>();
+            html.split_string(val, tokens, " ", "", "(");
+            var origin_found = false;
+            foreach (var tok in tokens)
             {
-                if (tok.substr(0, 3) == _t("url"))
+                if (tok.StartsWith("url"))
                 {
-                    add_parsed_property(_t("background-image"), *tok, important);
-                    if (baseurl)
-                    {
-                        add_parsed_property(_t("background-image-baseurl"), baseurl, important);
-                    }
-
+                    add_parsed_property("background-image", tok, important);
+                    if (baseurl != null)
+                        add_parsed_property("background-image-baseurl", baseurl, important);
                 }
-                else if (value_in_list(tok.c_str(), background_repeat_strings))
+                else if (html.value_in_list(tok, types.background_repeat_strings))
+                    add_parsed_property("background-repeat", tok, important);
+                else if (html.value_in_list(tok, types.background_attachment_strings))
+                    add_parsed_property("background-attachment", tok, important);
+                else if (html.value_in_list(tok, types.background_box_strings))
                 {
-                    add_parsed_property(_t("background-repeat"), *tok, important);
+                    if (!origin_found) { add_parsed_property("background-origin", tok, important); origin_found = true; }
+                    else add_parsed_property("background-clip", tok, important);
                 }
-                else if (value_in_list(tok.c_str(), background_attachment_strings))
+                else if (html.value_in_list(tok, "left;right;top;bottom;center") || char.IsDigit(tok[0]) || tok[0] == '-' || tok[0] == '.' || tok[0] == '+')
                 {
-                    add_parsed_property(_t("background-attachment"), *tok, important);
+                    if (_properties.TryGetValue("background-position", out var prop)) prop._value = $"{prop._value} {tok}";
+                    else add_parsed_property("background-position", tok, important);
                 }
-                else if (value_in_list(tok.c_str(), background_box_strings))
-                {
-                    if (!origin_found)
-                    {
-                        add_parsed_property(_t("background-origin"), *tok, important);
-                        origin_found = true;
-                    }
-                    else
-                    {
-                        add_parsed_property(_t("background-clip"), *tok, important);
-                    }
-                }
-                else if (value_in_list(tok.c_str(), _t("left;right;top;bottom;center")) ||
-                          iswdigit((*tok)[0]) ||
-                          (*tok)[0] == _t('-') ||
-                          (*tok)[0] == _t('.') ||
-                          (*tok)[0] == _t('+'))
-                {
-                    if (m_properties.find(_t("background-position")) != m_properties.end())
-                    {
-                        m_properties[_t("background-position")].m_value = m_properties[_t("background-position")].m_value + _t(" ") + *tok;
-                    }
-                    else
-                    {
-                        add_parsed_property(_t("background-position"), *tok, important);
-                    }
-                }
-                else if (web_color::is_color(tok.c_str()))
-                {
-                    add_parsed_property(_t("background-color"), *tok, important);
-                }
+                else if (web_color.is_color(tok))
+                    add_parsed_property("background-color", tok, important);
             }
         }
         void parse_short_font(string val, bool important)
         {
-            add_parsed_property(_t("font-style"), _t("normal"), important);
-            add_parsed_property(_t("font-variant"), _t("normal"), important);
-            add_parsed_property(_t("font-weight"), _t("normal"), important);
-            add_parsed_property(_t("font-size"), _t("medium"), important);
-            add_parsed_property(_t("line-height"), _t("normal"), important);
+            add_parsed_property("font-style", "normal", important);
+            add_parsed_property("font-variant", "normal", important);
+            add_parsed_property("font-weight", "normal", important);
+            add_parsed_property("font-size", "medium", important);
+            add_parsed_property("line-height", "normal", important);
 
-            string_vector tokens;
-            split_string(val, tokens, _t(" "), _t(""), _t("\""));
+            var tokens = new List<string>();
+            html.split_string(val, tokens, " ", "", "\"");
 
-            int idx = 0;
-            bool was_normal = false;
-            bool is_family = false;
-            tstring font_family;
-            for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
+            var idx = 0;
+            var was_normal = false;
+            var is_family = false;
+            var font_family = string.Empty;
+            foreach (var tok in tokens)
             {
-                idx = value_index(tok.c_str(), font_style_strings);
+                idx = html.value_index(tok, types.font_style_strings);
                 if (!is_family)
                 {
                     if (idx >= 0)
                     {
                         if (idx == 0 && !was_normal)
                         {
-                            add_parsed_property(_t("font-weight"), *tok, important);
-                            add_parsed_property(_t("font-variant"), *tok, important);
-                            add_parsed_property(_t("font-style"), *tok, important);
+                            add_parsed_property("font-weight", tok, important);
+                            add_parsed_property("font-variant", tok, important);
+                            add_parsed_property("font-style", tok, important);
                         }
                         else
-                        {
-                            add_parsed_property(_t("font-style"), *tok, important);
-                        }
+                            add_parsed_property("font-style", tok, important);
                     }
                     else
                     {
-                        if (value_in_list(tok.c_str(), font_weight_strings))
-                        {
-                            add_parsed_property(_t("font-weight"), *tok, important);
-                        }
+                        if (html.value_in_list(tok, types.font_weight_strings))
+                            add_parsed_property("font-weight", tok, important);
                         else
                         {
-                            if (value_in_list(tok.c_str(), font_variant_strings))
+                            if (html.value_in_list(tok, types.font_variant_strings))
+                                add_parsed_property("font-variant", tok, important);
+                            else if (char.IsDigit(tok[0]))
                             {
-                                add_parsed_property(_t("font-variant"), *tok, important);
-                            }
-                            else if (iswdigit((*tok)[0]))
-                            {
-                                string_vector szlh;
-                                split_string(*tok, szlh, _t("/"));
-
-                                if (szlh.size() == 1)
+                                var szlh = new List<string>();
+                                html.split_string(tok, szlh, "/");
+                                if (szlh.Count == 1)
+                                    add_parsed_property("font-size", szlh[0], important);
+                                else if (szlh.Count >= 2)
                                 {
-                                    add_parsed_property(_t("font-size"), szlh[0], important);
-                                }
-                                else if (szlh.size() >= 2)
-                                {
-                                    add_parsed_property(_t("font-size"), szlh[0], important);
-                                    add_parsed_property(_t("line-height"), szlh[1], important);
+                                    add_parsed_property("font-size", szlh[0], important);
+                                    add_parsed_property("line-height", szlh[1], important);
                                 }
                             }
                             else
                             {
                                 is_family = true;
-                                font_family += *tok;
+                                font_family += tok;
                             }
                         }
                     }
                 }
                 else
-                {
-                    font_family += *tok;
-                }
+                    font_family += tok;
             }
-            add_parsed_property(_t("font-family"), font_family, important);
+            add_parsed_property("font-family", font_family, important);
         }
+
         void add_parsed_property(string name, string val, bool important)
         {
-            bool is_valid = true;
-            string_map::iterator vals = m_valid_values.find(name);
-            if (vals != m_valid_values.end())
-            {
-                if (!value_in_list(val, vals.second))
-                {
-                    is_valid = false;
-                }
-            }
-
+            var is_valid = !_valid_values.TryGetValue(name, out var vals) || html.value_in_list(val, vals);
             if (is_valid)
             {
-                props_map::iterator prop = m_properties.find(name);
-                if (prop != m_properties.end())
+                if (_properties.TryGetValue(name, out var prop))
                 {
-                    if (!prop.second.m_important || (important && prop.second.m_important))
+                    if (!prop._important || (important && prop._important))
                     {
-                        prop.second.m_value = val;
-                        prop.second.m_important = important;
+                        prop._value = val;
+                        prop._important = important;
                     }
                 }
-                else
-                {
-                    m_properties[name] = property_value(val.c_str(), important);
-                }
-            }
-        }
-        void remove_property(string name, bool important)
-        {
-            props_map::iterator prop = m_properties.find(name);
-            if (prop != m_properties.end())
-            {
-                if (!prop.second.m_important || (important && prop.second.m_important))
-                {
-                    m_properties.erase(prop);
-                }
+                else _properties[name] = new property_value(val, important);
             }
         }
 
+        void remove_property(string name, bool important)
+        {
+            if (_properties.TryGetValue(name, out var prop))
+                if (!prop._important || (important && prop._important))
+                    _properties.Remove(name);
+        }
     }
 }

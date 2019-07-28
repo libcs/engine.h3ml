@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace H3ml.Layout
 {
-    public struct media_query_expression
+    public class media_query_expression
     {
         public media_feature feature;
         public int val;
@@ -12,7 +13,7 @@ namespace H3ml.Layout
         public media_query_expression()
         {
             check_as_bool = false;
-            feature = media_feature_none;
+            feature = media_feature.none;
             val = 0;
             val2 = 0;
         }
@@ -21,148 +22,148 @@ namespace H3ml.Layout
         {
             switch (feature)
             {
-                case media_feature_width:
+                case media_feature.width:
                     if (check_as_bool) return features.width != 0;
                     else if (features.width == val) return true;
                     break;
-                case media_feature_min_width:
+                case media_feature.min_width:
                     if (features.width >= val) return true;
                     break;
-                case media_feature_max_width:
+                case media_feature.max_width:
                     if (features.width <= val) return true;
                     break;
-                case media_feature_height:
+                case media_feature.height:
                     if (check_as_bool) return (features.height != 0);
                     else if (features.height == val) return true;
                     break;
-                case media_feature_min_height:
+                case media_feature.min_height:
                     if (features.height >= val) return true;
                     break;
-                case media_feature_max_height:
+                case media_feature.max_height:
                     if (features.height <= val) return true;
                     break;
 
-                case media_feature_device_width:
+                case media_feature.device_width:
                     if (check_as_bool) return (features.device_width != 0);
                     else if (features.device_width == val) return true;
                     break;
-                case media_feature_min_device_width:
+                case media_feature.min_device_width:
                     if (features.device_width >= val) return true;
                     break;
-                case media_feature_max_device_width:
+                case media_feature.max_device_width:
                     if (features.device_width <= val) return true;
                     break;
-                case media_feature_device_height:
+                case media_feature.device_height:
                     if (check_as_bool) return (features.device_height != 0);
                     else if (features.device_height == val) return true;
                     break;
-                case media_feature_min_device_height:
+                case media_feature.min_device_height:
                     if (features.device_height <= val) return true;
                     break;
-                case media_feature_max_device_height:
+                case media_feature.max_device_height:
                     if (features.device_height <= val) return true;
                     break;
 
-                case media_feature_orientation:
+                case media_feature.orientation:
                     if (features.height >= features.width)
                     {
-                        if (val == media_orientation_portrait) return true;
+                        if ((media_orientation)val == media_orientation.portrait) return true;
                     }
                     else
                     {
-                        if (val == media_orientation_landscape) return true;
+                        if ((media_orientation)val == media_orientation.landscape) return true;
                     }
                     break;
-                case media_feature_aspect_ratio:
-                    if (features.height && val2)
+                case media_feature.aspect_ratio:
+                    if (features.height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.width / (double)features.height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.width / (double)features.height * 100.0);
                         if (ratio_this == ratio_feat) return true;
                     }
                     break;
-                case media_feature_min_aspect_ratio:
-                    if (features.height && val2)
+                case media_feature.min_aspect_ratio:
+                    if (features.height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.width / (double)features.height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.width / (double)features.height * 100.0);
                         if (ratio_feat >= ratio_this) return true;
                     }
                     break;
-                case media_feature_max_aspect_ratio:
-                    if (features.height && val2)
+                case media_feature.max_aspect_ratio:
+                    if (features.height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.width / (double)features.height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.width / (double)features.height * 100.0);
                         if (ratio_feat <= ratio_this) return true;
                     }
                     break;
 
-                case media_feature_device_aspect_ratio:
-                    if (features.device_height && val2)
+                case media_feature.device_aspect_ratio:
+                    if (features.device_height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.device_width / (double)features.device_height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.device_width / (double)features.device_height * 100.0);
                         if (ratio_feat == ratio_this) return true;
                     }
                     break;
-                case media_feature_min_device_aspect_ratio:
-                    if (features.device_height && val2)
+                case media_feature.min_device_aspect_ratio:
+                    if (features.device_height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.device_width / (double)features.device_height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.device_width / (double)features.device_height * 100.0);
                         if (ratio_feat >= ratio_this) return true;
                     }
                     break;
-                case media_feature_max_device_aspect_ratio:
-                    if (features.device_height && val2)
+                case media_feature.max_device_aspect_ratio:
+                    if (features.device_height != 0 && val2 != 0)
                     {
-                        var ratio_this = (int)Math.Round((double)val / (double)val2 * 100);
-                        var ratio_feat = (int)Math.Round((double)features.device_width / (double)features.device_height * 100.0);
+                        var ratio_this = (int)Math.Round(val / (double)val2 * 100);
+                        var ratio_feat = (int)Math.Round(features.device_width / (double)features.device_height * 100.0);
                         if (ratio_feat <= ratio_this) return true;
                     }
                     break;
 
-                case media_feature_color:
+                case media_feature.color:
                     if (check_as_bool) return features.color != 0;
                     else if (features.color == val) return true;
                     break;
-                case media_feature_min_color:
+                case media_feature.min_color:
                     if (features.color >= val) return true;
                     break;
-                case media_feature_max_color:
+                case media_feature.max_color:
                     if (features.color <= val) return true;
                     break;
 
-                case media_feature_color_index:
+                case media_feature.color_index:
                     if (check_as_bool) return features.color_index != 0;
                     else if (features.color_index == val) return true;
                     break;
-                case media_feature_min_color_index:
+                case media_feature.min_color_index:
                     if (features.color_index >= val) return true;
                     break;
-                case media_feature_max_color_index:
+                case media_feature.max_color_index:
                     if (features.color_index <= val) return true;
                     break;
 
-                case media_feature_monochrome:
+                case media_feature.monochrome:
                     if (check_as_bool) return features.monochrome != 0;
                     else if (features.monochrome == val) return true;
                     break;
-                case media_feature_min_monochrome:
+                case media_feature.min_monochrome:
                     if (features.monochrome >= val) return true;
                     break;
-                case media_feature_max_monochrome:
+                case media_feature.max_monochrome:
                     if (features.monochrome <= val) return true;
                     break;
 
-                case media_feature_resolution:
+                case media_feature.resolution:
                     if (features.resolution == val) return true;
                     break;
-                case media_feature_min_resolution:
+                case media_feature.min_resolution:
                     if (features.resolution >= val) return true;
                     break;
-                case media_feature_max_resolution:
+                case media_feature.max_resolution:
                     if (features.resolution <= val) return true;
                     break;
                 default: return false;
@@ -173,13 +174,14 @@ namespace H3ml.Layout
 
     public class media_query
     {
-        IList<media_query_expression> _expressions;
+        List<media_query_expression> _expressions;
         bool _not;
         media_type _media_type;
 
         public media_query()
         {
-            _media_type = media_type_all;
+            _expressions = new List<media_query_expression>();
+            _media_type = media_type.all;
             _not = false;
         }
 
@@ -193,58 +195,55 @@ namespace H3ml.Layout
         public static media_query create_from_string(string str, document doc)
         {
             var query = new media_query();
-
-            html.split_string(str, out var tokens, " \t\r\n", "", "(");
-
-            foreach (var tok in tokens)
+            var tokens = new List<string>();
+            html.split_string(str, tokens, " \t\r\n", "", "(");
+            for (var i = 0; i < tokens.Count; i++)
             {
+                var tok = tokens[i];
                 if (tok == "not")
                     query._not = true;
-                else if (tok.at(0) == '(')
+                else if (tok[0] == '(')
                 {
-                    tok.erase(0, 1);
-                    if (tok.at(tok.length - 1) == ')')
-                        tok.erase(tok.length - 1, 1);
-                    media_query_expression expr;
-                    html.split_string(tok, out var expr_tokens, ":");
-                    if (!expr_tokens.empty())
+                    tok = tok.Substring(1);
+                    if (tok[tok.Length - 1] == ')')
+                        tok = tok.Remove(tok.Length - 1, 1);
+                    var expr = new media_query_expression();
+                    var expr_tokens = new List<string>();
+                    html.split_string(tok, expr_tokens, ":");
+                    if (expr_tokens.Count != 0)
                     {
-                        trim(expr_tokens[0]);
-                        expr.feature = (media_feature)value_index(expr_tokens[0], media_feature_strings, media_feature_none);
-                        if (expr.feature != media_feature_none)
+                        expr_tokens[0] = expr_tokens[0].Trim();
+                        expr.feature = (media_feature)html.value_index(expr_tokens[0], types.media_feature_strings, (int)media_feature.none);
+                        if (expr.feature != media_feature.none)
                         {
-                            if (expr_tokens.size() == 1)
+                            if (expr_tokens.Count == 1)
                                 expr.check_as_bool = true;
                             else
                             {
-                                trim(expr_tokens[1]);
+                                expr_tokens[1] = expr_tokens[1].Trim();
                                 expr.check_as_bool = false;
-                                if (expr.feature == media_feature_orientation)
-                                    expr.val = value_index(expr_tokens[1], media_orientation_strings, media_orientation_landscape);
+                                if (expr.feature == media_feature.orientation)
+                                    expr.val = html.value_index(expr_tokens[1], types.media_orientation_strings, (int)media_orientation.landscape);
                                 else
                                 {
-                                    var slash_pos = expr_tokens[1].find('/');
+                                    var slash_pos = expr_tokens[1].IndexOf('/');
                                     if (slash_pos != -1)
                                     {
-                                        var val1 = expr_tokens[1].substr(0, slash_pos);
-                                        var val2 = expr_tokens[1].substr(slash_pos + 1);
-                                        trim(val1);
-                                        trim(val2);
+                                        var val1 = expr_tokens[1].Substring(0, slash_pos).Trim();
+                                        var val2 = expr_tokens[1].Substring(slash_pos + 1).Trim();
                                         expr.val = int.Parse(val1);
                                         expr.val2 = int.Parse(val2);
                                     }
                                     else
                                     {
-                                        css_length length;
+                                        var length = new css_length();
                                         length.fromString(expr_tokens[1]);
-                                        if (length.units == css_units_dpcm)
-                                            expr.val = (int)(length.val * 2.54);
-                                        else if (length.units == css_units_dpi)
-                                            expr.val = (int)(length.val * 2.54);
+                                        if (length.units == css_units.dpcm) expr.val = (int)(length.val * 2.54);
+                                        else if (length.units == css_units.dpi) expr.val = (int)(length.val * 2.54);
                                         else
                                         {
                                             if (doc != null)
-                                                doc.cvt_units(length, doc.container().get_default_font_size());
+                                                doc.cvt_units(length, doc.container.get_default_font_size());
                                             expr.val = (int)length.val;
                                         }
                                     }
@@ -254,8 +253,7 @@ namespace H3ml.Layout
                         }
                     }
                 }
-                else
-                    query._media_type = (media_type)value_index(tok, media_type_strings, media_type_all);
+                else query._media_type = (media_type)html.value_index(tok, types.media_type_strings, (int)media_type.all);
             }
             return query;
         }
@@ -263,7 +261,7 @@ namespace H3ml.Layout
         public bool check(media_features features)
         {
             var res = false;
-            if (_media_type == media_type_all || _media_type == features.type)
+            if (_media_type == media_type.all || _media_type == features.type)
             {
                 res = true;
                 foreach (var expr in _expressions)
@@ -298,11 +296,10 @@ namespace H3ml.Layout
         {
             var list = new media_query_list();
             var tokens = new List<string>();
-            html.split_string(str, out tokens, ",");
-            foreach (var tok in tokens)
+            html.split_string(str, tokens, ",");
+            for (var i = 0; i < tokens.Count; i++)
             {
-                trim(tok);
-                lcase(tok);
+                var tok = tokens[i].Trim().ToLowerInvariant();
                 var query = media_query.create_from_string(tok, doc);
                 if (query != null)
                     list._queries.Add(query);
@@ -310,6 +307,7 @@ namespace H3ml.Layout
             return list._queries.Count != 0 ? list : null;
         }
         public bool is_used => _is_used;
+
         public bool apply_media_features(media_features features)   // returns true if the _is_used changed
         {
             var apply = false;
