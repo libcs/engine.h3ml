@@ -2277,241 +2277,190 @@ namespace H3ml.Layout
 
         public override void add_style(style st) => _style.combine(st);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         public override element get_element_by_point(int x, int y, int client_x, int client_y)
         {
             if (!is_visible) return null;
-
-            element::ptr ret;
-
-            std::map<int, bool> zindexes;
-
-            for (IList<element>::iterator i = m_positioned.begin(); i != m_positioned.end(); i++)
-            {
-                zindexes[(*i).get_zindex()];
-            }
-
-            for (std::map<int, bool>::iterator idx = zindexes.begin(); idx != zindexes.end() && !ret; idx++)
-            {
-                if (idx.first > 0)
+            element ret = null;
+            var zindexes = new HashSet<int>();
+            foreach (var i in _positioned)
+                zindexes.Add(i.get_zindex);
+            foreach (var idx in zindexes)
+                if (idx > 0)
                 {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, idx.first);
+                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    if (ret != null) break;
+                }
+            if (ret != null) return ret;
+
+            foreach (var idx in zindexes)
+            {
+                if (idx == 0)
+                {
+                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    if (ret != null) break;
                 }
             }
-            if (ret) return ret;
+            if (ret != null) return ret;
 
-            for (std::map<int, bool>::iterator idx = zindexes.begin(); idx != zindexes.end() && !ret; idx++)
-            {
-                if (idx.first == 0)
+            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.inlines, 0);
+            if (ret != null) return ret;
+
+            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.floats, 0);
+            if (ret != null) return ret;
+
+            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.block, 0);
+            if (ret != null) return ret;
+
+            foreach (var idx in zindexes)
+                if (idx < 0)
                 {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, idx.first);
+                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    if (ret != null) break;
                 }
-            }
-            if (ret) return ret;
+            if (ret != null) return ret;
 
-            ret = get_child_by_point(x, y, client_x, client_y, draw_inlines, 0);
-            if (ret) return ret;
-
-            ret = get_child_by_point(x, y, client_x, client_y, draw_floats, 0);
-            if (ret) return ret;
-
-            ret = get_child_by_point(x, y, client_x, client_y, draw_block, 0);
-            if (ret) return ret;
-
-
-            for (std::map<int, bool>::iterator idx = zindexes.begin(); idx != zindexes.end() && !ret; idx++)
-            {
-                if (idx.first < 0)
-                {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, idx.first);
-                }
-            }
-            if (ret) return ret;
-
-            if (m_el_position == element_position_fixed)
+            if (_el_position == element_position.@fixed)
             {
                 if (is_point_inside(client_x, client_y))
-                {
-                    ret = shared_from_this();
-                }
+                    ret = this;
             }
             else
             {
                 if (is_point_inside(x, y))
-                {
-                    ret = shared_from_this();
-                }
+                    ret = this;
             }
-
             return ret;
         }
 
-        public virtual element get_child_by_point(int x, int y, int client_x, int client_y, draw_flag flag, int zindex)
+        public override element get_child_by_point(int x, int y, int client_x, int client_y, draw_flag flag, int zindex)
         {
-            element::ptr ret = 0;
-
-            if (m_overflow > overflow_visible)
-            {
-                if (!m_pos.is_point_inside(x, y))
-                {
+            element ret = null;
+            if (_overflow > overflow.visible)
+                if (!_pos.is_point_inside(x, y))
                     return ret;
-                }
-            }
-
-            position pos = m_pos;
+            var pos = _pos;
             pos.x = x - pos.x;
             pos.y = y - pos.y;
-
-            for (IList<element>::reverse_iterator i = m_children.rbegin(); i != m_children.rend() && !ret; i++)
+            for (var ii = _children.Count - 1; ii >= 0 && ret == null; ii++)
             {
-                element::ptr el = (*i);
-
-                if (el.is_visible() && el.get_display() != display_inline_text)
+                var i = _children[ii];
+                var el = i;
+                if (el.is_visible && el.get_display != style_display.inline_text)
                 {
                     switch (flag)
                     {
-                        case draw_positioned:
-                            if (el.is_positioned() && el.get_zindex() == zindex)
+                        case draw_flag.positioned:
+                            if (el.is_positioned && el.get_zindex == zindex)
                             {
-                                if (el.get_element_position() == element_position_fixed)
+                                if (el.get_element_position(out var junk) == element_position.@fixed)
                                 {
                                     ret = el.get_element_by_point(client_x, client_y, client_x, client_y);
-                                    if (!ret && (*i).is_point_inside(client_x, client_y))
-                                    {
-                                        ret = (*i);
-                                    }
+                                    if (ret == null && i.is_point_inside(client_x, client_y))
+                                        ret = i;
                                 }
                                 else
                                 {
                                     ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
-                                    if (!ret && (*i).is_point_inside(pos.x, pos.y))
-                                    {
-                                        ret = (*i);
-                                    }
+                                    if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                        ret = i;
                                 }
-                                el = 0;
+                                el = null;
                             }
                             break;
-                        case draw_block:
-                            if (!el.is_inline_box() && el.get_float() == float_none && !el.is_positioned())
-                            {
+                        case draw_flag.block:
+                            if (!el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
                                 if (el.is_point_inside(pos.x, pos.y))
-                                {
                                     ret = el;
-                                }
-                            }
                             break;
-                        case draw_floats:
-                            if (el.get_float() != float_none && !el.is_positioned())
+                        case draw_flag.floats:
+                            if (el.get_float != element_float.none && !el.is_positioned)
                             {
                                 ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
-
-                                if (!ret && (*i).is_point_inside(pos.x, pos.y))
-                                {
-                                    ret = (*i);
-                                }
-                                el = 0;
+                                if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                    ret = i;
+                                el = null;
                             }
                             break;
-                        case draw_inlines:
-                            if (el.is_inline_box() && el.get_float() == float_none && !el.is_positioned())
+                        case draw_flag.inlines:
+                            if (el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
                             {
-                                if (el.get_display() == display_inline_block)
+                                if (el.get_display == style_display.inline_block)
                                 {
                                     ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
-                                    el = 0;
+                                    el = null;
                                 }
-                                if (!ret && (*i).is_point_inside(pos.x, pos.y))
-                                {
-                                    ret = (*i);
-                                }
+                                if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                    ret = i;
                             }
                             break;
-                        default:
-                            break;
+                        default: break;
                     }
 
-                    if (el && !el.is_positioned())
+                    if (el != null && !el.is_positioned)
                     {
-                        if (flag == draw_positioned)
+                        if (flag == draw_flag.positioned)
                         {
-                            element::ptr child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
-                            if (child)
-                            {
+                            var child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
+                            if (child != null)
                                 ret = child;
-                            }
                         }
-                        else
+                        else if (el.get_float == element_float.none && el.get_display != style_display.inline_block)
                         {
-                            if (el.get_float() == float_none &&
-                                el.get_display() != display_inline_block)
-                            {
-                                element::ptr child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
-                                if (child)
-                                {
-                                    ret = child;
-                                }
-                            }
+                            var child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
+                            if (child != null)
+                                ret = child;
                         }
                     }
                 }
             }
-
             return ret;
         }
 
-        public virtual bool is_nth_child(element el, int num, int off, bool of_type)
+        public override bool is_nth_child(element el, int num, int off, bool of_type)
         {
-            int idx = 1;
-            for (const auto&child : m_children)
-	{
-                if (child.get_display() != display_inline_text)
+            var idx = 1;
+            foreach (var child in _children)
+                if (child.get_display != style_display.inline_text)
                 {
-                    if ((!of_type) || (of_type && !t_strcmp(el.get_tagName(), child.get_tagName())))
+                    if (!of_type || (of_type && el.get_tagName() == child.get_tagName()))
                     {
                         if (el == child)
                         {
                             if (num != 0)
                             {
                                 if ((idx - off) >= 0 && (idx - off) % num == 0)
-                                {
                                     return true;
-                                }
-
                             }
                             else if (idx == off)
-                            {
                                 return true;
+                            return false;
+                        }
+                        idx++;
+                    }
+                    if (el == child) break;
+                }
+            return false;
+        }
+
+        public override bool is_nth_last_child(element el, int num, int off, bool of_type)
+        {
+            var idx = 1;
+            for (var childi = _children.Count - 1; childi >= 0; childi++)
+            {
+                var child = _children[childi];
+                if (child.get_display != style_display.inline_text)
+                {
+                    if (!of_type || (of_type && el.get_tagName() == child.get_tagName()))
+                    {
+                        if (el == child)
+                        {
+                            if (num != 0)
+                            {
+                                if ((idx - off) >= 0 && (idx - off) % num == 0)
+                                    return true;
                             }
+                            else if (idx == off)
+                                return true;
                             return false;
                         }
                         idx++;
@@ -2521,141 +2470,85 @@ namespace H3ml.Layout
             }
             return false;
         }
-        public virtual bool is_nth_last_child(element el, int num, int off, bool of_type)
-        {
-            int idx = 1;
-            for (IList<element>::const_reverse_iterator child = m_children.rbegin(); child != m_children.rend(); child++)
-            {
-                if ((*child).get_display() != display_inline_text)
-                {
-                    if (!of_type || (of_type && !t_strcmp(el.get_tagName(), (*child).get_tagName())))
-                    {
-                        if (el == (*child))
-                        {
-                            if (num != 0)
-                            {
-                                if ((idx - off) >= 0 && (idx - off) % num == 0)
-                                {
-                                    return true;
-                                }
 
-                            }
-                            else if (idx == off)
-                            {
-                                return true;
-                            }
-                            return false;
-                        }
-                        idx++;
-                    }
-                    if (el == (*child)) break;
-                }
-            }
-            return false;
-        }
-        public virtual bool is_only_child(element el, bool of_type)
+        public override bool is_only_child(element el, bool of_type)
         {
-            int child_count = 0;
-            for (const auto&child : m_children)
-	{
-                if (child.get_display() != display_inline_text)
+            var child_count = 0;
+            foreach (var child in _children)
+                if (child.get_display != style_display.inline_text)
                 {
-                    if (!of_type || (of_type && !t_strcmp(el.get_tagName(), child.get_tagName())))
-                    {
+                    if (!of_type || (of_type && el.get_tagName() == child.get_tagName()))
                         child_count++;
-                    }
                     if (child_count > 1) break;
                 }
-            }
             if (child_count > 1)
-            {
                 return false;
-            }
             return true;
         }
-        public virtual background get_background(bool own_only = false)
+
+        public override background get_background(bool own_only = false)
         {
             if (own_only)
             {
                 // return own background with check for empty one
-                if (m_bg.m_image.empty() && !m_bg.m_color.alpha)
-                {
-                    return 0;
-                }
-                return &m_bg;
+                if (string.IsNullOrEmpty(_bg._image) && _bg._color.alpha == 0)
+                    return null;
+                return _bg;
             }
 
-            if (m_bg.m_image.empty() && !m_bg.m_color.alpha)
+            if (string.IsNullOrEmpty(_bg._image) && _bg._color.alpha == 0)
             {
                 // if this is root element (<html>) try to get background from body
-                if (!have_parent())
-                {
-                    for (const auto&el : m_children)
-			{
+                if (!have_parent)
+                    foreach (var el in _children)
                         if (el.is_body())
-                        {
                             // return own body background
                             return el.get_background(true);
-                        }
-                    }
-                }
-                return 0;
+                return null;
             }
 
             if (is_body())
             {
-                element::ptr el_parent = parent();
-                if (el_parent)
-                {
-                    if (!el_parent.get_background(true))
-                    {
+                var el_parent = parent();
+                if (el_parent != null)
+                    if (el_parent.get_background(true) == null)
                         // parent of body will draw background for body
-                        return 0;
-                    }
-                }
+                        return null;
             }
-
-            return &m_bg;
+            return _bg;
         }
-
 
         protected void draw_children_box(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
-            position pos = m_pos;
+            var pos = _pos;
             pos.x += x;
             pos.y += y;
-
-            document::ptr doc = get_document();
-
-            if (m_overflow > overflow_visible)
+            var doc = get_document();
+            if (_overflow > overflow.visible)
             {
-                position border_box = pos;
-                border_box += m_padding;
-                border_box += m_borders;
-
-                border_radiuses bdr_radius = m_css_borders.radius.calc_percents(border_box.width, border_box.height);
-
-                bdr_radius -= m_borders;
-                bdr_radius -= m_padding;
-
-                doc.container().set_clip(pos, bdr_radius, true, true);
+                var border_box = pos;
+                border_box += _padding;
+                border_box += _borders;
+                var bdr_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                bdr_radius -= _borders;
+                bdr_radius -= _padding;
+                doc.container.set_clip(pos, bdr_radius, true, true);
             }
 
-            position browser_wnd;
-            doc.container().get_client_rect(browser_wnd);
+            doc.container.get_client_rect(out var browser_wnd);
 
-            element::ptr el;
-            for (auto & item : m_children)
+            element el;
+            foreach (var item in _children)
             {
                 el = item;
-                if (el.is_visible())
+                if (el.is_visible)
                 {
                     switch (flag)
                     {
-                        case draw_positioned:
-                            if (el.is_positioned() && el.get_zindex() == zindex)
+                        case draw_flag.positioned:
+                            if (el.is_positioned && el.get_zindex == zindex)
                             {
-                                if (el.get_element_position() == element_position_fixed)
+                                if (el.get_element_position(out var junk) == element_position.@fixed)
                                 {
                                     el.draw(hdc, browser_wnd.x, browser_wnd.y, clip);
                                     el.draw_stacking_context(hdc, browser_wnd.x, browser_wnd.y, clip, true);
@@ -2665,87 +2558,72 @@ namespace H3ml.Layout
                                     el.draw(hdc, pos.x, pos.y, clip);
                                     el.draw_stacking_context(hdc, pos.x, pos.y, clip, true);
                                 }
-                                el = 0;
+                                el = null;
                             }
                             break;
-                        case draw_block:
-                            if (!el.is_inline_box() && el.get_float() == float_none && !el.is_positioned())
-                            {
+                        case draw_flag.block:
+                            if (!el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
                                 el.draw(hdc, pos.x, pos.y, clip);
-                            }
                             break;
-                        case draw_floats:
-                            if (el.get_float() != float_none && !el.is_positioned())
+                        case draw_flag.floats:
+                            if (el.get_float != element_float.none && !el.is_positioned)
                             {
                                 el.draw(hdc, pos.x, pos.y, clip);
                                 el.draw_stacking_context(hdc, pos.x, pos.y, clip, false);
-                                el = 0;
+                                el = null;
                             }
                             break;
-                        case draw_inlines:
-                            if (el.is_inline_box() && el.get_float() == float_none && !el.is_positioned())
+                        case draw_flag.inlines:
+                            if (el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
                             {
                                 el.draw(hdc, pos.x, pos.y, clip);
-                                if (el.get_display() == display_inline_block)
+                                if (el.get_display == style_display.inline_block)
                                 {
                                     el.draw_stacking_context(hdc, pos.x, pos.y, clip, false);
-                                    el = 0;
+                                    el = null;
                                 }
                             }
                             break;
-                        default:
-                            break;
+                        default: break;
                     }
 
-                    if (el)
+                    if (el != null)
                     {
-                        if (flag == draw_positioned)
+                        if (flag == draw_flag.positioned)
                         {
-                            if (!el.is_positioned())
-                            {
+                            if (!el.is_positioned)
                                 el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
-                            }
                         }
                         else
                         {
-                            if (el.get_float() == float_none &&
-                                el.get_display() != display_inline_block &&
-                                !el.is_positioned())
-                            {
+                            if (el.get_float == element_float.none && el.get_display != style_display.inline_block && !el.is_positioned)
                                 el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
-                            }
                         }
                     }
                 }
             }
 
-            if (m_overflow > overflow_visible)
-            {
-                doc.container().del_clip();
-            }
+            if (_overflow > overflow.visible)
+                doc.container.del_clip();
         }
+
         protected void draw_children_table(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
-            if (!m_grid) return;
-
-            position pos = m_pos;
+            if (_grid == null) return;
+            var pos = _pos;
             pos.x += x;
             pos.y += y;
-            for (int row = 0; row < m_grid.rows_count(); row++)
+            for (var row = 0; row < _grid.rows_count; row++)
             {
-                if (flag == draw_block)
+                if (flag == draw_flag.block)
+                    _grid.row(row).el_row.draw_background(hdc, pos.x, pos.y, clip);
+                for (var col = 0; col < _grid.cols_count; col++)
                 {
-                    m_grid.row(row).el_row.draw_background(hdc, pos.x, pos.y, clip);
-                }
-                for (int col = 0; col < m_grid.cols_count(); col++)
-                {
-                    table_cell* cell = m_grid.cell(col, row);
-                    if (cell.el)
+                    var cell = _grid.cell(col, row);
+                    if (cell.el != null)
                     {
-                        if (flag == draw_block)
-                        {
+                        if (flag == draw_flag.block)
                             cell.el.draw(hdc, pos.x, pos.y, clip);
-                        }
                         cell.el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
                     }
                 }
@@ -2754,318 +2632,222 @@ namespace H3ml.Layout
 
         protected int render_box(int x, int y, int max_width, bool second_pass = false)
         {
-            int parent_width = max_width;
-
+            var parent_width = max_width;
             calc_outlines(parent_width);
+            _pos.clear();
+            _pos.move_to(x, y);
+            _pos.x += content_margins_left;
+            _pos.y += content_margins_top;
+            var ret_width = 0;
 
-            m_pos.clear();
-            m_pos.move_to(x, y);
+            var block_width = new def_value<int>(0);
 
-            m_pos.x += content_margins_left();
-            m_pos.y += content_margins_top();
-
-            int ret_width = 0;
-
-            def_value<int> block_width(0);
-
-            if (m_display != display_table_cell && !m_css_width.is_predefined())
+            if (_display != style_display.table_cell && !_css_width.is_predefined)
             {
-                int w = calc_width(parent_width);
-
-                if (m_box_sizing == box_sizing_border_box)
-                {
-                    w -= m_padding.width() + m_borders.width();
-                }
+                var w = calc_width(parent_width);
+                if (_box_sizing == box_sizing.border_box)
+                    w -= _padding.width + _borders.width;
                 ret_width = max_width = block_width = w;
             }
             else
             {
-                if (max_width)
-                {
-                    max_width -= content_margins_left() + content_margins_right();
-                }
+                if (max_width != 0)
+                    max_width -= content_margins_left + content_margins_right;
             }
 
             // check for max-width (on the first pass only)
-            if (!m_css_max_width.is_predefined() && !second_pass)
+            if (!_css_max_width.is_predefined && !second_pass)
             {
-                int mw = get_document().cvt_units(m_css_max_width, m_font_size, parent_width);
-                if (m_box_sizing == box_sizing_border_box)
-                {
-                    mw -= m_padding.left + m_borders.left + m_padding.right + m_borders.right;
-                }
+                var mw = get_document().cvt_units(_css_max_width, _font_size, parent_width);
+                if (_box_sizing == box_sizing.border_box)
+                    mw -= _padding.left + _borders.left + _padding.right + _borders.right;
                 if (max_width > mw)
-                {
                     max_width = mw;
-                }
             }
 
-            m_floats_left.clear();
-            m_floats_right.clear();
-            m_boxes.clear();
-            m_cahe_line_left.invalidate();
-            m_cahe_line_right.invalidate();
+            _floats_left.Clear();
+            _floats_right.Clear();
+            _boxes.Clear();
+            _cahe_line_left.invalidate();
+            _cahe_line_right.invalidate();
 
-            element_position el_position;
-
-            int block_height = 0;
-
-            m_pos.height = 0;
+            var block_height = 0;
+            _pos.height = 0;
 
             if (get_predefined_height(block_height))
-            {
-                m_pos.height = block_height;
-            }
+                _pos.height = block_height;
 
-            white_space ws = get_white_space();
-            bool skip_spaces = false;
-            if (ws == white_space_normal ||
-                ws == white_space_nowrap ||
-                ws == white_space_pre_line)
-            {
-                skip_spaces = true;
-            }
+            var ws = get_white_space;
+            var skip_spaces = ws == white_space.normal || ws == white_space.nowrap || ws == white_space.pre_line;
+            var was_space = false;
 
-            bool was_space = false;
-
-            for (auto el : m_children)
+            element_position el_position;
+            foreach (var el in _children)
             {
                 // we don't need process absolute and fixed positioned element on the second pass
                 if (second_pass)
                 {
-                    el_position = el.get_element_position();
-                    if ((el_position == element_position_absolute || el_position == element_position_fixed)) continue;
+                    el_position = el.get_element_position(out var junk);
+                    if (el_position == element_position.absolute || el_position == element_position.@fixed) continue;
                 }
 
                 // skip spaces to make rendering a bit faster
                 if (skip_spaces)
-                {
                     if (el.is_white_space())
                     {
                         if (was_space)
                         {
-                            el.skip(true);
+                            el.skip = true;
                             continue;
                         }
                         else
-                        {
                             was_space = true;
-                        }
                     }
                     else
-                    {
                         was_space = false;
-                    }
-                }
 
                 // place element into rendering flow
-                int rw = place_element(el, max_width);
+                var rw = place_element(el, max_width);
                 if (rw > ret_width)
-                {
                     ret_width = rw;
-                }
             }
 
             finish_last_box(true);
 
-            if (block_width.is_default() && is_inline_box())
-            {
-                m_pos.width = ret_width;
-            }
-            else
-            {
-                m_pos.width = max_width;
-            }
+            _pos.width = block_width.is_default && is_inline_box ? ret_width : max_width;
             calc_auto_margins(parent_width);
 
-            if (!m_boxes.empty())
+            if (_boxes.Count != 0)
             {
-                if (collapse_top_margin())
+                if (collapse_top_margin)
                 {
-                    int old_top = m_margins.top;
-                    m_margins.top = std::max(m_boxes.front().top_margin(), m_margins.top);
-                    if (m_margins.top != old_top)
-                    {
-                        update_floats(m_margins.top - old_top, shared_from_this());
-                    }
+                    var old_top = _margins.top;
+                    _margins.top = Math.Max(_boxes.First().top_margin, _margins.top);
+                    if (_margins.top != old_top)
+                        update_floats(_margins.top - old_top, this);
                 }
-                if (collapse_bottom_margin())
+                if (collapse_bottom_margin)
                 {
-                    m_margins.bottom = std::max(m_boxes.back().bottom_margin(), m_margins.bottom);
-                    m_pos.height = m_boxes.back().bottom() - m_boxes.back().bottom_margin();
+                    _margins.bottom = Math.Max(_boxes.Last().bottom_margin, _margins.bottom);
+                    _pos.height = _boxes.Last().bottom - _boxes.Last().bottom_margin;
                 }
                 else
-                {
-                    m_pos.height = m_boxes.back().bottom();
-                }
+                    _pos.height = _boxes.Last().bottom;
             }
 
             // add the floats height to the block height
-            if (is_floats_holder())
+            if (is_floats_holder)
             {
-                int floats_height = get_floats_height();
-                if (floats_height > m_pos.height)
-                {
-                    m_pos.height = floats_height;
-                }
+                var floats_height = get_floats_height();
+                if (floats_height > _pos.height)
+                    _pos.height = floats_height;
             }
 
             // calculate the final position
-
-            m_pos.move_to(x, y);
-            m_pos.x += content_margins_left();
-            m_pos.y += content_margins_top();
-
+            _pos.move_to(x, y);
+            _pos.x += content_margins_left;
+            _pos.y += content_margins_top;
             if (get_predefined_height(block_height))
-            {
-                m_pos.height = block_height;
-            }
+                _pos.height = block_height;
 
-            int min_height = 0;
-            if (!m_css_min_height.is_predefined() && m_css_min_height.units() == css_units_percentage)
+            var min_height = 0;
+            if (!_css_min_height.is_predefined && _css_min_height.units == css_units.percentage)
             {
-                element::ptr el_parent = parent();
-                if (el_parent)
-                {
-                    if (el_parent.get_predefined_height(block_height))
-                    {
-                        min_height = m_css_min_height.calc_percent(block_height);
-                    }
-                }
+                var el_parent = parent();
+                if (el_parent != null && el_parent.get_predefined_height(block_height))
+                    min_height = _css_min_height.calc_percent(block_height);
             }
             else
+                min_height = (int)_css_min_height.val;
+            if (min_height != 0 && _box_sizing == box_sizing.border_box)
             {
-                min_height = (int)m_css_min_height.val();
-            }
-            if (min_height != 0 && m_box_sizing == box_sizing_border_box)
-            {
-                min_height -= m_padding.top + m_borders.top + m_padding.bottom + m_borders.bottom;
+                min_height -= _padding.top + _borders.top + _padding.bottom + _borders.bottom;
                 if (min_height < 0) min_height = 0;
             }
 
-            if (m_display == display_list_item)
+            if (_display == style_display.list_item)
             {
-                const tchar_t* list_image = get_style_property(_t("list-style-image"), true, 0);
-                if (list_image)
+                var list_image = get_style_property("list-style-image", true, null);
+                if (list_image != null)
                 {
-                    tstring url;
-                    css::parse_css_url(list_image, url);
-
-                    size sz;
-                    const tchar_t* list_image_baseurl = get_style_property(_t("list-style-image-baseurl"), true, 0);
-                    get_document().container().get_image_size(url.c_str(), list_image_baseurl, sz);
+                    css.parse_css_url(list_image, out var url);
+                    var list_image_baseurl = get_style_property("list-style-image-baseurl", true, null);
+                    get_document().container.get_image_size(url, list_image_baseurl, out var sz);
                     if (min_height < sz.height)
-                    {
                         min_height = sz.height;
-                    }
                 }
-
             }
 
-            if (min_height > m_pos.height)
-            {
-                m_pos.height = min_height;
-            }
+            if (min_height > _pos.height)
+                _pos.height = min_height;
 
-            int min_width = m_css_min_width.calc_percent(parent_width);
+            var min_width = _css_min_width.calc_percent(parent_width);
 
-            if (min_width != 0 && m_box_sizing == box_sizing_border_box)
+            if (min_width != 0 && _box_sizing == box_sizing.border_box)
             {
-                min_width -= m_padding.left + m_borders.left + m_padding.right + m_borders.right;
+                min_width -= _padding.left + _borders.left + _padding.right + _borders.right;
                 if (min_width < 0) min_width = 0;
             }
 
             if (min_width != 0)
             {
-                if (min_width > m_pos.width)
-                {
-                    m_pos.width = min_width;
-                }
+                if (min_width > _pos.width)
+                    _pos.width = min_width;
                 if (min_width > ret_width)
-                {
                     ret_width = min_width;
-                }
             }
 
-            ret_width += content_margins_left() + content_margins_right();
+            ret_width += content_margins_left + content_margins_right;
 
             // re-render with new width
-            if (ret_width < max_width && !second_pass && have_parent())
-            {
-                if (m_display == display_inline_block ||
-                    m_css_width.is_predefined() &&
-                    (m_float != float_none ||
-                    m_display == display_table ||
-                    m_el_position == element_position_absolute ||
-                    m_el_position == element_position_fixed
-                    )
-                    )
+            if (ret_width < max_width && !second_pass && have_parent)
+                if (_display == style_display.inline_block || _css_width.is_predefined && (_float != element_float.none || _display == style_display.table || _el_position == element_position.absolute || _el_position == element_position.@fixed))
                 {
                     render(x, y, ret_width, true);
-                    m_pos.width = ret_width - (content_margins_left() + content_margins_right());
+                    _pos.width = ret_width - (content_margins_left + content_margins_right);
                 }
-            }
 
-            if (is_floats_holder() && !second_pass)
-            {
-                for (const auto&fb : m_floats_left)
-		{
-                    fb.el.apply_relative_shift(fb.el.parent().calc_width(m_pos.width));
-                }
-            }
-
+            if (is_floats_holder && !second_pass)
+                foreach (var fb in _floats_left)
+                    fb.el.apply_relative_shift(fb.el.parent().calc_width(_pos.width));
 
             return ret_width;
         }
 
         protected int render_table(int x, int y, int max_width, bool second_pass = false)
         {
-            if (!m_grid) return 0;
+            if (_grid == null) return 0;
 
-            int parent_width = max_width;
+            var parent_width = max_width;
 
             calc_outlines(parent_width);
 
-            m_pos.clear();
-            m_pos.move_to(x, y);
+            _pos.clear();
+            _pos.move_to(x, y);
+            _pos.x += content_margins_left;
+            _pos.y += content_margins_top;
 
-            m_pos.x += content_margins_left();
-            m_pos.y += content_margins_top();
-
-            def_value<int> block_width(0);
-
-            if (!m_css_width.is_predefined())
-            {
-                max_width = block_width = calc_width(parent_width) - m_padding.width() - m_borders.width();
-            }
-            else
-            {
-                if (max_width)
-                {
-                    max_width -= content_margins_left() + content_margins_right();
-                }
-            }
+            var block_width = new def_value<int>(0);
+            if (!_css_width.is_predefined)
+                max_width = block_width = calc_width(parent_width) - _padding.width - _borders.width;
+            else if (max_width != 0)
+                max_width -= content_margins_left + content_margins_right;
 
             // Calculate table spacing
-            int table_width_spacing = 0;
-            if (m_border_collapse == border_collapse_separate)
-            {
-                table_width_spacing = m_border_spacing_x * (m_grid.cols_count() + 1);
-            }
+            var table_width_spacing = 0;
+            if (_border_collapse == border_collapse.separate)
+                table_width_spacing = _border_spacing_x * (_grid.cols_count + 1);
             else
             {
                 table_width_spacing = 0;
-
-                if (m_grid.cols_count())
+                if (_grid.cols_count != 0)
                 {
-                    table_width_spacing -= std::min(border_left(), m_grid.column(0).border_left);
-                    table_width_spacing -= std::min(border_right(), m_grid.column(m_grid.cols_count() - 1).border_right);
+                    table_width_spacing -= Math.Min(border_left, _grid.column(0).border_left);
+                    table_width_spacing -= Math.Min(border_right, _grid.column(_grid.cols_count - 1).border_right);
                 }
 
-                for (int col = 1; col < m_grid.cols_count(); col++)
-                {
-                    table_width_spacing -= std::min(m_grid.column(col).border_left, m_grid.column(col - 1).border_right);
-                }
+                for (var col = 1; col < _grid.cols_count; col++)
+                    table_width_spacing -= Math.Min(_grid.column(col).border_left, _grid.column(col - 1).border_right);
             }
 
 
@@ -3074,34 +2856,32 @@ namespace H3ml.Layout
             // cell width.
             // 
             // Also, calculate the "maximum" cell width of each cell: formatting the content without breaking lines other than where explicit line breaks occur.
-
-            if (m_grid.cols_count() == 1 && !block_width.is_default())
+            if (_grid.cols_count == 1 && !block_width.is_default)
             {
-                for (int row = 0; row < m_grid.rows_count(); row++)
+                for (var row = 0; row < _grid.rows_count; row++)
                 {
-                    table_cell* cell = m_grid.cell(0, row);
-                    if (cell && cell.el)
+                    var cell = _grid.cell(0, row);
+                    if (cell != null && cell.el != null)
                     {
                         cell.min_width = cell.max_width = cell.el.render(0, 0, max_width - table_width_spacing);
-                        cell.el.m_pos.width = cell.min_width - cell.el.content_margins_left() - cell.el.content_margins_right();
+                        cell.el._pos.width = cell.min_width - cell.el.content_margins_left - cell.el.content_margins_right;
                     }
                 }
             }
             else
             {
-                for (int row = 0; row < m_grid.rows_count(); row++)
-                {
-                    for (int col = 0; col < m_grid.cols_count(); col++)
+                for (var row = 0; row < _grid.rows_count; row++)
+                    for (var col = 0; col < _grid.cols_count; col++)
                     {
-                        table_cell* cell = m_grid.cell(col, row);
-                        if (cell && cell.el)
+                        var cell = _grid.cell(col, row);
+                        if (cell != null && cell.el != null)
                         {
-                            if (!m_grid.column(col).css_width.is_predefined() && m_grid.column(col).css_width.units() != css_units_percentage)
+                            if (!_grid.column(col).css_width.is_predefined && _grid.column(col).css_width.units != css_units.percentage)
                             {
-                                int css_w = m_grid.column(col).css_width.calc_percent(block_width);
-                                int el_w = cell.el.render(0, 0, css_w);
-                                cell.min_width = cell.max_width = std::max(css_w, el_w);
-                                cell.el.m_pos.width = cell.min_width - cell.el.content_margins_left() - cell.el.content_margins_right();
+                                var css_w = _grid.column(col).css_width.calc_percent(block_width);
+                                var el_w = cell.el.render(0, 0, css_w);
+                                cell.min_width = cell.max_width = Math.Max(css_w, el_w);
+                                cell.el._pos.width = cell.min_width - cell.el.content_margins_left - cell.el.content_margins_right;
                             }
                             else
                             {
@@ -3112,55 +2892,42 @@ namespace H3ml.Layout
                             }
                         }
                     }
-                }
             }
 
             // For each column, determine a maximum and minimum column width from the cells that span only that column. 
             // The minimum is that required by the cell with the largest minimum cell width (or the column 'width', whichever is larger). 
             // The maximum is that required by the cell with the largest maximum cell width (or the column 'width', whichever is larger).
-
-            for (int col = 0; col < m_grid.cols_count(); col++)
+            for (var col = 0; col < _grid.cols_count; col++)
             {
-                m_grid.column(col).max_width = 0;
-                m_grid.column(col).min_width = 0;
-                for (int row = 0; row < m_grid.rows_count(); row++)
-                {
-                    if (m_grid.cell(col, row).colspan <= 1)
+                _grid.column(col).max_width = 0;
+                _grid.column(col).min_width = 0;
+                for (var row = 0; row < _grid.rows_count; row++)
+                    if (_grid.cell(col, row).colspan <= 1)
                     {
-                        m_grid.column(col).max_width = std::max(m_grid.column(col).max_width, m_grid.cell(col, row).max_width);
-                        m_grid.column(col).min_width = std::max(m_grid.column(col).min_width, m_grid.cell(col, row).min_width);
+                        _grid.column(col).max_width = Math.Max(_grid.column(col).max_width, _grid.cell(col, row).max_width);
+                        _grid.column(col).min_width = Math.Max(_grid.column(col).min_width, _grid.cell(col, row).min_width);
                     }
-                }
             }
 
             // For each cell that spans more than one column, increase the minimum widths of the columns it spans so that together, 
             // they are at least as wide as the cell. Do the same for the maximum widths. 
             // If possible, widen all spanned columns by approximately the same amount.
-
-            for (int col = 0; col < m_grid.cols_count(); col++)
-            {
-                for (int row = 0; row < m_grid.rows_count(); row++)
-                {
-                    if (m_grid.cell(col, row).colspan > 1)
+            for (var col = 0; col < _grid.cols_count; col++)
+                for (var row = 0; row < _grid.rows_count; row++)
+                    if (_grid.cell(col, row).colspan > 1)
                     {
-                        int max_total_width = m_grid.column(col).max_width;
-                        int min_total_width = m_grid.column(col).min_width;
-                        for (int col2 = col + 1; col2 < col + m_grid.cell(col, row).colspan; col2++)
+                        var max_total_width = _grid.column(col).max_width;
+                        var min_total_width = _grid.column(col).min_width;
+                        for (var col2 = col + 1; col2 < col + _grid.cell(col, row).colspan; col2++)
                         {
-                            max_total_width += m_grid.column(col2).max_width;
-                            min_total_width += m_grid.column(col2).min_width;
+                            max_total_width += _grid.column(col2).max_width;
+                            min_total_width += _grid.column(col2).min_width;
                         }
-                        if (min_total_width < m_grid.cell(col, row).min_width)
-                        {
-                            m_grid.distribute_min_width(m_grid.cell(col, row).min_width - min_total_width, col, col + m_grid.cell(col, row).colspan - 1);
-                        }
-                        if (max_total_width < m_grid.cell(col, row).max_width)
-                        {
-                            m_grid.distribute_max_width(m_grid.cell(col, row).max_width - max_total_width, col, col + m_grid.cell(col, row).colspan - 1);
-                        }
+                        if (min_total_width < _grid.cell(col, row).min_width)
+                            _grid.distribute_min_width(_grid.cell(col, row).min_width - min_total_width, col, col + _grid.cell(col, row).colspan - 1);
+                        if (max_total_width < _grid.cell(col, row).max_width)
+                            _grid.distribute_max_width(_grid.cell(col, row).max_width - max_total_width, col, col + _grid.cell(col, row).colspan - 1);
                     }
-                }
-            }
 
             // If the 'table' or 'inline-table' element's 'width' property has a computed value (W) other than 'auto', the used width is the 
             // greater of W, CAPMIN, and the minimum width required by all the columns plus cell spacing or borders (MIN). 
@@ -3169,200 +2936,185 @@ namespace H3ml.Layout
             // If the 'table' or 'inline-table' element has 'width: auto', the used width is the greater of the table's containing block width, 
             // CAPMIN, and MIN. However, if either CAPMIN or the maximum width required by the columns plus cell spacing or borders (MAX) is 
             // less than that of the containing block, use max(MAX, CAPMIN).
+            var table_width = 0;
+            var min_table_width = 0;
+            var max_table_width = 0;
 
-
-            int table_width = 0;
-            int min_table_width = 0;
-            int max_table_width = 0;
-
-            if (!block_width.is_default())
-            {
-                table_width = m_grid.calc_table_width(block_width - table_width_spacing, false, min_table_width, max_table_width);
-            }
+            if (!block_width.is_default)
+                table_width = _grid.calc_table_width(block_width - table_width_spacing, false, min_table_width, max_table_width);
             else
-            {
-                table_width = m_grid.calc_table_width(max_width - table_width_spacing, true, min_table_width, max_table_width);
-            }
+                table_width = _grid.calc_table_width(max_width - table_width_spacing, true, min_table_width, max_table_width);
 
             min_table_width += table_width_spacing;
             max_table_width += table_width_spacing;
             table_width += table_width_spacing;
-            m_grid.calc_horizontal_positions(m_borders, m_border_collapse, m_border_spacing_x);
+            _grid.calc_horizontal_positions(_borders, _border_collapse, _border_spacing_x);
 
-            bool row_span_found = false;
+            var row_span_found = false;
 
             // render cells with computed width
-            for (int row = 0; row < m_grid.rows_count(); row++)
+            for (var row = 0; row < _grid.rows_count; row++)
             {
-                m_grid.row(row).height = 0;
-                for (int col = 0; col < m_grid.cols_count(); col++)
+                _grid.row(row).height = 0;
+                for (var col = 0; col < _grid.cols_count; col++)
                 {
-                    table_cell* cell = m_grid.cell(col, row);
-                    if (cell.el)
+                    var cell = _grid.cell(col, row);
+                    if (cell.el != null)
                     {
-                        int span_col = col + cell.colspan - 1;
-                        if (span_col >= m_grid.cols_count())
-                        {
-                            span_col = m_grid.cols_count() - 1;
-                        }
-                        int cell_width = m_grid.column(span_col).right - m_grid.column(col).left;
+                        var span_col = col + cell.colspan - 1;
+                        if (span_col >= _grid.cols_count)
+                            span_col = _grid.cols_count - 1;
+                        var cell_width = _grid.column(span_col).right - _grid.column(col).left;
 
-                        if (cell.el.m_pos.width != cell_width - cell.el.content_margins_left() - cell.el.content_margins_right())
+                        if (cell.el._pos.width != cell_width - cell.el.content_margins_left - cell.el.content_margins_right)
                         {
-                            cell.el.render(m_grid.column(col).left, 0, cell_width);
-                            cell.el.m_pos.width = cell_width - cell.el.content_margins_left() - cell.el.content_margins_right();
+                            cell.el.render(_grid.column(col).left, 0, cell_width);
+                            cell.el._pos.width = cell_width - cell.el.content_margins_left - cell.el.content_margins_right;
                         }
                         else
-                        {
-                            cell.el.m_pos.x = m_grid.column(col).left + cell.el.content_margins_left();
-                        }
+                            cell.el._pos.x = _grid.column(col).left + cell.el.content_margins_left;
 
                         if (cell.rowspan <= 1)
-                        {
-                            m_grid.row(row).height = std::max(m_grid.row(row).height, cell.el.height());
-                        }
+                            _grid.row(row).height = Math.Max(_grid.row(row).height, cell.el.height);
                         else
-                        {
                             row_span_found = true;
-                        }
-
                     }
                 }
             }
 
             if (row_span_found)
             {
-                for (int col = 0; col < m_grid.cols_count(); col++)
-                {
-                    for (int row = 0; row < m_grid.rows_count(); row++)
+                for (var col = 0; col < _grid.cols_count; col++)
+                    for (var row = 0; row < _grid.rows_count; row++)
                     {
-                        table_cell* cell = m_grid.cell(col, row);
-                        if (cell.el)
+                        var cell = _grid.cell(col, row);
+                        if (cell.el != null)
                         {
-                            int span_row = row + cell.rowspan - 1;
-                            if (span_row >= m_grid.rows_count())
-                            {
-                                span_row = m_grid.rows_count() - 1;
-                            }
+                            var span_row = row + cell.rowspan - 1;
+                            if (span_row >= _grid.rows_count)
+                                span_row = _grid.rows_count - 1;
                             if (span_row != row)
                             {
-                                int h = 0;
-                                for (int i = row; i <= span_row; i++)
-                                {
-                                    h += m_grid.row(i).height;
-                                }
-                                if (h < cell.el.height())
-                                {
-                                    m_grid.row(span_row).height += cell.el.height() - h;
-                                }
+                                var h = 0;
+                                for (var i = row; i <= span_row; i++)
+                                    h += _grid.row(i).height;
+                                if (h < cell.el.height)
+                                    _grid.row(span_row).height += cell.el.height - h;
                             }
                         }
                     }
-                }
             }
 
             // Calculate vertical table spacing
-            int table_height_spacing = 0;
-            if (m_border_collapse == border_collapse_separate)
-            {
-                table_height_spacing = m_border_spacing_y * (m_grid.rows_count() + 1);
-            }
+            var table_height_spacing = 0;
+            if (_border_collapse == border_collapse.separate)
+                table_height_spacing = _border_spacing_y * (_grid.rows_count + 1);
             else
             {
                 table_height_spacing = 0;
-
-                if (m_grid.rows_count())
+                if (_grid.rows_count != 0)
                 {
-                    table_height_spacing -= std::min(border_top(), m_grid.row(0).border_top);
-                    table_height_spacing -= std::min(border_bottom(), m_grid.row(m_grid.rows_count() - 1).border_bottom);
+                    table_height_spacing -= Math.Min(border_top, _grid.row(0).border_top);
+                    table_height_spacing -= Math.Min(border_bottom, _grid.row(_grid.rows_count - 1).border_bottom);
                 }
-
-                for (int row = 1; row < m_grid.rows_count(); row++)
-                {
-                    table_height_spacing -= std::min(m_grid.row(row).border_top, m_grid.row(row - 1).border_bottom);
-                }
+                for (var row = 1; row < _grid.rows_count; row++)
+                    table_height_spacing -= Math.Min(_grid.row(row).border_top, _grid.row(row - 1).border_bottom);
             }
 
 
             // calculate block height
-            int block_height = 0;
+            var block_height = 0;
             if (get_predefined_height(block_height))
-            {
-                block_height -= m_padding.height() + m_borders.height();
-            }
+                block_height -= _padding.height + _borders.height;
 
             // calculate minimum height from m_css_min_height
-            int min_height = 0;
-            if (!m_css_min_height.is_predefined() && m_css_min_height.units() == css_units_percentage)
+            var min_height = 0;
+            if (!_css_min_height.is_predefined && _css_min_height.units == css_units.percentage)
             {
-                element::ptr el_parent = parent();
-                if (el_parent)
+                var el_parent = parent();
+                if (el_parent != null)
                 {
-                    int parent_height = 0;
+                    var parent_height = 0;
                     if (el_parent.get_predefined_height(parent_height))
-                    {
-                        min_height = m_css_min_height.calc_percent(parent_height);
-                    }
+                        min_height = _css_min_height.calc_percent(parent_height);
                 }
             }
-            else
-            {
-                min_height = (int)m_css_min_height.val();
-            }
+            else min_height = (int)_css_min_height.val;
 
-            int extra_row_height = 0;
-            int minimum_table_height = std::max(block_height, min_height);
+            //var extra_row_height = 0;
+            var minimum_table_height = Math.Max(block_height, min_height);
 
-            m_grid.calc_rows_height(minimum_table_height - table_height_spacing, m_border_spacing_y);
-            m_grid.calc_vertical_positions(m_borders, m_border_collapse, m_border_spacing_y);
+            _grid.calc_rows_height(minimum_table_height - table_height_spacing, _border_spacing_y);
+            _grid.calc_vertical_positions(_borders, _border_collapse, _border_spacing_y);
 
-            int table_height = 0;
+            var table_height = 0;
 
             // place cells vertically
-            for (int col = 0; col < m_grid.cols_count(); col++)
-            {
-                for (int row = 0; row < m_grid.rows_count(); row++)
+            for (var col = 0; col < _grid.cols_count; col++)
+                for (var row = 0; row < _grid.rows_count; row++)
                 {
-                    table_cell* cell = m_grid.cell(col, row);
-                    if (cell.el)
+                    var cell = _grid.cell(col, row);
+                    if (cell.el != null)
                     {
-                        int span_row = row + cell.rowspan - 1;
-                        if (span_row >= m_grid.rows_count())
-                        {
-                            span_row = m_grid.rows_count() - 1;
-                        }
-                        cell.el.m_pos.y = m_grid.row(row).top + cell.el.content_margins_top();
-                        cell.el.m_pos.height = m_grid.row(span_row).bottom - m_grid.row(row).top - cell.el.content_margins_top() - cell.el.content_margins_bottom();
-                        table_height = std::max(table_height, m_grid.row(span_row).bottom);
+                        var span_row = row + cell.rowspan - 1;
+                        if (span_row >= _grid.rows_count)
+                            span_row = _grid.rows_count - 1;
+                        cell.el._pos.y = _grid.row(row).top + cell.el.content_margins_top;
+                        cell.el._pos.height = _grid.row(span_row).bottom - _grid.row(row).top - cell.el.content_margins_top - cell.el.content_margins_bottom;
+                        table_height = Math.Max(table_height, _grid.row(span_row).bottom);
                         cell.el.apply_vertical_align();
                     }
                 }
-            }
 
-            if (m_border_collapse == border_collapse_collapse)
+            if (_border_collapse == border_collapse.collapse)
             {
-                if (m_grid.rows_count())
-                {
-                    table_height -= std::min(border_bottom(), m_grid.row(m_grid.rows_count() - 1).border_bottom);
-                }
+                if (_grid.rows_count != 0)
+                    table_height -= Math.Min(border_bottom, _grid.row(_grid.rows_count - 1).border_bottom);
             }
             else
-            {
-                table_height += m_border_spacing_y;
-            }
+                table_height += _border_spacing_y;
 
-            m_pos.width = table_width;
+            _pos.width = table_width;
 
             calc_auto_margins(parent_width);
 
-            m_pos.move_to(x, y);
-            m_pos.x += content_margins_left();
-            m_pos.y += content_margins_top();
-            m_pos.width = table_width;
-            m_pos.height = table_height;
+            _pos.move_to(x, y);
+            _pos.x += content_margins_left;
+            _pos.y += content_margins_top;
+            _pos.width = table_width;
+            _pos.height = table_height;
 
             return max_table_width;
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         protected int fix_line_width(int max_width, element_float flt)
         {
@@ -3863,7 +3615,7 @@ protected element get_element_before()
             return m_children.front();
         }
     }
-    element::ptr el = std::make_shared<el_before>(get_document());
+    element::ptr el = Math.Make_shared<el_before>(get_document());
     el.parent(shared_from_this());
     m_children.insert(m_children.begin(), el);
     return el;
@@ -3877,7 +3629,7 @@ protected element get_element_after()
             return m_children.back();
         }
     }
-    element::ptr el = std::make_shared<el_after>(get_document());
+    element::ptr el = Math.Make_shared<el_after>(get_document());
     appendChild(el);
     return el;
 }

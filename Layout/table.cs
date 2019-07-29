@@ -280,8 +280,8 @@ namespace H3ml.Layout
         public table_column column(int c) => _columns[c];
         public table_row row(int r) => _rows[r];
 
-        public int rows_count() => _rows_count;
-        public int cols_count() => _cols_count;
+        public int rows_count => _rows_count;
+        public int cols_count => _cols_count;
 
         public void distribute_max_width(int width, int start, int end) => distribute_width(width, start, end, table_column_accessor_max_width.Default);
         public void distribute_min_width(int width, int start, int end) => distribute_width(width, start, end, table_column_accessor_min_width.Default);

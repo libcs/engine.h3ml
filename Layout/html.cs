@@ -24,7 +24,7 @@ namespace H3ml.Layout
         string get_default_font_name();
         void draw_list_marker(IntPtr hdc, list_marker marker);
         void load_image(string src, string baseurl, bool redraw_on_ready);
-        void get_image_size(string src, string baseurl, size sz);
+        void get_image_size(string src, string baseurl, out size sz);
         void draw_background(IntPtr hdc, background_paint bg);
         void draw_borders(IntPtr hdc, borders borders, position draw_pos, bool root);
 
