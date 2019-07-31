@@ -30,28 +30,30 @@ namespace H3ml.Layout
 
         public static bool operator ==(selector_specificity t, selector_specificity val) => t.a == val.a && t.b == val.b && t.c == val.c && t.d == val.d;
         public static bool operator !=(selector_specificity t, selector_specificity val) => t.a != val.a || t.b != val.b || t.c != val.c || t.d != val.d;
+        public override bool Equals(object obj) => obj is selector_specificity val ? this == val : base.Equals(obj);
 
-        //public bool operator >(selector_specificity val)
-        //{
-        //    if (a > val.a) return true;
-        //    else if (a < val.a) return false;
-        //    else
-        //    {
-        //        if (b > val.b) return true;
-        //        else if (b < val.b) return false;
-        //        else
-        //        {
-        //            if (c > val.c) return true;
-        //            else if (c < val.c) return false;
-        //            else
-        //            {
-        //                if (d > val.d) return true;
-        //                else if (d < val.d) return false;
-        //            }
-        //        }
-        //    }
-        //    return false;
-        //}
+        public static bool operator >(selector_specificity t, selector_specificity val)
+        {
+            if (t.a > val.a) return true;
+            else if (t.a < val.a) return false;
+            else
+            {
+                if (t.b > val.b) return true;
+                else if (t.b < val.b) return false;
+                else
+                {
+                    if (t.c > val.c) return true;
+                    else if (t.c < val.c) return false;
+                    else
+                    {
+                        if (t.d > val.d) return true;
+                        else if (t.d < val.d) return false;
+                    }
+                }
+            }
+            return false;
+        }
+        public static bool operator <(selector_specificity t, selector_specificity val) => !(t > val) && t != val;
 
         //public bool operator >=(selector_specificity val)
         //{
@@ -59,9 +61,7 @@ namespace H3ml.Layout
         //    if (this > val) return true;
         //    return false;
         //}
-
         //public bool operator <=(selector_specificity val) => this > val ? false : true;
-        //public bool operator <(selector_specificity val) => this <= val && this != val;
     }
 
     //////////////////////////////////////////////////////////////////////////

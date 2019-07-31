@@ -41,7 +41,8 @@ namespace Gumbo.DefGen
         static IEnumerable<string> GetExportableNames(string libFilePath)
         {
             var linkermemberFileName = Path.GetTempFileName();
-            Process.Start("dumpbin.exe", $@"/LINKERMEMBER:2 /OUT:""{linkermemberFileName}"" ""{libFilePath}""").WaitForExit();
+            var args = $@"/LINKERMEMBER:2 /OUT:""{linkermemberFileName}"" ""{libFilePath}""";
+            Process.Start("dumpbin.exe", args).WaitForExit();
 
             var lines = File.ReadAllLines(linkermemberFileName);
             File.Delete(linkermemberFileName);

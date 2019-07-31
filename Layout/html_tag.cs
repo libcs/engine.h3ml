@@ -570,9 +570,9 @@ namespace H3ml.Layout
                         text_indent = _css_text_indent.calc_percent(max_width);
                 }
                 get_font(out var fm);
-                _boxes.emplace_back(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.right, line_height, fm, _text_align));
+                _boxes.Add(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.right, line_height, fm, _text_align));
             }
-            else _boxes.emplace_back(new block_box(line_ctx.top, line_ctx.left, line_ctx.right));
+            else _boxes.Add(new block_box(line_ctx.top, line_ctx.left, line_ctx.right));
             return line_ctx.top;
         }
 
@@ -1828,9 +1828,8 @@ namespace H3ml.Layout
                         el.get_inline_boxes(sub_boxes);
                         if (sub_boxes.Count != 0)
                         {
-                            sub_boxes.Last().width += el.margin_right;
+                            var p = sub_boxes[sub_boxes.Count - 1]; p.width += el.margin_right; sub_boxes[sub_boxes.Count - 1] = p;
                             if (boxes.Count == 0)
-                            {
                                 if (_padding.left + _borders.left > 0)
                                 {
                                     var padding_box = sub_boxes.First();
@@ -1838,8 +1837,7 @@ namespace H3ml.Layout
                                     padding_box.width = _padding.left + _borders.left + el.margin_left;
                                     boxes.Add(padding_box);
                                 }
-                            }
-                            sub_boxes.Last().width += el.margin_right;
+                            p = sub_boxes[sub_boxes.Count - 1]; p.width += el.margin_right; sub_boxes[sub_boxes.Count - 1] = p;
                             ((List<position>)boxes).AddRange(sub_boxes);
                         }
                     }
@@ -1856,7 +1854,9 @@ namespace H3ml.Layout
             }
             if (boxes.Count != 0)
                 if (_padding.right + _borders.right > 0)
-                    boxes.Last().width += _padding.right + _borders.right;
+                {
+                    var p = boxes[boxes.Count - 1]; p.width += _padding.right + _borders.right; boxes[boxes.Count - 1] = p;
+                }
         }
 
         public override bool is_floats_holder =>
@@ -2643,13 +2643,13 @@ namespace H3ml.Layout
             var ret_width = 0;
 
             var block_width = new def_value<int>(0);
-
             if (_display != style_display.table_cell && !_css_width.is_predefined)
             {
                 var w = calc_width(parent_width);
                 if (_box_sizing == box_sizing.border_box)
                     w -= _padding.width + _borders.width;
-                ret_width = max_width = block_width = w;
+                ret_width = max_width = w;
+                block_width.assignTo(w);
             }
             else
             {
@@ -2831,7 +2831,7 @@ namespace H3ml.Layout
 
             var block_width = new def_value<int>(0);
             if (!_css_width.is_predefined)
-                max_width = block_width = calc_width(parent_width) - _padding.width - _borders.width;
+                block_width.assignTo(max_width = calc_width(parent_width) - _padding.width - _borders.width);
             else if (max_width != 0)
                 max_width -= content_margins_left + content_margins_right;
 
@@ -2880,7 +2880,7 @@ namespace H3ml.Layout
                         {
                             if (!_grid.column(col).css_width.is_predefined && _grid.column(col).css_width.units != css_units.percentage)
                             {
-                                var css_w = _grid.column(col).css_width.calc_percent(block_width);
+                                var css_w = _grid.column(col).css_width.calc_percent(block_width.val);
                                 var el_w = cell.el.render(0, 0, css_w);
                                 cell.min_width = cell.max_width = Math.Max(css_w, el_w);
                                 cell.el._pos.width = cell.min_width - cell.el.content_margins_left - cell.el.content_margins_right;
@@ -2943,7 +2943,7 @@ namespace H3ml.Layout
             var max_table_width = 0;
 
             if (!block_width.is_default)
-                table_width = _grid.calc_table_width(block_width - table_width_spacing, false, min_table_width, max_table_width);
+                table_width = _grid.calc_table_width(block_width.val - table_width_spacing, false, min_table_width, max_table_width);
             else
                 table_width = _grid.calc_table_width(max_width - table_width_spacing, true, min_table_width, max_table_width);
 

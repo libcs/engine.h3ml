@@ -43,7 +43,7 @@ namespace Gumbo
             if (_IsDisposed)
                 throw new ObjectDisposedException("UnmanagedLibrary");
             var ptr = GetProcAddress(_LibarayHandle, name);
-            return Marshal.PtrToStructure<T>(ptr);
+            return ptr != IntPtr.Zero ? Marshal.PtrToStructure<T>(ptr) : throw new InvalidOperationException($"function {name} not found");
         }
 
         ~WindowsUnmanagedLibrary() { Dispose(); }

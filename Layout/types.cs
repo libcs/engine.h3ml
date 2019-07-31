@@ -35,11 +35,6 @@ namespace H3ml.Layout
         public int width;
         public int height;
 
-        //public position()
-        //{
-        //    x = y = width = height = 0;
-        //}
-
         public position(int x, int y, int width, int height)
         {
             this.x = x;
@@ -70,10 +65,7 @@ namespace H3ml.Layout
             return t;
         }
 
-        public void clear()
-        {
-            x = y = width = height = 0;
-        }
+        public void clear() => x = y = width = height = 0;
 
         public void assignTo(size sz)
         {
@@ -568,26 +560,26 @@ namespace H3ml.Layout
     public class def_value<T>
     {
         T _val;
-        bool _isDefault;
+        bool _is_default;
 
         public def_value(T def_val)
         {
-            _isDefault = true;
+            _is_default = true;
             _val = def_val;
         }
         public void reset(T def_val)
         {
-            _isDefault = true;
+            _is_default = true;
             _val = def_val;
         }
-        public bool is_default => _isDefault;
-        //public T assignTo(T new_val)
-        //{
-        //    m_val = new_val;
-        //    m_is_default = false;
-        //    return m_val;
-        //}
-        //public operator T() => m_val;
+        public bool is_default => _is_default;
+        public T assignTo(T new_val)
+        {
+            _val = new_val;
+            _is_default = false;
+            return _val;
+        }
+        public T val => _val;
     }
 
     partial class types

@@ -5,8 +5,8 @@ namespace H3ml.Layout
 {
     public class element
     {
-        protected internal WeakReference<element> _parent; //: weak
-        protected internal WeakReference<document> _doc; //: weak
+        protected internal element _parent;
+        protected internal document _doc;
         protected internal box _box;
         protected internal List<element> _children = new List<element>();
         protected internal position _pos;
@@ -15,10 +15,9 @@ namespace H3ml.Layout
         protected internal margins _borders;
         protected internal bool _skip;
 
-        protected virtual void select_all(css_selector selector, IList<element> res) { }
         public element(document doc)
         {
-            _doc = new WeakReference<document>(doc);
+            _doc = doc;
             _box = null;
             _skip = false;
         }
@@ -100,7 +99,7 @@ namespace H3ml.Layout
             get => _skip;
             set => _skip = value;
         }
-        public bool have_parent => !_parent.expired();
+        public bool have_parent => _parent != null;
         public element parent() => _parent;
         public void parent(element par) => _parent = par;
         public bool is_visible => !(_skip || get_display == style_display.none || get_visibility != visibility.visible);
@@ -213,6 +212,7 @@ namespace H3ml.Layout
 
         public virtual IList<element> select_all(string selector) => new element[0];
         public virtual IList<element> select_all(css_selector selector) => new element[0];
+        protected virtual void select_all(css_selector selector, IList<element> res) { }
 
         public virtual element select_one(string selector) => null;
         public virtual element select_one(css_selector selector) => null;

@@ -8,7 +8,7 @@ namespace Gumbo
         [Test]
         public void TestFirstAndLastTagsInEnum()
         {
-            string testHtml = "<html><head><head><body><title></title><base></base><tt></tt><unknown123></unknown123></body></html>";
+            var testHtml = "<html><head><head><body><title></title><base></base><tt></tt><unknown123></unknown123></body></html>";
             using (var gumbo = new GumboWrapper(testHtml))
             {
                 var list = gumbo.Document.Root.Children.OfType<ElementWrapper>().ToList();
@@ -25,7 +25,7 @@ namespace Gumbo
         [Test]
         public void TestHeadBody()
         {
-            string testHtml = "<html><body class=\"gumbo\">привет!</body></html>";
+            var testHtml = "<html><body class=\"gumbo\">привет!</body></html>";
             using (var gumbo = new GumboWrapper(testHtml))
             {
                 var list = gumbo.Document.Root.Children.OfType<ElementWrapper>().ToList();
@@ -38,7 +38,7 @@ namespace Gumbo
         [Test]
         public void TestAttributes()
         {
-            string testHtml = "<html><body class=\"gumbo\">привет!</body></html>";
+            var testHtml = "<html><body class=\"gumbo\">привет!</body></html>";
             using (var gumbo = new GumboWrapper(testHtml))
             {
                 var list = gumbo.Document.Root.Children.OfType<ElementWrapper>().ToList();
