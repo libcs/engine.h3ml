@@ -194,7 +194,7 @@ namespace H3ml.Layout
                     add_property("border-radius-y", tokens[1], baseurl, important);
                 }
             }
-            else if (!t_strcmp(name, "border-radius-x")))
+            else if (name == "border-radius-x")
             {
                 var tokens = new List<string>();
                 html.split_string(val, tokens, " ");

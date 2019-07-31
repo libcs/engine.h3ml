@@ -1,248 +1,169 @@
+using System;
+
 namespace H3ml.Layout
 {
-	public class el_image : html_tag
-	{
-		string	_src;
+    public class el_image : html_tag
+    {
+        string _src;
 
-		public el_image(document doc) : base(doc) => _display = display_inline_block;
+        public el_image(document doc) : base(doc) => _display = style_display.inline_block;
 
-		public override int line_height() => height();
-		public override bool is_replaced() => true;
-		public override int render(int x, int y, int max_width, bool second_pass = false)
-		{
-			int parent_width = max_width;
+        public override int line_height => height;
+        public override bool is_replaced => true;
+        public override int render(int x, int y, int max_width, bool second_pass = false)
+        {
+            var parent_width = max_width;
+            calc_outlines(parent_width);
+            _pos.move_to(x, y);
+            var doc = get_document();
+            doc.container.get_image_size(_src, null, out var sz);
+            _pos.width = sz.width;
+            _pos.height = sz.height;
+            if (_css_height.is_predefined && _css_width.is_predefined)
+            {
+                _pos.height = sz.height;
+                _pos.width = sz.width;
+                // check for max-height
+                if (!_css_max_width.is_predefined)
+                {
+                    var max_width2 = doc.cvt_units(_css_max_width, _font_size, parent_width);
+                    if (_pos.width > max_width2)
+                        _pos.width = max_width2;
+                    _pos.height = sz.width != 0 ? (int)(_pos.width * (float)sz.height / sz.width) : sz.height;
+                }
 
-			calc_outlines(parent_width);
+                // check for max-height
+                if (!_css_max_height.is_predefined)
+                {
+                    var max_height = doc.cvt_units(_css_max_height, _font_size);
+                    if (_pos.height > max_height)
+                        _pos.height = max_height;
+                    _pos.width = sz.height != 0 ? (int)(_pos.height * (float)sz.width / sz.height) : sz.width;
+                }
+            }
+            else if (!_css_height.is_predefined && _css_width.is_predefined)
+            {
+                if (!get_predefined_height(_pos.height))
+                    _pos.height = (int)_css_height.val;
+                // check for max-height
+                if (!_css_max_height.is_predefined)
+                {
+                    var max_height = doc.cvt_units(_css_max_height, _font_size);
+                    if (_pos.height > max_height)
+                        _pos.height = max_height;
+                }
+                _pos.width = sz.height != 0 ? (int)(_pos.height * (float)sz.width / sz.height) : sz.width;
+            }
+            else if (_css_height.is_predefined && !_css_width.is_predefined)
+            {
+                _pos.width = _css_width.calc_percent(parent_width);
+                // check for max-width
+                if (!_css_max_width.is_predefined)
+                {
+                    var max_width2 = doc.cvt_units(_css_max_width, _font_size, parent_width);
+                    if (_pos.width > max_width2)
+                        _pos.width = max_width2;
+                }
+                _pos.height = sz.width != 0 ? (int)(_pos.width * (float)sz.height / sz.width) : sz.height;
+            }
+            else
+            {
+                _pos.width = _css_width.calc_percent(parent_width);
+                _pos.height = 0;
+                if (!get_predefined_height(_pos.height))
+                    _pos.height = (int)_css_height.val;
 
-			m_pos.move_to(x, y);
+                // check for max-height
+                if (!_css_max_height.is_predefined)
+                {
+                    var max_height = doc.cvt_units(_css_max_height, _font_size);
+                    if (_pos.height > max_height)
+                        _pos.height = max_height;
+                }
 
-			document::ptr doc = get_document();
+                // check for max-height
+                if (!_css_max_width.is_predefined)
+                {
+                    var max_width2 = doc.cvt_units(_css_max_width, _font_size, parent_width);
+                    if (_pos.width > max_width2)
+                        _pos.width = max_width2;
+                }
+            }
+            calc_auto_margins(parent_width);
+            _pos.x += content_margins_left;
+            _pos.y += content_margins_top;
+            return _pos.width + content_margins_left + content_margins_right;
+        }
 
-			litehtml::size sz;
-			doc.container().get_image_size(m_src.c_str(), 0, sz);
+        public override void parse_attributes()
+        {
+            _src = get_attr("src", "");
+            var attr_height = get_attr("height"); if (attr_height != null) _style.add_property("height", attr_height, null, false);
+            var attr_width = get_attr("width"); if (attr_width != null) _style.add_property("width", attr_width, null, false);
+        }
 
-			m_pos.width = sz.width;
-			m_pos.height = sz.height;
+        public override void parse_styles(bool is_reparse = false)
+        {
+            parse_styles(is_reparse);
+            if (!string.IsNullOrEmpty(_src))
+                get_document().container.load_image(_src, null, !_css_height.is_predefined && !_css_width.is_predefined);
+        }
 
-			if (m_css_height.is_predefined() && m_css_width.is_predefined())
-			{
-				m_pos.height = sz.height;
-				m_pos.width = sz.width;
+        public override void draw(IntPtr hdc, int x, int y, position clip)
+        {
+            var pos = _pos;
+            pos.x += x;
+            pos.y += y;
+            var el_pos = pos;
+            el_pos += _padding;
+            el_pos += _borders;
 
-				// check for max-height
-				if (!m_css_max_width.is_predefined())
-				{
-					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
-					if (m_pos.width > max_width)
-					{
-						m_pos.width = max_width;
-					}
-					if (sz.width)
-					{
-						m_pos.height = (int)((float)m_pos.width * (float)sz.height / (float)sz.width);
-					}
-					else
-					{
-						m_pos.height = sz.height;
-					}
-				}
+            // draw standard background here
+            if (el_pos.does_intersect(clip))
+            {
+                var bg = get_background();
+                if (bg != null)
+                {
+                    var bg_paint = new background_paint();
+                    init_background_paint(pos, bg_paint, bg);
+                    get_document().container.draw_background(hdc, bg_paint);
+                }
+            }
 
-				// check for max-height
-				if (!m_css_max_height.is_predefined())
-				{
-					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
-					if (m_pos.height > max_height)
-					{
-						m_pos.height = max_height;
-					}
-					if (sz.height)
-					{
-						m_pos.width = (int)(m_pos.height * (float)sz.width / (float)sz.height);
-					}
-					else
-					{
-						m_pos.width = sz.width;
-					}
-				}
-			}
-			else if (!m_css_height.is_predefined() && m_css_width.is_predefined())
-			{
-				if (!get_predefined_height(m_pos.height))
-				{
-					m_pos.height = (int)m_css_height.val();
-				}
+            // draw image as background
+            if (pos.does_intersect(clip))
+            {
+                if (pos.width > 0 && pos.height > 0)
+                {
+                    var bg = new background_paint();
+                    bg.image = _src;
+                    bg.clip_box = pos;
+                    bg.origin_box = pos;
+                    bg.border_box = pos;
+                    bg.border_box += _padding;
+                    bg.border_box += _borders;
+                    bg.repeat = background_repeat.no_repeat;
+                    bg.image_size.width = pos.width;
+                    bg.image_size.height = pos.height;
+                    bg.border_radius = _css_borders.radius.calc_percents(bg.border_box.width, bg.border_box.height);
+                    bg.position_x = pos.x;
+                    bg.position_y = pos.y;
+                    get_document().container.draw_background(hdc, bg);
+                }
+            }
 
-				// check for max-height
-				if (!m_css_max_height.is_predefined())
-				{
-					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
-					if (m_pos.height > max_height)
-					{
-						m_pos.height = max_height;
-					}
-				}
+            // draw borders
+            if (el_pos.does_intersect(clip))
+            {
+                var border_box = pos;
+                border_box += _padding;
+                border_box += _borders;
+                var bdr = new borders(_css_borders);
+                bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                get_document().container.draw_borders(hdc, bdr, border_box, !have_parent);
+            }
+        }
 
-				if (sz.height)
-				{
-					m_pos.width = (int)(m_pos.height * (float)sz.width / (float)sz.height);
-				}
-				else
-				{
-					m_pos.width = sz.width;
-				}
-			}
-			else if (m_css_height.is_predefined() && !m_css_width.is_predefined())
-			{
-				m_pos.width = (int)m_css_width.calc_percent(parent_width);
-
-				// check for max-width
-				if (!m_css_max_width.is_predefined())
-				{
-					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
-					if (m_pos.width > max_width)
-					{
-						m_pos.width = max_width;
-					}
-				}
-
-				if (sz.width)
-				{
-					m_pos.height = (int)((float)m_pos.width * (float)sz.height / (float)sz.width);
-				}
-				else
-				{
-					m_pos.height = sz.height;
-				}
-			}
-			else
-			{
-				m_pos.width = (int)m_css_width.calc_percent(parent_width);
-				m_pos.height = 0;
-				if (!get_predefined_height(m_pos.height))
-				{
-					m_pos.height = (int)m_css_height.val();
-				}
-
-				// check for max-height
-				if (!m_css_max_height.is_predefined())
-				{
-					int max_height = doc.cvt_units(m_css_max_height, m_font_size);
-					if (m_pos.height > max_height)
-					{
-						m_pos.height = max_height;
-					}
-				}
-
-				// check for max-height
-				if (!m_css_max_width.is_predefined())
-				{
-					int max_width = doc.cvt_units(m_css_max_width, m_font_size, parent_width);
-					if (m_pos.width > max_width)
-					{
-						m_pos.width = max_width;
-					}
-				}
-			}
-
-			calc_auto_margins(parent_width);
-
-			m_pos.x += content_margins_left();
-			m_pos.y += content_margins_top();
-
-			return m_pos.width + content_margins_left() + content_margins_right();
-		}
-
-		public override void parse_attributes()
-		{
-			m_src = get_attr(_t("src"), _t(""));
-
-			const tchar_t* attr_height = get_attr(_t("height"));
-			if (attr_height)
-			{
-				m_style.add_property(_t("height"), attr_height, 0, false);
-			}
-			const tchar_t* attr_width = get_attr(_t("width"));
-			if (attr_width)
-			{
-				m_style.add_property(_t("width"), attr_width, 0, false);
-			}
-		}
-
-		public override void parse_styles(bool is_reparse = false)
-		{
-			html_tag::parse_styles(is_reparse);
-
-			if (!m_src.empty())
-			{
-				if (!m_css_height.is_predefined() && !m_css_width.is_predefined())
-				{
-					get_document().container().load_image(m_src.c_str(), 0, true);
-				}
-				else
-				{
-					get_document().container().load_image(m_src.c_str(), 0, false);
-				}
-			}
-		}
-
-		public override void draw(IntPtr hdc, int x, int y, position clip)
-		{
-			position pos = m_pos;
-			pos.x += x;
-			pos.y += y;
-
-			position el_pos = pos;
-			el_pos += m_padding;
-			el_pos += m_borders;
-
-			// draw standard background here
-			if (el_pos.does_intersect(clip))
-			{
-				const background* bg = get_background();
-				if (bg)
-				{
-					background_paint bg_paint;
-					init_background_paint(pos, bg_paint, bg);
-
-					get_document().container().draw_background(hdc, bg_paint);
-				}
-			}
-
-			// draw image as background
-			if (pos.does_intersect(clip))
-			{
-				if (pos.width > 0 && pos.height > 0) {
-					background_paint bg;
-					bg.image = m_src;
-					bg.clip_box = pos;
-					bg.origin_box = pos;
-					bg.border_box = pos;
-					bg.border_box += m_padding;
-					bg.border_box += m_borders;
-					bg.repeat = background_repeat_no_repeat;
-					bg.image_size.width = pos.width;
-					bg.image_size.height = pos.height;
-					bg.border_radius = m_css_borders.radius.calc_percents(bg.border_box.width, bg.border_box.height);
-					bg.position_x = pos.x;
-					bg.position_y = pos.y;
-					get_document().container().draw_background(hdc, bg);
-				}
-			}
-
-			// draw borders
-			if (el_pos.does_intersect(clip))
-			{
-				position border_box = pos;
-				border_box += m_padding;
-				border_box += m_borders;
-
-				borders bdr = m_css_borders;
-				bdr.radius = m_css_borders.radius.calc_percents(border_box.width, border_box.height);
-
-				get_document().container().draw_borders(hdc, bdr, border_box, have_parent() ? false : true);
-			}
-		}
-
-		public override void get_content_size(out size sz, int max_width) => get_document().container().get_image_size(_src, 0, out sz);
-	}
+        public override void get_content_size(out size sz, int max_width) => get_document().container.get_image_size(_src, null, out sz);
+    }
 }

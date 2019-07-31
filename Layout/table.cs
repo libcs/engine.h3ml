@@ -310,7 +310,7 @@ namespace H3ml.Layout
                         {
                             // distribute between the columns with percents
                             for (var col = start; col <= end; col++)
-                                if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units_percentage)
+                                if (!_columns[col].css_width.is_predefined && _columns[col].css_width.units == css_units.percentage)
                                     distribute_columns.Add(_columns[col]);
                         }
                         break;

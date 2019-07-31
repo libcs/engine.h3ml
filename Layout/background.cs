@@ -92,13 +92,13 @@ namespace H3ml.Layout
             is_root = val.is_root;
         }
 
-        //public void assignTo(background val)
-        //{
-        //    attachment = val._attachment;
-        //    baseurl = val._baseurl;
-        //    image = val._image;
-        //    repeat = val._repeat;
-        //    color = val._color;
-        //}
+        public void assignTo(background val)
+        {
+            attachment = val._attachment;
+            baseurl = val._baseurl;
+            image = val._image;
+            repeat = val._repeat;
+            color = val._color;
+        }
     }
 }

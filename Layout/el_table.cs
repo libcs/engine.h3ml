@@ -29,7 +29,7 @@ namespace H3ml.Layout
             {
                 _css_border_spacing_x.fromString(get_style_property("-litehtml-border-spacing-x", true, "0px"));
                 _css_border_spacing_y.fromString(get_style_property("-litehtml-border-spacing-y", true, "0px"));
-                var fntsz = get_font_size();
+                var fntsz = get_font_size;
                 var doc = get_document();
                 _border_spacing_x = doc.cvt_units(_css_border_spacing_x, fntsz);
                 _border_spacing_y = doc.cvt_units(_css_border_spacing_y, fntsz);

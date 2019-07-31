@@ -5,8 +5,8 @@ namespace H3ml.Layout
 {
     public class element
     {
-        protected internal element _parent; //: weak
-        protected internal document _doc; //: weak
+        protected internal WeakReference<element> _parent; //: weak
+        protected internal WeakReference<document> _doc; //: weak
         protected internal box _box;
         protected internal List<element> _children = new List<element>();
         protected internal position _pos;
@@ -18,7 +18,7 @@ namespace H3ml.Layout
         protected virtual void select_all(css_selector selector, IList<element> res) { }
         public element(document doc)
         {
-            _doc = doc;
+            _doc = new WeakReference<document>(doc);
             _box = null;
             _skip = false;
         }
@@ -367,7 +367,7 @@ namespace H3ml.Layout
                     }
                     else
                     {
-                        p_height = m_pos.height;
+                        p_height = _pos.height;
                         return false;
                     }
                 }

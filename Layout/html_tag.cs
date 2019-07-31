@@ -1273,16 +1273,16 @@ namespace H3ml.Layout
                     var bg = get_background();
                     if (bg != null)
                     {
-                        background_paint bg_paint;
+                        var bg_paint = new background_paint();
                         init_background_paint(pos, bg_paint, bg);
                         get_document().container.draw_background(hdc, bg_paint);
                     }
                     var border_box = pos;
                     border_box += _padding;
                     border_box += _borders;
-                    var bdr = (borders)_css_borders;
+                    var bdr = new borders(_css_borders);
                     bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
-                    get_document().container.draw_borders(hdc, bdr, border_box, have_parent ? false : true);
+                    get_document().container.draw_borders(hdc, bdr, border_box, !have_parent);
                 }
             }
             else
@@ -1291,7 +1291,7 @@ namespace H3ml.Layout
                 var boxes = new List<position>();
                 get_inline_boxes(boxes);
 
-                background_paint bg_paint;
+                var bg_paint = new background_paint();
                 position content_box;
 
                 for (var i = 0; i < boxes.Count; i++)
@@ -1340,7 +1340,7 @@ namespace H3ml.Layout
                             bg_paint.border_radius = bdr.radius.calc_percents(bg_paint.border_box.width, bg_paint.border_box.width);
                             get_document().container.draw_background(hdc, bg_paint);
                         }
-                        var b = (borders)bdr;
+                        var b = new borders(bdr);
                         b.radius = bdr.radius.calc_percents(box.width, box.height);
                         get_document().container.draw_borders(hdc, b, box, false);
                     }
@@ -1565,9 +1565,7 @@ namespace H3ml.Layout
                                 case pseudo_class.nth_last_of_type:
                                     {
                                         if (string.IsNullOrEmpty(selector_param)) return select_result.no_match;
-                                        var num = 0;
-                                        var off = 0;
-                                        parse_nth_child_params(selector_param, num, off);
+                                        parse_nth_child_params(selector_param, out var num, out var off);
                                         if (num == 0 && off == 0) return select_result.no_match;
                                         switch (selector2)
                                         {
@@ -1883,7 +1881,7 @@ namespace H3ml.Layout
                     switch (el_float)
                     {
                         case element_float.none: process = true; break;
-                        case element_float.left: if (fb.clear_floats == element_clear.left || fb.clear_floats == element_clear.oth) process = true; break;
+                        case element_float.left: if (fb.clear_floats == element_clear.left || fb.clear_floats == element_clear.both) process = true; break;
                         case element_float.right: if (fb.clear_floats == element_clear.right || fb.clear_floats == element_clear.both) process = true; break;
                     }
                     if (process)
@@ -1972,7 +1970,7 @@ namespace H3ml.Layout
             var el_parent = parent();
             if (el_parent != null)
             {
-                var w = el_parent.get_line_left(y + m_pos.y);
+                var w = el_parent.get_line_left(y + _pos.y);
                 if (w < 0)
                     w = 0;
                 return w - (w != 0 ? _pos.x : 0);
@@ -2048,13 +2046,16 @@ namespace H3ml.Layout
                     else
                     {
                         var inserted = false;
-                        foreach (var i in _floats_left)
+                        for (var ii = 0; ii < _floats_left.Count; ii++)
+                        {
+                            var i = _floats_left[ii];
                             if (fb.pos.right > i.pos.right)
                             {
-                                _floats_left.Insert(i, fb);
+                                _floats_left.Insert(ii, fb);
                                 inserted = true;
                                 break;
                             }
+                        }
                         if (!inserted)
                             _floats_left.Add(fb);
                     }
@@ -2067,11 +2068,12 @@ namespace H3ml.Layout
                     else
                     {
                         var inserted = false;
-                        foreach (var i in _floats_right)
+                        for (var ii = 0; ii < _floats_right.Count; ii++)
                         {
+                            var i = _floats_right[ii];
                             if (fb.pos.left < i.pos.left)
                             {
-                                _floats_right.Insert(i, fb);
+                                _floats_right.Insert(ii, fb);
                                 inserted = true;
                                 break;
                             }
@@ -3087,551 +3089,336 @@ namespace H3ml.Layout
             return max_table_width;
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         protected int fix_line_width(int max_width, element_float flt)
         {
-            int ret_width = 0;
-            if (!m_boxes.empty())
+            var ret_width = 0;
+            if (_boxes.Count != 0)
             {
-                IList<element> els;
-                m_boxes.back().get_elements(els);
-                bool was_cleared = false;
-                if (!els.empty() && els.front().get_clear() != clear_none)
+                var els = new List<element>();
+                _boxes.Last().get_elements(els);
+                var was_cleared = false;
+                if (els.Count != 0 && els.First().get_clear != element_clear.none)
                 {
-                    if (els.front().get_clear() == clear_both)
-                    {
+                    if (els.First().get_clear == element_clear.both)
                         was_cleared = true;
-                    }
-                    else
-                    {
-                        if ((flt == float_left && els.front().get_clear() == clear_left) ||
-                            (flt == float_right && els.front().get_clear() == clear_right))
-                        {
-                            was_cleared = true;
-                        }
-                    }
+                    else if ((flt == element_float.left && els.First().get_clear == element_clear.left) || (flt == element_float.right && els.First().get_clear == element_clear.right))
+                        was_cleared = true;
                 }
 
                 if (!was_cleared)
                 {
-                    m_boxes.pop_back();
-
-                    for (IList<element>::iterator i = els.begin(); i != els.end(); i++)
+                    _boxes.RemoveAt(_boxes.Count - 1);
+                    foreach (var i in els)
                     {
-                        int rw = place_element((*i), max_width);
+                        var rw = place_element(i, max_width);
                         if (rw > ret_width)
-                        {
                             ret_width = rw;
-                        }
                     }
                 }
                 else
                 {
-                    int line_top = 0;
-                    if (m_boxes.back().get_type() == box_line)
-                    {
-                        line_top = m_boxes.back().top();
-                    }
-                    else
-                    {
-                        line_top = m_boxes.back().bottom();
-                    }
+                    var line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
+                    var line_left = 0;
+                    var line_right = max_width;
+                    get_line_left_right(line_top, max_width, ref line_left, ref line_right);
 
-                    int line_left = 0;
-                    int line_right = max_width;
-                    get_line_left_right(line_top, max_width, line_left, line_right);
-
-                    if (m_boxes.back().get_type() == box_line)
+                    if (_boxes.Last().get_type == box_type.line)
                     {
-                        if (m_boxes.size() == 1 && m_list_style_type != list_style_type_none && m_list_style_position == list_style_position_inside)
+                        if (_boxes.Count == 1 && _list_style_type != list_style_type.none && _list_style_position == list_style_position.inside)
+                            line_left += get_font_size;
+                        if (_css_text_indent.val != 0)
                         {
-                            int sz_font = get_font_size();
-                            line_left += sz_font;
-                        }
-
-                        if (m_css_text_indent.val() != 0)
-                        {
-                            bool line_box_found = false;
-                            for (box::vector::iterator iter = m_boxes.begin(); iter < m_boxes.end(); iter++)
-                            {
-                                if ((*iter).get_type() == box_line)
+                            var line_box_found = false;
+                            foreach (var iter in _boxes)
+                                if (iter.get_type == box_type.line)
                                 {
                                     line_box_found = true;
                                     break;
                                 }
-                            }
                             if (!line_box_found)
-                            {
-                                line_left += m_css_text_indent.calc_percent(max_width);
-                            }
+                                line_left += _css_text_indent.calc_percent(max_width);
                         }
-
                     }
 
-                    IList<element> els;
-                    m_boxes.back().new_width(line_left, line_right, els);
-                    for (auto & el : els)
+                    var els2 = new List<element>();
+                    _boxes.Last().new_width(line_left, line_right, els2);
+                    foreach (var el in els2)
                     {
-                        int rw = place_element(el, max_width);
+                        var rw = place_element(el, max_width);
                         if (rw > ret_width)
-                        {
                             ret_width = rw;
-                        }
                     }
                 }
             }
-
             return ret_width;
         }
+
         protected void parse_background()
         {
             // parse background-color
-            m_bg.m_color = get_color(_t("background-color"), false, web_color(0, 0, 0, 0));
+            _bg._color = get_color("background-color", false, new web_color(0, 0, 0, 0));
 
             // parse background-position
-            const tchar_t* str = get_style_property(_t("background-position"), false, _t("0% 0%"));
-            if (str)
+            var str = get_style_property("background-position", false, "0% 0%");
+            if (str != null)
             {
-                string_vector res;
-                split_string(str, res, _t(" \t"));
-                if (res.size() > 0)
+                var res = new List<string>();
+                html.split_string(str, res, " \t");
+                if (res.Count != 0)
                 {
-                    if (res.size() == 1)
+                    if (res.Count == 1)
                     {
-                        if (value_in_list(res[0].c_str(), _t("left;right;center")))
-                        {
-                            m_bg.m_position.x.fromString(res[0], _t("left;right;center"));
-                            m_bg.m_position.y.set_value(50, css_units_percentage);
-                        }
-                        else if (value_in_list(res[0].c_str(), _t("top;bottom;center")))
-                        {
-                            m_bg.m_position.y.fromString(res[0], _t("top;bottom;center"));
-                            m_bg.m_position.x.set_value(50, css_units_percentage);
-                        }
-                        else
-                        {
-                            m_bg.m_position.x.fromString(res[0], _t("left;right;center"));
-                            m_bg.m_position.y.set_value(50, css_units_percentage);
-                        }
+                        if (html.value_in_list(res[0], "left;right;center")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); }
+                        else if (html.value_in_list(res[0], "top;bottom;center")) { _bg._position.y.fromString(res[0], "top;bottom;center"); _bg._position.x.set_value(50, css_units.percentage); }
+                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); }
                     }
                     else
                     {
-                        if (value_in_list(res[0].c_str(), _t("left;right")))
-                        {
-                            m_bg.m_position.x.fromString(res[0], _t("left;right;center"));
-                            m_bg.m_position.y.fromString(res[1], _t("top;bottom;center"));
-                        }
-                        else if (value_in_list(res[0].c_str(), _t("top;bottom")))
-                        {
-                            m_bg.m_position.x.fromString(res[1], _t("left;right;center"));
-                            m_bg.m_position.y.fromString(res[0], _t("top;bottom;center"));
-                        }
-                        else if (value_in_list(res[1].c_str(), _t("left;right")))
-                        {
-                            m_bg.m_position.x.fromString(res[1], _t("left;right;center"));
-                            m_bg.m_position.y.fromString(res[0], _t("top;bottom;center"));
-                        }
-                        else if (value_in_list(res[1].c_str(), _t("top;bottom")))
-                        {
-                            m_bg.m_position.x.fromString(res[0], _t("left;right;center"));
-                            m_bg.m_position.y.fromString(res[1], _t("top;bottom;center"));
-                        }
-                        else
-                        {
-                            m_bg.m_position.x.fromString(res[0], _t("left;right;center"));
-                            m_bg.m_position.y.fromString(res[1], _t("top;bottom;center"));
-                        }
+                        if (html.value_in_list(res[0], "left;right")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
+                        else if (html.value_in_list(res[0], "top;bottom")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); }
+                        else if (html.value_in_list(res[1], "left;right")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); }
+                        else if (html.value_in_list(res[1], "top;bottom")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
+                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
                     }
 
-                    if (m_bg.m_position.x.is_predefined())
-                    {
-                        switch (m_bg.m_position.x.predef())
+                    if (_bg._position.x.is_predefined)
+                        switch (_bg._position.x.predef)
                         {
-                            case 0:
-                                m_bg.m_position.x.set_value(0, css_units_percentage);
-                                break;
-                            case 1:
-                                m_bg.m_position.x.set_value(100, css_units_percentage);
-                                break;
-                            case 2:
-                                m_bg.m_position.x.set_value(50, css_units_percentage);
-                                break;
+                            case 0: _bg._position.x.set_value(0, css_units.percentage); break;
+                            case 1: _bg._position.x.set_value(100, css_units.percentage); break;
+                            case 2: _bg._position.x.set_value(50, css_units.percentage); break;
                         }
-                    }
-                    if (m_bg.m_position.y.is_predefined())
-                    {
-                        switch (m_bg.m_position.y.predef())
+                    if (_bg._position.y.is_predefined)
+                        switch (_bg._position.y.predef)
                         {
-                            case 0:
-                                m_bg.m_position.y.set_value(0, css_units_percentage);
-                                break;
-                            case 1:
-                                m_bg.m_position.y.set_value(100, css_units_percentage);
-                                break;
-                            case 2:
-                                m_bg.m_position.y.set_value(50, css_units_percentage);
-                                break;
+                            case 0: _bg._position.y.set_value(0, css_units.percentage); break;
+                            case 1: _bg._position.y.set_value(100, css_units.percentage); break;
+                            case 2: _bg._position.y.set_value(50, css_units.percentage); break;
                         }
-                    }
+                }
+                else { _bg._position.x.set_value(0, css_units.percentage); _bg._position.y.set_value(0, css_units.percentage); }
+            }
+            else { _bg._position.y.set_value(0, css_units.percentage); _bg._position.x.set_value(0, css_units.percentage); }
+
+            str = get_style_property("background-size", false, "auto");
+            if (str != null)
+            {
+                var res = new List<string>();
+                html.split_string(str, res, " \t");
+                if (res.Count != 0)
+                {
+                    _bg._position.width.fromString(res[0], types.background_size_strings);
+                    if (res.Count > 1) _bg._position.height.fromString(res[1], types.background_size_strings);
+                    else _bg._position.height.predef = (int)background_size.auto;
                 }
                 else
                 {
-                    m_bg.m_position.x.set_value(0, css_units_percentage);
-                    m_bg.m_position.y.set_value(0, css_units_percentage);
-                }
-            }
-            else
-            {
-                m_bg.m_position.y.set_value(0, css_units_percentage);
-                m_bg.m_position.x.set_value(0, css_units_percentage);
-            }
-
-            str = get_style_property(_t("background-size"), false, _t("auto"));
-            if (str)
-            {
-                string_vector res;
-                split_string(str, res, _t(" \t"));
-                if (!res.empty())
-                {
-                    m_bg.m_position.width.fromString(res[0], background_size_strings);
-                    if (res.size() > 1)
-                    {
-                        m_bg.m_position.height.fromString(res[1], background_size_strings);
-                    }
-                    else
-                    {
-                        m_bg.m_position.height.predef(background_size_auto);
-                    }
-                }
-                else
-                {
-                    m_bg.m_position.width.predef(background_size_auto);
-                    m_bg.m_position.height.predef(background_size_auto);
+                    _bg._position.width.predef = (int)background_size.auto;
+                    _bg._position.height.predef = (int)background_size.auto;
                 }
             }
 
-            document::ptr doc = get_document();
-
-            doc.cvt_units(m_bg.m_position.x, m_font_size);
-            doc.cvt_units(m_bg.m_position.y, m_font_size);
-            doc.cvt_units(m_bg.m_position.width, m_font_size);
-            doc.cvt_units(m_bg.m_position.height, m_font_size);
+            var doc = get_document();
+            doc.cvt_units(_bg._position.x, _font_size);
+            doc.cvt_units(_bg._position.y, _font_size);
+            doc.cvt_units(_bg._position.width, _font_size);
+            doc.cvt_units(_bg._position.height, _font_size);
 
             // parse background_attachment
-            m_bg.m_attachment = (background_attachment)value_index(
-                get_style_property(_t("background-attachment"), false, _t("scroll")),
-                background_attachment_strings,
-                background_attachment_scroll);
-
+            _bg._attachment = (background_attachment)html.value_index(get_style_property("background-attachment", false, "scroll"), types.background_attachment_strings, (int)background_attachment.scroll);
             // parse background_attachment
-            m_bg.m_repeat = (background_repeat)value_index(
-                get_style_property(_t("background-repeat"), false, _t("repeat")),
-                background_repeat_strings,
-                background_repeat_repeat);
-
+            _bg._repeat = (background_repeat)html.value_index(get_style_property("background-repeat", false, "repeat"), types.background_repeat_strings, (int)background_repeat.repeat);
             // parse background_clip
-            m_bg.m_clip = (background_box)value_index(
-                get_style_property(_t("background-clip"), false, _t("border-box")),
-                background_box_strings,
-                background_box_border);
-
+            _bg._clip = (background_box)html.value_index(get_style_property("background-clip", false, "border-box"), types.background_box_strings, (int)background_box.border_box);
             // parse background_origin
-            m_bg.m_origin = (background_box)value_index(
-                get_style_property(_t("background-origin"), false, _t("padding-box")),
-                background_box_strings,
-                background_box_content);
+            _bg._origin = (background_box)html.value_index(get_style_property("background-origin", false, "padding-box"), types.background_box_strings, (int)background_box.content_box);
 
             // parse background-image
-            css::parse_css_url(get_style_property(_t("background-image"), false, _t("")), m_bg.m_image);
-            m_bg.m_baseurl = get_style_property(_t("background-image-baseurl"), false, _t(""));
+            css.parse_css_url(get_style_property("background-image", false, ""), out _bg._image);
+            _bg._baseurl = get_style_property("background-image-baseurl", false, "");
 
-            if (!m_bg.m_image.empty())
-            {
-                doc.container().load_image(m_bg.m_image.c_str(), m_bg.m_baseurl.empty() ? 0 : m_bg.m_baseurl.c_str(), true);
-            }
+            if (!string.IsNullOrEmpty(_bg._image))
+                doc.container.load_image(_bg._image, string.IsNullOrEmpty(_bg._baseurl) ? null : _bg._baseurl, true);
         }
 
-        void litehtml::html_tag::add_positioned(const element::ptr &el)
-{
-	if (m_el_position != element_position_static || (!have_parent()))
-	{
-		m_positioned.push_back(el);
-	} else
-	{
-		element::ptr el_parent = parent();
-		if (el_parent)
-		{
-			el_parent.add_positioned(el);
-}
-	}
-}
         protected void init_background_paint(position pos, background_paint bg_paint, background bg)
-{
-    if (!bg) return;
-
-    bg_paint = *bg;
-    position content_box = pos;
-    position padding_box = pos;
-    padding_box += m_padding;
-    position border_box = padding_box;
-    border_box += m_borders;
-
-    switch (bg.m_clip)
-    {
-        case litehtml::background_box_padding:
-            bg_paint.clip_box = padding_box;
-            break;
-        case litehtml::background_box_content:
-            bg_paint.clip_box = content_box;
-            break;
-        default:
-            bg_paint.clip_box = border_box;
-            break;
-    }
-
-    switch (bg.m_origin)
-    {
-        case litehtml::background_box_border:
-            bg_paint.origin_box = border_box;
-            break;
-        case litehtml::background_box_content:
-            bg_paint.origin_box = content_box;
-            break;
-        default:
-            bg_paint.origin_box = padding_box;
-            break;
-    }
-
-    if (!bg_paint.image.empty())
-    {
-        get_document().container().get_image_size(bg_paint.image.c_str(), bg_paint.baseurl.c_str(), bg_paint.image_size);
-        if (bg_paint.image_size.width && bg_paint.image_size.height)
         {
-            litehtml::size img_new_sz = bg_paint.image_size;
-            double img_ar_width = (double)bg_paint.image_size.width / (double)bg_paint.image_size.height;
-            double img_ar_height = (double)bg_paint.image_size.height / (double)bg_paint.image_size.width;
-
-
-            if (bg.m_position.width.is_predefined())
+            if (bg == null) return;
+            bg_paint.assignTo(bg);
+            var content_box = pos;
+            var padding_box = pos;
+            padding_box += _padding;
+            var border_box = padding_box;
+            border_box += _borders;
+            switch (bg._clip)
             {
-                switch (bg.m_position.width.predef())
-                {
-                    case litehtml::background_size_contain:
-                        if ((int)((double)bg_paint.origin_box.width * img_ar_height) <= bg_paint.origin_box.height)
-                        {
-                            img_new_sz.width = bg_paint.origin_box.width;
-                            img_new_sz.height = (int)((double)bg_paint.origin_box.width * img_ar_height);
-                        }
-                        else
-                        {
-                            img_new_sz.height = bg_paint.origin_box.height;
-                            img_new_sz.width = (int)((double)bg_paint.origin_box.height * img_ar_width);
-                        }
-                        break;
-                    case litehtml::background_size_cover:
-                        if ((int)((double)bg_paint.origin_box.width * img_ar_height) >= bg_paint.origin_box.height)
-                        {
-                            img_new_sz.width = bg_paint.origin_box.width;
-                            img_new_sz.height = (int)((double)bg_paint.origin_box.width * img_ar_height);
-                        }
-                        else
-                        {
-                            img_new_sz.height = bg_paint.origin_box.height;
-                            img_new_sz.width = (int)((double)bg_paint.origin_box.height * img_ar_width);
-                        }
-                        break;
-                        break;
-                    case litehtml::background_size_auto:
-                        if (!bg.m_position.height.is_predefined())
-                        {
-                            img_new_sz.height = bg.m_position.height.calc_percent(bg_paint.origin_box.height);
-                            img_new_sz.width = (int)((double)img_new_sz.height * img_ar_width);
-                        }
-                        break;
-                }
+                case background_box.padding_box: bg_paint.clip_box = padding_box; break;
+                case background_box.content_box: bg_paint.clip_box = content_box; break;
+                default: bg_paint.clip_box = border_box; break;
             }
+            switch (bg._origin)
+            {
+                case background_box.border_box: bg_paint.origin_box = border_box; break;
+                case background_box.content_box: bg_paint.origin_box = content_box; break;
+                default: bg_paint.origin_box = padding_box; break;
+            }
+            if (!string.IsNullOrEmpty(bg_paint.image))
+            {
+                get_document().container.get_image_size(bg_paint.image, bg_paint.baseurl, out bg_paint.image_size);
+                if (bg_paint.image_size.width != 0 && bg_paint.image_size.height != 0)
+                {
+                    var img_new_sz = bg_paint.image_size;
+                    var img_ar_width = bg_paint.image_size.width / (double)bg_paint.image_size.height;
+                    var img_ar_height = bg_paint.image_size.height / (double)bg_paint.image_size.width;
+                    if (bg._position.width.is_predefined)
+                        switch ((background_size)bg._position.width.predef)
+                        {
+                            case background_size.contain:
+                                if ((int)(bg_paint.origin_box.width * img_ar_height) <= bg_paint.origin_box.height)
+                                {
+                                    img_new_sz.width = bg_paint.origin_box.width;
+                                    img_new_sz.height = (int)(bg_paint.origin_box.width * img_ar_height);
+                                }
+                                else
+                                {
+                                    img_new_sz.height = bg_paint.origin_box.height;
+                                    img_new_sz.width = (int)(bg_paint.origin_box.height * img_ar_width);
+                                }
+                                break;
+                            case background_size.cover:
+                                if ((int)(bg_paint.origin_box.width * img_ar_height) >= bg_paint.origin_box.height)
+                                {
+                                    img_new_sz.width = bg_paint.origin_box.width;
+                                    img_new_sz.height = (int)(bg_paint.origin_box.width * img_ar_height);
+                                }
+                                else
+                                {
+                                    img_new_sz.height = bg_paint.origin_box.height;
+                                    img_new_sz.width = (int)(bg_paint.origin_box.height * img_ar_width);
+                                }
+                                break;
+                            case background_size.auto:
+                                if (!bg._position.height.is_predefined)
+                                {
+                                    img_new_sz.height = bg._position.height.calc_percent(bg_paint.origin_box.height);
+                                    img_new_sz.width = (int)(img_new_sz.height * img_ar_width);
+                                }
+                                break;
+                        }
+                    else
+                    {
+                        img_new_sz.width = bg._position.width.calc_percent(bg_paint.origin_box.width);
+                        img_new_sz.height = bg._position.height.is_predefined
+                            ? (int)(img_new_sz.width * img_ar_height)
+                            : bg._position.height.calc_percent(bg_paint.origin_box.height);
+                    }
+
+                    bg_paint.image_size = img_new_sz;
+                    bg_paint.position_x = bg_paint.origin_box.x + (int)bg._position.x.calc_percent(bg_paint.origin_box.width - bg_paint.image_size.width);
+                    bg_paint.position_y = bg_paint.origin_box.y + (int)bg._position.y.calc_percent(bg_paint.origin_box.height - bg_paint.image_size.height);
+                }
+
+            }
+            bg_paint.border_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+            bg_paint.border_box = border_box;
+            bg_paint.is_root = !have_parent;
+        }
+
+        protected void draw_list_marker(IntPtr hdc, position pos)
+        {
+            var lm = new list_marker();
+            var list_image = get_style_property("list-style-image", true, null);
+            var img_size = new size();
+            if (list_image != null)
+            {
+                css.parse_css_url(list_image, out lm.image);
+                lm.baseurl = get_style_property("list-style-image-baseurl", true, null);
+                get_document().container.get_image_size(lm.image, lm.baseurl, out img_size);
+            }
+            else lm.baseurl = null;
+
+
+            var ln_height = line_height;
+            var sz_font = get_font_size;
+            lm.pos.x = pos.x;
+            lm.pos.width = sz_font - sz_font * 2 / 3;
+            lm.pos.height = sz_font - sz_font * 2 / 3;
+            lm.pos.y = pos.y + ln_height / 2 - lm.pos.height / 2;
+
+            if (img_size.width != 0 && img_size.height != 0)
+            {
+                if (lm.pos.y + img_size.height > pos.y + pos.height)
+                    lm.pos.y = pos.y + pos.height - img_size.height;
+                if (img_size.width > lm.pos.width)
+                    lm.pos.x -= img_size.width - lm.pos.width;
+                lm.pos.width = img_size.width;
+                lm.pos.height = img_size.height;
+            }
+            if (_list_style_position == list_style_position.outside)
+                lm.pos.x -= sz_font;
+            lm.color = get_color("color", true, new web_color(0, 0, 0));
+            lm.marker_type = _list_style_type;
+            get_document().container.draw_list_marker(hdc, lm);
+        }
+
+        protected void parse_nth_child_params(string param, out int num, out int off)
+        {
+            if (param == "odd") { num = 2; off = 1; }
+            else if (param == "even") { num = 2; off = 0; }
             else
             {
-                img_new_sz.width = bg.m_position.width.calc_percent(bg_paint.origin_box.width);
-                if (bg.m_position.height.is_predefined())
+                var tokens = new List<string>();
+                html.split_string(param, tokens, " n", "n");
+                var s_num = string.Empty;
+                var s_int = string.Empty;
+                foreach (var tok in tokens)
                 {
-                    img_new_sz.height = (int)((double)img_new_sz.width * img_ar_height);
+                    if (tok == "n")
+                    {
+                        s_num = s_int;
+                        s_int = string.Empty;
+                    }
+                    else s_int += tok;
                 }
-                else
-                {
-                    img_new_sz.height = bg.m_position.height.calc_percent(bg_paint.origin_box.height);
-                }
+                var s_off = s_int;
+                num = int.Parse(s_num);
+                off = int.Parse(s_off);
             }
-
-            bg_paint.image_size = img_new_sz;
-            bg_paint.position_x = bg_paint.origin_box.x + (int)bg.m_position.x.calc_percent(bg_paint.origin_box.width - bg_paint.image_size.width);
-            bg_paint.position_y = bg_paint.origin_box.y + (int)bg.m_position.y.calc_percent(bg_paint.origin_box.height - bg_paint.image_size.height);
         }
 
-    }
-    bg_paint.border_radius = m_css_borders.radius.calc_percents(border_box.width, border_box.height); ;
-    bg_paint.border_box = border_box;
-    bg_paint.is_root = have_parent() ? false : true;
-}
-
-protected void draw_list_marker(IntPtr hdc, position pos)
-{
-    list_marker lm;
-
-    const tchar_t* list_image = get_style_property(_t("list-style-image"), true, 0);
-    size img_size;
-    if (list_image)
-    {
-        css::parse_css_url(list_image, lm.image);
-        lm.baseurl = get_style_property(_t("list-style-image-baseurl"), true, 0);
-        get_document().container().get_image_size(lm.image.c_str(), lm.baseurl, img_size);
-    }
-    else
-    {
-        lm.baseurl = 0;
-    }
-
-
-    int ln_height = line_height();
-    int sz_font = get_font_size();
-    lm.pos.x = pos.x;
-    lm.pos.width = sz_font - sz_font * 2 / 3;
-    lm.pos.height = sz_font - sz_font * 2 / 3;
-    lm.pos.y = pos.y + ln_height / 2 - lm.pos.height / 2;
-
-    if (img_size.width && img_size.height)
-    {
-        if (lm.pos.y + img_size.height > pos.y + pos.height)
+        protected void remove_before_after()
         {
-            lm.pos.y = pos.y + pos.height - img_size.height;
-        }
-        if (img_size.width > lm.pos.width)
-        {
-            lm.pos.x -= img_size.width - lm.pos.width;
-        }
-
-        lm.pos.width = img_size.width;
-        lm.pos.height = img_size.height;
-    }
-    if (m_list_style_position == list_style_position_outside)
-    {
-        lm.pos.x -= sz_font;
-    }
-
-    lm.color = get_color(_t("color"), true, web_color(0, 0, 0));
-    lm.marker_type = m_list_style_type;
-    get_document().container().draw_list_marker(hdc, lm);
-}
-protected void parse_nth_child_params(string param, out int num, out int off)
-{
-    if (param == _t("odd"))
-    {
-        num = 2;
-        off = 1;
-    }
-    else if (param == _t("even"))
-    {
-        num = 2;
-        off = 0;
-    }
-    else
-    {
-        string_vector tokens;
-        split_string(param, tokens, _t(" n"), _t("n"));
-
-        tstring s_num;
-        tstring s_off;
-
-        tstring s_int;
-        for (string_vector::iterator tok = tokens.begin(); tok != tokens.end(); tok++)
-        {
-            if ((*tok) == _t("n"))
+            if (_children.Count != 0)
             {
-                s_num = s_int;
-                s_int.clear();
+                if (_children.First().get_tagName() == "::before")
+                    _children.RemoveAt(0);
             }
-            else
+            if (_children.Count != 0)
             {
-                s_int += (*tok);
+                if (_children.Last().get_tagName() == "::after")
+                    _children.RemoveAt(_children.Count - 1);
             }
         }
-        s_off = s_int;
 
-        num = t_atoi(s_num.c_str());
-        off = t_atoi(s_off.c_str());
-    }
-}
-protected void remove_before_after()
-{
-    if (!m_children.empty())
-    {
-        if (!t_strcmp(m_children.front().get_tagName(), _t("::before")))
+        protected element get_element_before()
         {
-            m_children.erase(m_children.begin());
+            if (_children.Count != 0)
+                if (_children.First().get_tagName() == "::before")
+                    return _children.First();
+            var el = new el_before(get_document());
+            el.parent(this);
+            _children.Insert(0, el);
+            return el;
         }
-    }
-    if (!m_children.empty())
-    {
-        if (!t_strcmp(m_children.back().get_tagName(), _t("::after")))
+
+        protected element get_element_after()
         {
-            m_children.erase(m_children.end() - 1);
+            if (_children.Count != 0)
+                if (_children.First().get_tagName() == "::after")
+                    return _children.Last();
+            var el = new el_after(get_document());
+            appendChild(el);
+            return el;
         }
-    }
-}
-protected element get_element_before()
-{
-    if (!m_children.empty())
-    {
-        if (!t_strcmp(m_children.front().get_tagName(), _t("::before")))
-        {
-            return m_children.front();
-        }
-    }
-    element::ptr el = Math.Make_shared<el_before>(get_document());
-    el.parent(shared_from_this());
-    m_children.insert(m_children.begin(), el);
-    return el;
-}
-protected element get_element_after()
-{
-    if (!m_children.empty())
-    {
-        if (!t_strcmp(m_children.back().get_tagName(), _t("::after")))
-        {
-            return m_children.back();
-        }
-    }
-    element::ptr el = Math.Make_shared<el_after>(get_document());
-    appendChild(el);
-    return el;
-}
     }
 }

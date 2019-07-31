@@ -384,9 +384,9 @@ namespace H3ml.Layout
                     html.split_string(decoration, tokens, " ");
                     foreach (var i in tokens)
                     {
-                        if (string.Equals(i, "underline", StringComparison.OrdinalIgnoreCase) decor |= types.font_decoration_underline;
-                        else if (string.Equals(i, "line-through", StringComparison.OrdinalIgnoreCase) decor |= types.font_decoration_linethrough;
-                        else if (string.Equals(i, "overline", StringComparison.OrdinalIgnoreCase) decor |= types.font_decoration_overline;
+                        if (string.Equals(i, "underline", StringComparison.OrdinalIgnoreCase)) decor |= types.font_decoration_underline;
+                        else if (string.Equals(i, "line-through", StringComparison.OrdinalIgnoreCase)) decor |= types.font_decoration_linethrough;
+                        else if (string.Equals(i, "overline", StringComparison.OrdinalIgnoreCase)) decor |= types.font_decoration_overline;
                     }
                 }
                 var fi = new font_item();
@@ -508,7 +508,7 @@ namespace H3ml.Layout
             while (i < _tabular_elements.Count)
             {
                 var el_ptr = _tabular_elements[i];
-                switch (el_ptr.get_display())
+                switch (el_ptr.get_display)
                 {
                     case style_display.inline_table:
                     case style_display.table: fix_table_children(el_ptr, style_display.table_row_group, "table-row-group"); break;

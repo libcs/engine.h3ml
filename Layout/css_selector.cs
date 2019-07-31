@@ -25,6 +25,7 @@ namespace H3ml.Layout
             t.b += val.b;
             t.c += val.c;
             t.d += val.d;
+            return t;
         }
 
         public static bool operator ==(selector_specificity t, selector_specificity val) => t.a == val.a && t.b == val.b && t.c == val.c && t.d == val.d;

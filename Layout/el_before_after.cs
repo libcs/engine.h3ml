@@ -56,56 +56,41 @@ namespace H3ml.Layout
 
         void add_text(string txt)
         {
-            tstring word;
-            tstring esc;
-            for (tstring::size_type i = 0; i < txt.length(); i++)
+            string word = null;
+            string esc = null;
+            for (var i = 0; i < txt.Length; i++)
             {
-                if ((txt.at(i) == _t(' ')) || (txt.at(i) == _t('\t')) || (txt.at(i) == _t('\\') && !esc.empty()))
+                if (txt[i] == ' ' || txt[i] == '\t' || (txt[i] == '\\' && !string.IsNullOrEmpty(esc)))
                 {
-                    if (esc.empty())
+                    if (string.IsNullOrEmpty(esc))
                     {
-                        if (!word.empty())
+                        if (!string.IsNullOrEmpty(word))
                         {
-                            element::ptr el = std::make_shared<el_text>(word.c_str(), get_document());
-                            appendChild(el);
-                            word.clear();
+                            appendChild(new el_text(word, get_document()));
+                            word = string.Empty;
                         }
-
-                        element::ptr el = std::make_shared<el_space>(txt.substr(i, 1).c_str(), get_document());
-                        appendChild(el);
+                        appendChild(new el_space(txt.Substring(i, 1), get_document()));
                     }
                     else
                     {
-                        word += convert_escape(esc.c_str() + 1);
-                        esc.clear();
-                        if (txt.at(i) == _t('\\'))
-                        {
-                            esc += txt.at(i);
-                        }
+                        word += convert_escape(esc.Substring(1));
+                        esc = string.Empty;
+                        if (txt[i] == '\\')
+                            esc += txt[i];
                     }
                 }
                 else
                 {
-                    if (!esc.empty() || txt.at(i) == _t('\\'))
-                    {
-                        esc += txt.at(i);
-                    }
-                    else
-                    {
-                        word += txt.at(i);
-                    }
+                    if (!string.IsNullOrEmpty(esc) || txt[i] == '\\') esc += txt[i];
+                    else word += txt[i];
                 }
             }
-
-            if (!esc.empty())
+            if (!string.IsNullOrEmpty(esc))
+                word += convert_escape(esc.Substring(1));
+            if (!string.IsNullOrEmpty(word))
             {
-                word += convert_escape(esc.c_str() + 1);
-            }
-            if (!word.empty())
-            {
-                element::ptr el = std::make_shared<el_text>(word.c_str(), get_document());
-                appendChild(el);
-                word.clear();
+                appendChild(new el_text(word, get_document()));
+                word = string.Empty;
             }
         }
 
@@ -117,17 +102,13 @@ namespace H3ml.Layout
                 // attr
                 case 0:
                     {
-                        tstring p_name = args;
-                        trim(p_name);
-                        lcase(p_name);
-                        element::ptr el_parent = parent();
-                        if (el_parent)
+                        var p_name = args.Trim().ToUpperInvariant();
+                        var el_parent = parent();
+                        if (el_parent != null)
                         {
-                            const tchar_t* attr_value = el_parent.get_attr(p_name.c_str());
-                            if (attr_value)
-                            {
+                            var attr_value = el_parent.get_attr(p_name);
+                            if (attr_value != null)
                                 add_text(attr_value);
-                            }
                         }
                     }
                     break;
@@ -137,28 +118,17 @@ namespace H3ml.Layout
                 // url
                 case 2:
                     {
-                        tstring p_url = params;
-                        trim(p_url);
-                        if (!p_url.empty())
+                        var p_url = args.Trim();
+                        if (!string.IsNullOrEmpty(p_url) && p_url[0] == '\'' || p_url[0] == '\"')
+                            p_url = p_url.Substring(1);
+                        if (!string.IsNullOrEmpty(p_url) && p_url[p_url.Length - 1] == '\'' || p_url[p_url.Length - 1] == '\"')
+                            p_url.Remove(p_url.Length - 1);
+                        if (!string.IsNullOrEmpty(p_url))
                         {
-                            if (p_url.at(0) == _t('\'') || p_url.at(0) == _t('\"'))
-                            {
-                                p_url.erase(0, 1);
-                            }
-                        }
-                        if (!p_url.empty())
-                        {
-                            if (p_url.at(p_url.length() - 1) == _t('\'') || p_url.at(p_url.length() - 1) == _t('\"'))
-                            {
-                                p_url.erase(p_url.length() - 1, 1);
-                            }
-                        }
-                        if (!p_url.empty())
-                        {
-                            element::ptr el = std::make_shared<el_image>(get_document());
-                            el.set_attr(_t("src"), p_url.c_str());
-                            el.set_attr(_t("style"), _t("display:inline-block"));
-                            el.set_tagName(_t("img"));
+                            var el = new el_image(get_document());
+                            el.set_attr("src", p_url);
+                            el.set_attr("style", "display:inline-block");
+                            el.set_tagName("img");
                             appendChild(el);
                             el.parse_attributes();
                         }

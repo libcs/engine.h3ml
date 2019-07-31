@@ -14,9 +14,8 @@ namespace H3ml.Layout
                 var href = get_attr("href");
                 if (!string.IsNullOrEmpty(href))
                 {
-                    string css_text;
-                    string css_baseurl;
-                    doc.container.import_css(css_text, href, css_baseurl);
+                    var css_baseurl = string.Empty;
+                    doc.container.import_css(out var css_text, href, css_baseurl);
                     if (!string.IsNullOrEmpty(css_text))
                     {
                         doc.add_stylesheet(css_text, css_baseurl, media);
