@@ -1,1 +1,1 @@
-@CMake -P CMakeLists.txt
+@CMake CMakeLists.txt
