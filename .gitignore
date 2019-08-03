@@ -20,7 +20,8 @@ Makefile
 
 # Directories we don't ever want to commit
 _vcpkg
-_build
+_build32
+_build64
 bin
 obj
 ipch

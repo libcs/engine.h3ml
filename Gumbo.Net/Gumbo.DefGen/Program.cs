@@ -69,7 +69,8 @@ Gumbo.DefGen x64 [path to lib]
         {
             var library = Path.GetFileNameWithoutExtension(libFile);
             var defFile = Path.ChangeExtension(libFile, ".def");
-            var exportedNames = GetExportableNames(libFile, clip);
+            var exportedNames = GetExportableNames(libFile, clip)
+                .Where(x => x != "_vfprintf_l");
             GenerateDefinitionFile(library, defFile, exportedNames);
         }
 

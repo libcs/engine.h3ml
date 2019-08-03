@@ -24,7 +24,9 @@ if(WIN32)
          COMMAND vcpkg install gumbo:x86-windows
          WORKING_DIRECTORY ${VCPKG}
       )
-      # generate gumbo.def
+   endif()
+   # generate gumbo.def
+   if (NOT EXISTS ${VCPKG}/packages/gumbo_x86-windows/lib/gumbo.def)
       execute_process(
          COMMAND dotnet run --project ./Gumbo.DefGen x86 ${VCPKG}/packages/gumbo_x86-windows/lib/gumbo.lib
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -37,10 +39,15 @@ if(WIN32)
          COMMAND vcpkg install gumbo:x64-windows
          WORKING_DIRECTORY ${VCPKG}
       )
-      # generate gumbo.def
+   endif()
+   # generate gumbo.def
+   if (NOT EXISTS ${VCPKG}/packages/gumbo_x64-windows/lib/gumbo.def)
       execute_process(
          COMMAND dotnet run --project ./Gumbo.DefGen x64 ${VCPKG}/packages/gumbo_x64-windows/lib/gumbo.lib
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
    endif()
 endif()
+
+add_library(gumbo SHARED empty.cc ${VCPKG}/packages/gumbo_${BITNESS}-windows/lib/gumbo.def)
+target_link_libraries(gumbo ${VCPKG}/packages/gumbo_${BITNESS}-windows/lib/gumbo.lib)
