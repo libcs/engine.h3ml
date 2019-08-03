@@ -5,13 +5,13 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout", "Layout\Layout.csproj", "{5ACE53DC-F177-4CE7-96AC-C36250BBA34B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo", "Gumbo\Gumbo\Gumbo.csproj", "{06C04D3D-61D5-49AE-838C-4E11B744D983}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.Net", "Gumbo.Net\Gumbo.Net\Gumbo.Net.csproj", "{06C04D3D-61D5-49AE-838C-4E11B744D983}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.Tests", "Gumbo\Gumbo.Tests\Gumbo.Tests.csproj", "{92B906E6-DA18-43BA-A63C-0A089DEFE173}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.Tests", "Gumbo.Net\Gumbo.Tests\Gumbo.Tests.csproj", "{92B906E6-DA18-43BA-A63C-0A089DEFE173}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.DefGen", "Gumbo\Gumbo.DefGen\Gumbo.DefGen.csproj", "{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.DefGen", "Gumbo.Net\Gumbo.DefGen\Gumbo.DefGen.csproj", "{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gumbo", "Gumbo", "{4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gumbo.Net", "Gumbo.Net", "{4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.Tests", "Layout.Tests\Layout.Tests.csproj", "{535E4648-96CB-4896-B9ED-293308D84E15}"
 EndProject

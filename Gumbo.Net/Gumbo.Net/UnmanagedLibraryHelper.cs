@@ -28,7 +28,13 @@ namespace Gumbo
         readonly IntPtr _LibarayHandle;
         bool _IsDisposed = false;
 
-        public WindowsUnmanagedLibrary(string name) => _LibarayHandle = LoadLibrary(name);
+        public WindowsUnmanagedLibrary(string name)
+        {
+            var library = IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}";
+            _LibarayHandle = LoadLibrary(library);
+            if (_LibarayHandle == IntPtr.Zero)
+                throw new InvalidOperationException($"library {name} not found");
+        }
 
         public void Dispose()
         {
@@ -59,7 +65,13 @@ namespace Gumbo
         const int RTLD_NOW = 2;
         bool _IsDisposed = false;
 
-        public LinuxUnmanagedLibrary(string name) => _LibarayHandle = dlopen(name, RTLD_NOW);
+        public LinuxUnmanagedLibrary(string name)
+        {
+            var library = IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}";
+            _LibarayHandle = dlopen(library, RTLD_NOW);
+            if (_LibarayHandle == IntPtr.Zero)
+                throw new InvalidOperationException($"library {name} not found");
+        }
 
         public void Dispose()
         {

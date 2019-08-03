@@ -20,6 +20,8 @@ Makefile
 *.sublime-workspace
 
 # Directories we don't ever want to commit
+_vcpkg
+_build
 bin
 obj
 ipch
