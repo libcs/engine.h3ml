@@ -59,7 +59,7 @@ namespace Gumbo
 
         public XDocument ToXDocument() => GumboToXmlExtensions.ToXDocument(_GumboDocumentNode);
 
-        public XPathNavigator CreateNavigator() => new GumboNavigator(this, this.Document);
+        public XPathNavigator CreateNavigator() => new GumboNavigator(this, Document);
 
         public ElementWrapper GetElementById(string id)
         {
@@ -88,7 +88,7 @@ namespace Gumbo
         {
             if (_IsMarshalled)
                 return;
-            MarshalElementAndDescendants(this.Document.Root);
+            MarshalElementAndDescendants(Document.Root);
             _IsMarshalled = true;
         }
 

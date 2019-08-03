@@ -3,20 +3,27 @@ using System.Runtime.InteropServices;
 
 namespace Gumbo
 {
+    /// <summary>
+    /// A supertype for GumboElement and GumboText, so that we can include one
+    /// generic type in lists of children and cast as necessary to subtypes.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public class GumboNode
     {
+        /// <summary>
+        /// The type of node that this is.
+        /// </summary>
         public GumboNodeType type;
-
+        /// <summary>
+        /// Pointer back to parent node.  Not owned.
+        /// </summary>
         public IntPtr parent;
-
         /// <summary>
         /// The index within the parent's children vector of this node.
         /// </summary>
-        public uint index_within_parent;
-
+        public ulong index_within_parent => (ulong)index_within_parent_.ToInt64(); IntPtr index_within_parent_;
         /// <summary>
-        /// Flags containing information about why this element was
+        /// A bitvector of flags containing information about why this element was
         /// inserted into the parse tree, including a variety of special parse
         /// situations.
         /// </summary>
@@ -26,19 +33,19 @@ namespace Gumbo
     [StructLayout(LayoutKind.Sequential)]
     public class GumboElementNode : GumboNode
     {
-        public GumboElement element;
+        public GumboElement element; // For GUMBO_NODE_ELEMENT.
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboDocumentNode : GumboNode
     {
-        public GumboDocument document;
+        public GumboDocument document;  // For GUMBO_NODE_DOCUMENT.
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboTextNode : GumboNode
     {
-        public GumboText text;
+        public GumboText text; // For everything else.
     }
 
     /// <summary>
@@ -54,30 +61,25 @@ namespace Gumbo
         /// A memory allocator function.  Default: malloc.
         /// </summary>
         IntPtr allocator;
-
         /// <summary>
         /// A memory deallocator function. Default: free.
         /// </summary>
         IntPtr deallocator;
-
         /// <summary>
         /// An opaque object that's passed in as the first argument to all callbacks
         /// used by this library.  Default: NULL.
         /// </summary>
         IntPtr userdata;
-
         /// <summary>
         /// The tab-stop size, for computing positions in source code that uses tabs.
         /// Default: 8.
         /// </summary>
         public int tab_stop;
-
         /// <summary>
         /// Whether or not to stop parsing when the first error is encountered.
         /// Default: false.
         /// </summary>
         public bool stop_on_first_error;
-
         /// <summary>
         /// The maximum number of errors before the parser stops recording them.  This
         /// is provided so that if the page is totally borked, we don't completely fill
@@ -86,7 +88,6 @@ namespace Gumbo
         /// Default: -1
         /// </summary>
         public int max_errors;
-
         /// <summary>
         /// The fragment context for parsing:
         /// https://html.spec.whatwg.org/multipage/syntax.html#parsing-html-fragments
@@ -100,7 +101,6 @@ namespace Gumbo
         /// Default: GUMBO_TAG_LAST 
         /// </summary>
         public GumboTag fragment_context;
-
         /// <summary>
         /// The namespace for the fragment context.  This lets client code
         /// differentiate between, say, parsing a &lt;title&gt; tag in SVG vs. parsing it in
@@ -121,13 +121,11 @@ namespace Gumbo
         /// that contains the entire document as its child.
         /// </summary>
         public IntPtr document;
-
         /// <summary>
         /// Pointer to the root node.  This the &lt;html&gt; tag that forms the root of the
         /// document.
         /// </summary>
         public IntPtr root;
-
         /// <summary>
         /// A list of errors that occurred during the parse.
         /// NOTE: In version 1.0 of this library, the API for errors hasn't been fully
@@ -144,32 +142,26 @@ namespace Gumbo
         /// Document node.  v will be a GumboDocument.
         /// </summary>
         GUMBO_NODE_DOCUMENT,
-
         /// <summary>
         /// Element node.  v will be a GumboElement.
         /// </summary>
         GUMBO_NODE_ELEMENT,
-
         /// <summary>
         /// Text node.  v will be a GumboText.
         /// </summary>
         GUMBO_NODE_TEXT,
-
         /// <summary>
         /// CDATA node. v will be a GumboText.
         /// </summary>
         GUMBO_NODE_CDATA,
-
         /// <summary>
         /// Comment node.  v will be a GumboText, excluding comment delimiters.
         /// </summary>
         GUMBO_NODE_COMMENT,
-
         /// <summary>
         /// Text node, where all contents is whitespace.  v will be a GumboText.
         /// </summary>
         GUMBO_NODE_WHITESPACE,
-
         /// <summary>
         /// Template node.  This is separate from GUMBO_NODE_ELEMENT because many
         /// client libraries will want to ignore the contents of template nodes, as
@@ -196,15 +188,13 @@ namespace Gumbo
         /// been reparented.
         /// </summary>
         GUMBO_INSERTION_NORMAL = 0,
-
         /// <summary>
         /// A node inserted by the parser to fulfill some implicit insertion rule.
         /// This is usually set in addition to some other flag giving a more specific
         /// insertion reason; it's a generic catch-all term meaning "The start tag for
         /// this node did not appear in the document source".
         /// </summary>
-        GUMBO_INSERTION_BY_PARSER = (1) << (0),
-
+        GUMBO_INSERTION_BY_PARSER = 1 << 0,
         /// <summary>
         /// A flag indicating that the end tag for this node did not appear in the
         /// document source.  Note that in some cases, you can still have
@@ -216,54 +206,46 @@ namespace Gumbo
         /// afterwards), which will leave this flag unset and require clients to
         /// inspect the parse errors for that case.
         /// </summary>
-        GUMBO_INSERTION_IMPLICIT_END_TAG = (1) << (1),
-
+        GUMBO_INSERTION_IMPLICIT_END_TAG = 1 << 1,
         /// <summary>
         /// A flag for nodes that are inserted because their presence is implied by
         /// other tags, eg. &lt;html&gt;, &lt;head&gt;, &lt;body&gt;, &lt;tbody&gt;, etc.
         /// </summary>
-        GUMBO_INSERTION_IMPLIED = (1) << (3),
-
+        GUMBO_INSERTION_IMPLIED = 1 << 3,
         /// <summary>
         /// A flag for nodes that are converted from their end tag equivalents.  For
         /// example, &lt;/p&gt; when no paragraph is open implies that the parser should
         /// create a &lt;p&gt; tag and immediately close it, while &lt;/br&gt; means the same thing
         /// as &lt;br&gt;.
         /// </summary>
-        GUMBO_INSERTION_CONVERTED_FROM_END_TAG = (1) << (4),
-
+        GUMBO_INSERTION_CONVERTED_FROM_END_TAG = 1 << 4,
         /// <summary>
         /// A flag for nodes that are converted from the parse of an &lt;isindex&gt; tag.
         /// </summary>
-        GUMBO_INSERTION_FROM_ISINDEX = (1) << (5),
-
+        GUMBO_INSERTION_FROM_ISINDEX = 1 << 5,
         /// <summary>
         /// A flag for &lt;image&gt; tags that are rewritten as &lt;img&gt;.
         /// </summary>
-        GUMBO_INSERTION_FROM_IMAGE = (1) << (6),
-
+        GUMBO_INSERTION_FROM_IMAGE = 1 << 6,
         /// <summary>
         /// A flag for nodes that are cloned as a result of the reconstruction of
         /// active formatting elements.  This is set only on the clone; the initial
         /// portion of the formatting run is a NORMAL node with an IMPLICIT_END_TAG.
         /// </summary>
-        GUMBO_INSERTION_RECONSTRUCTED_FORMATTING_ELEMENT = (1) << (7),
-
+        GUMBO_INSERTION_RECONSTRUCTED_FORMATTING_ELEMENT = 1 << 7,
         /// <summary>
         /// A flag for nodes that are cloned by the adoption agency algorithm.
         /// </summary>
-        GUMBO_INSERTION_ADOPTION_AGENCY_CLONED = (1) << (8),
-
+        GUMBO_INSERTION_ADOPTION_AGENCY_CLONED = 1 << 8,
         /// <summary>
         /// A flag for nodes that are moved by the adoption agency algorithm.
         /// </summary>
-        GUMBO_INSERTION_ADOPTION_AGENCY_MOVED = (1) << (9),
-
+        GUMBO_INSERTION_ADOPTION_AGENCY_MOVED = 1 << 9,
         /// <summary>
         /// A flag for nodes that have been foster-parented out of a table (or
         /// should've been foster-parented, if verbatim mode is set).
         /// </summary>
-        GUMBO_INSERTION_FOSTER_PARENTED = (1) << (10),
+        GUMBO_INSERTION_FOSTER_PARENTED = 1 << 10,
     }
 
     /// <summary>
@@ -283,12 +265,10 @@ namespace Gumbo
         /// elements, each a void* to the element itself.
         /// </summary>
         public IntPtr data;
-
         /// <summary>
         /// Number of elements currently in the vector.
         /// </summary>
         public uint length;
-
         /// <summary>
         /// Current array capacity.
         /// </summary>
@@ -460,13 +440,11 @@ namespace Gumbo
         GUMBO_TAG_SPACER,
         GUMBO_TAG_TT,
         GUMBO_TAG_RTC,
-
         /// <summary>
         /// Used for all tags that don't have special handling in HTML.  Add new tags
         /// to the end of tag.in so as to preserve backwards-compatibility.
         /// </summary>
         GUMBO_TAG_UNKNOWN,
-
         /// <summary>
         /// A marker value to indicate the end of the enum, for iterating over it.
         /// Also used as the terminator for varargs functions that take tags.
@@ -489,19 +467,16 @@ namespace Gumbo
         /// http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#adjust-foreign-attributes
         /// </summary>
         public GumboAttributeNamespaceEnum attr_namespace;
-
         /// <summary>
         /// The name of the attribute.  This is in a freshly-allocated buffer to deal
         /// with case-normalization, and is null-terminated.
         /// </summary>
         public IntPtr name;
-
         /// <summary>
         /// The original text of the attribute name, as a pointer into the original
         /// source buffer.
         /// </summary>
         public GumboStringPiece original_name;
-
         /// <summary>
         /// The value of the attribute.  This is in a freshly-allocated buffer to deal
         /// with unescaping, and is null-terminated.  It does not include any quotes
@@ -509,7 +484,6 @@ namespace Gumbo
         /// 'selected' on a checkbox), this will be an empty string.
         /// </summary>
         public IntPtr value;
-
         /// <summary>
         /// The original text of the value of the attribute.  This points into the
         /// original source buffer.  It includes any quotes that surround the
@@ -519,24 +493,20 @@ namespace Gumbo
         /// string.
         /// </summary>
         public GumboStringPiece original_value;
-
         /// <summary>
         /// The starting position of the attribute name.
         /// </summary>
         public GumboSourcePosition name_start;
-
         /// <summary>
         /// The ending position of the attribute name.  This is not always derivable
         /// from the starting position of the value because of the possibility of
         /// whitespace around the = sign.
         /// </summary>
         public GumboSourcePosition name_end;
-
         /// <summary>
         /// The starting position of the attribute value.
         /// </summary>
         public GumboSourcePosition value_start;
-
         /// <summary>
         /// The ending position of the attribute value.
         /// </summary>
@@ -555,28 +525,22 @@ namespace Gumbo
         /// Pointers are owned.
         /// </summary>
         public GumboVector children;
-
         /// <summary>
         /// True if there was an explicit doctype token as opposed to it being omitted.
         /// </summary>
-        [MarshalAs(UnmanagedType.I1)]
-        public bool has_doctype;
-
+        [MarshalAs(UnmanagedType.I1)] public bool has_doctype;
         /// <summary>
         /// A field from the doctype token, copied verbatim.
         /// </summary>
         public IntPtr name;
-
         /// <summary>
         /// A field from the doctype token, copied verbatim.
         /// </summary>
         public IntPtr public_identifier;
-
         /// <summary>
         /// A field from the doctype token, copied verbatim.
         /// </summary>
         public IntPtr system_identifier;
-
         /// <summary>
         /// Whether or not the document is in QuirksMode, as determined by the values
         /// in the GumboTokenDocType template.
@@ -596,11 +560,8 @@ namespace Gumbo
         /// are owned.
         /// </summary>
         public GumboVector children;
-
         public GumboTag tag;
-
         public GumboNamespaceEnum tag_namespace;
-
         /// <summary>
         /// A GumboStringPiece pointing to the original tag text for this element,
         /// pointing directly into the source buffer.  If the tag was inserted
@@ -608,25 +569,24 @@ namespace Gumbo
         /// zero-length string.
         /// </summary>
         public GumboStringPiece original_tag;
-
         /// <summary>
         /// A GumboStringPiece pointing to the original end tag text for this element.
         /// If the end tag was inserted algorithmically, (for example, closing a
         /// self-closing tag), this will be a zero-length string.
         /// </summary>
         public GumboStringPiece original_end_tag;
-
         /// <summary>
         /// The source position for the start of the start tag.
         /// </summary>
         public GumboSourcePosition start_pos;
-
+        /// <summary>
+        /// The source position for the start of the end tag.
+        /// </summary>
+        public GumboSourcePosition end_pos;
         /// <summary>
         /// An array of GumboAttributes, containing the attributes for this tag in the
         /// order that they were parsed.  Pointers are owned.
         /// </summary>
-        public GumboSourcePosition end_pos;
-
         public GumboVector attributes;
     }
 
@@ -642,13 +602,11 @@ namespace Gumbo
         /// comment/cdata nodes, this does not include the comment delimiters.
         /// </summary>
         public IntPtr text;
-
         /// <summary>
         /// The original text of this node, as a pointer into the original buffer.  For
         /// comment/cdata nodes, this includes the comment delimiters.
         /// </summary>
         public GumboStringPiece original_text;
-
         /// <summary>
         /// The starting position of this node.  This corresponds to the position of
         /// original_text, before entities are decoded.

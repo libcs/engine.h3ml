@@ -6,109 +6,138 @@ namespace Gumbo
     [StructLayout(LayoutKind.Sequential)]
     public class GumboErrorContainer
     {
-        // The type of error.
+        /// <summary>
+        /// The type of error.        
+        /// </summary>
         public GumboErrorType type;
-
-        // The position within the source file where the error occurred.
+        /// <summary>
+        /// The position within the source file where the error occurred.
+        /// </summary>
         public GumboSourcePosition position;
-
-        // A pointer to the byte within the original source file text where the error
-        // occurred (note that this is not the same as position.offset, as that gives
-        // character-based instead of byte-based offsets).
+        /// <summary>
+        /// A pointer to the byte within the original source file text where the error
+        /// occurred (note that this is not the same as position.offset, as that gives
+        /// character-based instead of byte-based offsets).
+        /// </summary>
         public IntPtr original_text;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboCodepointErrorContainer : GumboErrorContainer
     {
-        // The code point we encountered, for:
-        // * GUMBO_ERR_UTF8_INVALID
-        // * GUMBO_ERR_UTF8_TRUNCATED
-        // * GUMBO_ERR_NUMERIC_CHAR_REF_WITHOUT_SEMICOLON
-        // * GUMBO_ERR_NUMERIC_CHAR_REF_INVALID
+        /// <summary>
+        /// The code point we encountered, for:
+        /// * GUMBO_ERR_UTF8_INVALID
+        /// * GUMBO_ERR_UTF8_TRUNCATED
+        /// * GUMBO_ERR_NUMERIC_CHAR_REF_WITHOUT_SEMICOLON
+        /// * GUMBO_ERR_NUMERIC_CHAR_REF_INVALID
+        /// </summary>
         public ulong codepoint;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboTokenizerErrorContainer : GumboErrorContainer
     {
-        // Tokenizer errors.
+        /// <summary>
+        /// Tokenizer errors.
+        /// </summary>
         public GumboTokenizerError tokenizer;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboNamedCharErrorContainer : GumboErrorContainer
     {
-        // Short textual data, for:
-        // * GUMBO_ERR_NAMED_CHAR_REF_WITHOUT_SEMICOLON
-        // * GUMBO_ERR_NAMED_CHAR_REF_INVALID
+        /// <summary>
+        /// Short textual data, for:
+        /// * GUMBO_ERR_NAMED_CHAR_REF_WITHOUT_SEMICOLON
+        /// * GUMBO_ERR_NAMED_CHAR_REF_INVALID
+        /// </summary>
         public GumboStringPiece text;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboDuplicateAttrErrorContainer : GumboErrorContainer
     {
-        // Duplicate attribute data, for GUMBO_ERR_DUPLICATE_ATTR.
+        /// <summary>
+        /// Duplicate attribute data, for GUMBO_ERR_DUPLICATE_ATTR.
+        /// </summary>
         public GumboDuplicateAttrError duplicate_attr;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public class GumboParserErrorContainer : GumboErrorContainer
     {
-        // Parser state, for GUMBO_ERR_PARSER and
-        // GUMBO_ERR_UNACKNOWLEDGE_SELF_CLOSING_TAG.
+        /// <summary>
+        /// Parser state, for GUMBO_ERR_PARSER and
+        /// GUMBO_ERR_UNACKNOWLEDGE_SELF_CLOSING_TAG.
+        /// </summary>
         public GumboParserError parser;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GumboTokenizerError
     {
-
-        /// int
+        /// <summary>
+        /// The bad codepoint encountered.
+        /// </summary>
         public int codepoint;
-
-        /// GumboTokenizerErrorState->Anonymous_55a5f164_2631_451b_91c9_865f5f94eb35
+        /// <summary>
+        /// The state that the tokenizer was in at the time.
+        /// </summary>
         public GumboTokenizerErrorState state;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GumboStringPiece
     {
-        /** A pointer to the beginning of the string.  NULL iff length == 0. */
+        /// <summary>
+        /// A pointer to the beginning of the string.  NULL iff length == 0.
+        /// </summary>
         public IntPtr data;
-
-        /** The length of the string fragment, in bytes.  May be zero. */
+        /// <summary>
+        /// The length of the string fragment, in bytes.  May be zero.
+        /// </summary>
         public uint length;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GumboDuplicateAttrError
     {
-        /// char*
+        /// <summary>
+        /// The name of the attribute.  Owned by this struct.
+        /// </summary>
         public IntPtr name;
-
-        /// unsigned int
+        /// <summary>
+        /// The (0-based) index within the attributes vector of the original
+        /// occurrence.
+        /// </summary>
         public uint original_index;
-
-        /// unsigned int
+        /// <summary>
+        /// The (0-based) index where the new occurrence would be.
+        /// </summary>
         public uint new_index;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GumboParserError
     {
-        // The type of input token that resulted in this error.
+        /// <summary>
+        /// The type of input token that resulted in this error.        
+        /// </summary>
         public GumboTokenType input_type;
-
-        // The HTML tag of the input token.  TAG_UNKNOWN if this was not a tag token.
+        /// <summary>
+        /// The HTML tag of the input token.  TAG_UNKNOWN if this was not a tag token.        
+        /// </summary>
         public GumboTag input_tag;
-
-        // The insertion mode that the parser was in at the time.
+        /// <summary>
+        /// The insertion mode that the parser was in at the time.        
+        /// </summary>
         public GumboInsertionMode parser_state;
-
-        // The tag stack at the point of the error.  Note that this is an GumboVector
-        // of GumboTag's *stored by value* - cast the void* to an GumboTag directly to
-        // get at the tag.
+        /// <summary>
+        /// The tag stack at the point of the error.  Note that this is an GumboVector
+        /// of GumboTag's *stored by value* - cast the void* to an GumboTag directly to
+        /// get at the tag.
+        /// /// </summary>
         public GumboVector /* GumboTag */ tag_stack;
     }
 

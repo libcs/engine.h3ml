@@ -139,8 +139,8 @@ namespace Gumbo.Xml
         }
 
         public override string Name => _State.Attribute != null
-            ? _State.Attribute.OriginalName
-            : _State.Node is ElementWrapper element ? element.OriginalTagName : string.Empty;
+            ? _State.Attribute.OriginalName : _State.Node is ElementWrapper element
+            ? element.OriginalTagName : string.Empty;
 
         public override System.Xml.XmlNameTable NameTable => throw new NotImplementedException();
 
@@ -185,16 +185,12 @@ namespace Gumbo.Xml
         }
 
         public override string Value => _State.Attribute != null
-            ? _State.Attribute.Value
-            : _State.Node is ElementWrapper element ? element.Value : _State.Node is TextWrapper text ? text.Value : string.Empty;
+            ? _State.Attribute.Value : _State.Node is ElementWrapper element
+            ? element.Value : _State.Node is TextWrapper text
+            ? text.Value : string.Empty;
 
-        public override XPathNavigator Clone()
-        {
-            if (_State.Node != null)
-                return new GumboNavigator(_Gumbo, _State.Node);
-            if (_State.Attribute != null)
-                return new GumboNavigator(_Gumbo, _State.Attribute);
-            throw new InvalidOperationException();
-        }
+        public override XPathNavigator Clone() => _State.Node != null
+            ? new GumboNavigator(_Gumbo, _State.Node) : _State.Attribute != null
+            ? new GumboNavigator(_Gumbo, _State.Attribute) : throw new InvalidOperationException();
     }
 }
