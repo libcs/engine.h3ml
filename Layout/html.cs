@@ -94,12 +94,10 @@ namespace H3ml.Layout
         {
             if (string.IsNullOrEmpty(str) || (string.IsNullOrEmpty(delims) && string.IsNullOrEmpty(delims_preserve)))
                 return;
-
             var all_delims = (delims + delims_preserve + quote).ToCharArray();
-
             var token_start = 0;
             var token_end = str.IndexOfAny(all_delims, token_start);
-            var token_len = 0;
+            int token_len;
             string token;
             while (true)
             {
@@ -111,15 +109,12 @@ namespace H3ml.Layout
                     else token_end = str.IndexOf(str[token_end], token_end + 1);
                     if (token_end != -1) token_end = str.IndexOfAny(all_delims, token_end + 1);
                 }
-
                 token_len = token_end == -1 ? -1 : token_end - token_start;
-
-                token = str.Substring(token_start, token_len);
+                token = str.Substr(token_start, token_len);
                 if (!string.IsNullOrEmpty(token))
                     tokens.Add(token);
                 if (token_end != -1 && !string.IsNullOrEmpty(delims_preserve) && delims_preserve.IndexOf(str[token_end]) != -1)
                     tokens.Add(str.Substring(token_end, 1));
-
                 token_start = token_end;
                 if (token_start == -1) break;
                 token_start++;
@@ -137,5 +132,9 @@ namespace H3ml.Layout
                     if (chars.IndexOf(source[i]) == -1) return i;
             return -1;
         }
+
+        public static string Substr(this string source, int start, int end) => end == -1 ? source.Substring(start) : source.Substring(start, end);
+
+        public static int FindFirstOf(this string source, char[] anyOf, int start) => start == -1 ? -1 : source.IndexOfAny(anyOf, start);
     }
 }

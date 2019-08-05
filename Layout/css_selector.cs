@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -89,6 +90,7 @@ namespace H3ml.Layout
 
     //////////////////////////////////////////////////////////////////////////
 
+    [DebuggerDisplay("{_tag}:{_attrs.Count}")]
     public class css_element_selector
     {
         static readonly char[] delims1 = ".#[:".ToCharArray();
@@ -100,7 +102,7 @@ namespace H3ml.Layout
         public void parse(string txt)
         {
             var el_end = txt.IndexOfAny(delims1);
-            _tag = txt.Substring(0, el_end).ToLowerInvariant();
+            _tag = txt.Substr(0, el_end).ToLowerInvariant();
             while (el_end != -1)
             {
                 if (txt[el_end] == '.')
@@ -193,7 +195,7 @@ namespace H3ml.Layout
                     el_end = pos;
                 }
                 else el_end++;
-                el_end = txt.IndexOfAny(delims1, el_end);
+                el_end = txt.FindFirstOf(delims1, el_end);
             }
         }
     }
@@ -210,10 +212,11 @@ namespace H3ml.Layout
 
     //////////////////////////////////////////////////////////////////////////
 
+    [DebuggerDisplay("Tag = {_right._tag}, Styles = {_style._properties.Count}")]
     public class css_selector
     {
         public selector_specificity _specificity;
-        public css_element_selector _right;
+        public css_element_selector _right = new css_element_selector();
         public css_selector _left;
         public css_combinator _combinator;
         public style _style;
