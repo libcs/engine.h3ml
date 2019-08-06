@@ -133,7 +133,7 @@ namespace H3ml.Layout
             return -1;
         }
 
-        public static string Substr(this string source, int start, int end) => end == -1 ? source.Substring(start) : source.Substring(start, end);
+        public static string Substr(this string source, int start, int end) => end < 0 ? source.Substring(start) : source.Substring(start, end);
 
         public static int FindFirstOf(this string source, char[] anyOf, int start) => start == -1 ? -1 : source.IndexOfAny(anyOf, start);
     }

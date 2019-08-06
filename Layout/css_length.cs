@@ -63,7 +63,6 @@ namespace H3ml.Layout
                 _predef = 0;
                 return;
             }
-
             var predef = html.value_index(str, predefs, -1);
             if (predef >= 0)
             {
@@ -89,6 +88,5 @@ namespace H3ml.Layout
                 }
             }
         }
-
     }
 }

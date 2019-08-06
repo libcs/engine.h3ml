@@ -104,24 +104,19 @@ namespace H3ml.Layout
             if ((_items.Count == 0 && el.is_white_space()) || el.is_break())
                 el._skip = true;
             else if (el.is_white_space())
-            {
                 if (have_last_space())
                 {
                     add = false;
                     el._skip = true;
                 }
-            }
-
             if (add)
             {
                 el._box = this;
                 _items.Add(el);
-
                 if (!el._skip)
                 {
                     var el_shift_left = el.get_inline_shift_left();
                     var el_shift_right = el.get_inline_shift_right();
-
                     el._pos.x = _box_left + _width + el_shift_left + el.content_margins_left;
                     el._pos.y = _box_top + el.content_margins_top;
                     _width += el.width + el_shift_left + el_shift_right;
@@ -201,7 +196,6 @@ namespace H3ml.Layout
             var y2 = _height;
 
             foreach (var el in _items)
-            {
                 if (el.get_display == style_display.inline_text)
                 {
                     el.get_font(out var fm);
@@ -223,7 +217,6 @@ namespace H3ml.Layout
                     y1 = Math.Min(y1, el.top);
                     y2 = Math.Max(y2, el.bottom);
                 }
-            }
 
             //css_offsets offsets;
 
@@ -232,7 +225,6 @@ namespace H3ml.Layout
                 el._pos.y -= y1;
                 el._pos.y += _box_top;
                 if (el.get_display != style_display.inline_text)
-                {
                     switch (el.get_vertical_align)
                     {
                         case vertical_align.top: el._pos.y = _box_top + el.content_margins_top; break;
@@ -244,8 +236,6 @@ namespace H3ml.Layout
                         case vertical_align.text_bottom: break; //TODO: process vertical align "text-bottom"
                         case vertical_align.text_top: break; //TODO: process vertical align "text-top"
                     }
-                }
-
                 el.apply_relative_shift(_box_right - _box_left);
             }
             _height = y2 - y1;
@@ -323,7 +313,6 @@ namespace H3ml.Layout
         bool is_break_only()
         {
             if (_items.Count == 0) return true;
-
             if (_items.First().is_break())
             {
                 foreach (var el in _items)

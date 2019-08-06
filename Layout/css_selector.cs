@@ -80,6 +80,7 @@ namespace H3ml.Layout
 
     //////////////////////////////////////////////////////////////////////////
 
+    [DebuggerDisplay("{val}[{attribute}]:{condition}")]
     public class css_attribute_selector
     {
         public string attribute;
@@ -103,13 +104,14 @@ namespace H3ml.Layout
         {
             var el_end = txt.IndexOfAny(delims1);
             _tag = txt.Substr(0, el_end).ToLowerInvariant();
+            _attrs.Clear(); //: sky
             while (el_end != -1)
             {
                 if (txt[el_end] == '.')
                 {
                     var attribute = new css_attribute_selector();
                     var pos = txt.IndexOfAny(delims1, el_end + 1);
-                    attribute.val = txt.Substring(el_end + 1, pos - el_end - 1);
+                    attribute.val = txt.Substr(el_end + 1, pos - el_end - 1);
                     html.split_string(attribute.val, attribute.class_val, " ");
                     attribute.condition = attr_select_condition.equal;
                     attribute.attribute = "class";
@@ -122,7 +124,7 @@ namespace H3ml.Layout
                     if (txt[el_end + 1] == ':')
                     {
                         var pos = txt.IndexOfAny(delims1, el_end + 2);
-                        attribute.val = txt.Substring(el_end + 2, pos - el_end - 2).ToLowerInvariant();
+                        attribute.val = txt.Substr(el_end + 2, pos - el_end - 2).ToLowerInvariant();
                         attribute.condition = attr_select_condition.pseudo_element;
                         attribute.attribute = "pseudo-el";
                         _attrs.Add(attribute);
@@ -150,7 +152,7 @@ namespace H3ml.Layout
                 {
                     var attribute = new css_attribute_selector();
                     var pos = txt.IndexOfAny(delims1, el_end + 1);
-                    attribute.val = txt.Substring(el_end + 1, pos - el_end - 1);
+                    attribute.val = txt.Substr(el_end + 1, pos - el_end - 1);
                     attribute.condition = attr_select_condition.equal;
                     attribute.attribute = "id";
                     _attrs.Add(attribute);
@@ -160,7 +162,7 @@ namespace H3ml.Layout
                 {
                     var attribute = new css_attribute_selector();
                     var pos = txt.IndexOfAny(delims3, el_end + 1);
-                    var attr = txt.Substring(el_end + 1, pos - el_end - 1).Trim().ToLowerInvariant();
+                    var attr = txt.Substr(el_end + 1, pos - el_end - 1).Trim().ToLowerInvariant();
                     if (pos != -1)
                     {
                         if (txt[pos] == ']') attribute.condition = attr_select_condition.exists;
@@ -223,7 +225,7 @@ namespace H3ml.Layout
         public int _order;
         public media_query_list _media_query;
 
-        public css_selector(media_query_list media)
+        public css_selector(media_query_list media = null)
         {
             _media_query = media;
             _combinator = css_combinator.descendant;
