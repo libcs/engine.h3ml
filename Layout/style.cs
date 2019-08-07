@@ -25,10 +25,10 @@ namespace H3ml.Layout
 
     public class style
     {
-        Dictionary<string, property_value> _properties = new Dictionary<string, property_value>();
-        static Dictionary<string, string> _valid_values = new Dictionary<string, string> { { "white-space", types.white_space_strings } };
+        static readonly Dictionary<string, string> _valid_values = new Dictionary<string, string> { { "white-space", types.white_space_strings } };
+        Dictionary<string, property_value> _properties;
 
-        public style() { }
+        public style() => _properties = new Dictionary<string, property_value>();
         public style(style val) => _properties = val._properties;
 
         public void add(string txt, string baseurl) => parse(txt, baseurl);
@@ -54,13 +54,13 @@ namespace H3ml.Layout
                 html.split_string(val, tokens, " ");
                 if (tokens.Count == 1)
                 {
-                    add_property("-litehtml-border-spacing-x", tokens[0], baseurl, important);
-                    add_property("-litehtml-border-spacing-y", tokens[0], baseurl, important);
+                    add_parsed_property("-litehtml-border-spacing-x", tokens[0], important);
+                    add_parsed_property("-litehtml-border-spacing-y", tokens[0], important);
                 }
-                else if (tokens.Count == 2)
+                else if (tokens.Count >= 2)
                 {
-                    add_property("-litehtml-border-spacing-x", tokens[0], baseurl, important);
-                    add_property("-litehtml-border-spacing-y", tokens[1], baseurl, important);
+                    add_parsed_property("-litehtml-border-spacing-x", tokens[0], important);
+                    add_parsed_property("-litehtml-border-spacing-y", tokens[1], important);
                 }
             }
             else
@@ -219,7 +219,7 @@ namespace H3ml.Layout
                     add_property("border-bottom-right-radius-x", tokens[2], baseurl, important);
                     add_property("border-bottom-left-radius-x", tokens[1], baseurl, important);
                 }
-                else if (tokens.Count == 4)
+                else if (tokens.Count >= 4)
                 {
                     add_property("border-top-left-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-right-radius-x", tokens[1], baseurl, important);
@@ -252,7 +252,7 @@ namespace H3ml.Layout
                     add_property("border-bottom-right-radius-y", tokens[2], baseurl, important);
                     add_property("border-bottom-left-radius-y", tokens[1], baseurl, important);
                 }
-                else if (tokens.Count == 4)
+                else if (tokens.Count >= 4)
                 {
                     add_property("border-top-left-radius-y", tokens[0], baseurl, important);
                     add_property("border-top-right-radius-y", tokens[1], baseurl, important);
@@ -260,6 +260,7 @@ namespace H3ml.Layout
                     add_property("border-bottom-left-radius-y", tokens[3], baseurl, important);
                 }
             }
+            else
 
             // Parse list-style shorthand properties 
             if (name == "list-style")
@@ -416,14 +417,7 @@ namespace H3ml.Layout
                     if (vals.Count == 1)
                         add_property(name, val, baseurl, false);
                     else if (vals.Count > 1)
-                    {
-                        vals[0] = vals[0].Trim();
-                        vals[1] = vals[1].ToLowerInvariant();
-                        if (vals[1] == "important")
-                            add_property(name, vals[0], baseurl, true);
-                        else
-                            add_property(name, vals[0], baseurl, false);
-                    }
+                        add_property(name, vals[0].Trim(), baseurl, vals[1].ToLowerInvariant() == "important");
                 }
             }
         }
@@ -464,8 +458,8 @@ namespace H3ml.Layout
         void parse_short_background(string val, string baseurl, bool important)
         {
             add_parsed_property("background-color", "transparent", important);
-            add_parsed_property("background-image", "", important);
-            add_parsed_property("background-image-baseurl", "", important);
+            add_parsed_property("background-image", string.Empty, important);
+            add_parsed_property("background-image-baseurl", string.Empty, important);
             add_parsed_property("background-repeat", "repeat", important);
             add_parsed_property("background-origin", "padding-box", important);
             add_parsed_property("background-clip", "border-box", important);
@@ -503,6 +497,7 @@ namespace H3ml.Layout
                     add_parsed_property("background-color", tok, important);
             }
         }
+
         void parse_short_font(string val, bool important)
         {
             add_parsed_property("font-style", "normal", important);
