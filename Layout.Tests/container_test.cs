@@ -15,8 +15,8 @@ namespace H3ml.Layout
         public void draw_list_marker(object hdc, list_marker marker) { }
         public void draw_text(object hdc, string text, object hFont, web_color color, position pos) { }
         public void get_client_rect(out position client) { client = default(position); }
-        public string get_default_font_name() => null;
-        public int get_default_font_size() => 0;
+        public string get_default_font_name() => "Arial";
+        public int get_default_font_size() => 12;
         public void get_image_size(string src, string baseurl, out size sz) { sz = default(size); }
         public void get_language(string language, out string culture) { culture = null; }
         public void get_media_features(media_features media) { }

@@ -17,11 +17,11 @@ namespace H3ml.Layout
 
     public class html_tag : element
     {
-        protected IList<box> _boxes;
-        protected IList<string> _class_values;
+        protected List<box> _boxes = new List<box>();
+        protected List<string> _class_values = new List<string>();
         protected string _tag;
-        protected style _style;
-        protected Dictionary<string, string> _attrs;
+        protected style _style = new style();
+        protected Dictionary<string, string> _attrs = new Dictionary<string, string>();
         protected vertical_align _vertical_align;
         protected text_align _text_align;
         protected style_display _display;
@@ -33,7 +33,7 @@ namespace H3ml.Layout
         protected List<floated_box> _floats_left = new List<floated_box>();
         protected List<floated_box> _floats_right = new List<floated_box>();
         protected List<element> _positioned = new List<element>();
-        protected background _bg;
+        protected background _bg = new background();
         protected element_position _el_position;
         protected int _line_height;
         protected bool _lh_predefined;
@@ -65,7 +65,7 @@ namespace H3ml.Layout
         protected int_int_cache _cahe_line_right;
 
         // data for table rendering
-        protected table_grid _grid;
+        protected table_grid _grid = new table_grid();
         protected css_length _css_border_spacing_x;
         protected css_length _css_border_spacing_y;
         protected int _border_spacing_x;
@@ -1234,7 +1234,7 @@ namespace H3ml.Layout
                     el.parse_styles();
         }
 
-        public override void draw(IntPtr hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, position clip)
         {
             var pos = _pos;
             pos.x += x;
@@ -1258,7 +1258,7 @@ namespace H3ml.Layout
             }
         }
 
-        public override void draw_background(IntPtr hdc, int x, int y, position clip)
+        public override void draw_background(object hdc, int x, int y, position clip)
         {
             var pos = _pos;
             pos.x += x;
@@ -2213,7 +2213,7 @@ namespace H3ml.Layout
             }
         }
 
-        public override void draw_children(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        public override void draw_children(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             if (_display == style_display.table || _display == style_display.inline_table) draw_children_table(hdc, x, y, clip, flag, zindex);
             else draw_children_box(hdc, x, y, clip, flag, zindex);
@@ -2221,7 +2221,7 @@ namespace H3ml.Layout
 
         public override int get_zindex => _z_index;
 
-        public override void draw_stacking_context(IntPtr hdc, int x, int y, position clip, bool with_positioned)
+        public override void draw_stacking_context(object hdc, int x, int y, position clip, bool with_positioned)
         {
             if (!is_visible) return;
             var zindexes = new HashSet<int>();
@@ -2251,7 +2251,7 @@ namespace H3ml.Layout
         {
             if (is_visible && _el_position != element_position.@fixed)
             {
-                calc_document_size(ref sz, x, y);
+                base.calc_document_size(ref sz, x, y);
                 if (_overflow == overflow.visible)
                     foreach (var el in _children)
                         el.calc_document_size(ref sz, x + _pos.x, y + _pos.y);
@@ -2520,7 +2520,7 @@ namespace H3ml.Layout
             return _bg;
         }
 
-        protected void draw_children_box(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_box(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             var pos = _pos;
             pos.x += x;
@@ -2609,7 +2609,7 @@ namespace H3ml.Layout
                 doc.container.del_clip();
         }
 
-        protected void draw_children_table(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_table(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
         {
             if (_grid == null) return;
             var pos = _pos;
@@ -3324,7 +3324,7 @@ namespace H3ml.Layout
             bg_paint.is_root = !have_parent;
         }
 
-        protected void draw_list_marker(IntPtr hdc, position pos)
+        protected void draw_list_marker(object hdc, position pos)
         {
             var lm = new list_marker();
             var list_image = get_style_property("list-style-image", true, null);
@@ -3336,7 +3336,6 @@ namespace H3ml.Layout
                 get_document().container.get_image_size(lm.image, lm.baseurl, out img_size);
             }
             else lm.baseurl = null;
-
 
             var ln_height = line_height;
             var sz_font = get_font_size;

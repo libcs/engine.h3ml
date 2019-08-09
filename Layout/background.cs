@@ -34,6 +34,7 @@ namespace H3ml.Layout
             _repeat = val._repeat;
             _clip = val._clip;
             _origin = val._origin;
+            _radius = val._radius;
         }
 
         //public background assignTo(background val)

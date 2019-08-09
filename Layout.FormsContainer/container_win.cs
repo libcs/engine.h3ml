@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace H3ml.Layout.Containers
 {
-    public class container_win : Control, document_container
+    public class container_win : UserControl, document_container
     {
         Dictionary<string, object> _images = new Dictionary<string, object>();
         List<position> _clips = new List<position>();
@@ -37,15 +37,18 @@ namespace H3ml.Layout.Containers
 
         public int get_text_base_line(object hdc, object hFont) => ((Font)hFont).FontFamily.GetCellDescent(FontStyle.Regular);
 
-        public int text_width(object hdc, string text, object hFont) => (int)((Graphics)hdc).MeasureString(text, (Font)hFont).Width;
+        public int text_width(object hdc, string text, object hFont) => TextRenderer.MeasureText(text, (Font)hFont).Width;  //(int)((Graphics)hdc).MeasureString(text, (Font)hFont).Width;
 
         public void draw_text(object hdc, string text, object hFont, web_color color, position pos)
         {
+            // https://stackoverflow.com/questions/6391911/c-sharp-winforms-anyone-know-of-a-c-sharp-gdi-library-not-slow-gdi
             apply_clip((Graphics)hdc);
-            var rcText = new RectangleF(pos.left, pos.top, pos.right, pos.bottom);
-            var format = new StringFormat();
-            using (var brush = new SolidBrush(Color.FromArgb(color.red, color.green, color.blue)))
-                ((Graphics)hdc).DrawString(text, (Font)hFont, brush, rcText, format);
+            var rcText = new Rectangle(pos.left, pos.top, pos.right, pos.bottom);
+            TextRenderer.DrawText((Graphics)hdc, text, (Font)hFont, rcText, Color.FromArgb(color.red, color.green, color.blue));
+            //var rcText = new RectangleF(pos.left, pos.top, pos.right, pos.bottom);
+            //var format = new StringFormat();
+            //using (var brush = new SolidBrush(Color.FromArgb(color.red, color.green, color.blue)))
+            //    ((Graphics)hdc).DrawString(text, (Font)hFont, brush, rcText, format);
             release_clip((Graphics)hdc);
         }
 
@@ -281,33 +284,33 @@ namespace H3ml.Layout.Containers
                         hdc.DrawImage(bgbmp, pos.x, pos.y, bgbmp.Width, bgbmp.Height);
                     }
                     break;
-                    //case background_repeat.repeat_x:
-                    //    {
-                    //        var bmp = new CachedBitmap(bgbmp, hdc);
-                    //        for (var x = pos.left; x < pos.right; x += bgbmp.Width)
-                    //            hdc.DrawCachedBitmap(bmp, x, pos.top);
-                    //        for (var x = pos.left - bgbmp.Width; x + bgbmp.Width > draw_pos.left; x -= bgbmp.Width)
-                    //            hdc.DrawCachedBitmap(&bmp, x, pos.top);
-                    //    }
-                    //    break;
-                    //case background_repeat.repeat_y:
-                    //    {
-                    //        var bmp = new CachedBitmap(bgbmp, hdc);
-                    //        for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
-                    //            hdc.DrawCachedBitmap(bmp, pos.left, y);
-                    //        for (var y = pos.top - bgbmp.Height; y + bgbmp.Height > draw_pos.top; y -= bgbmp.Height)
-                    //            hdc.DrawCachedBitmap(&bmp, pos.left, y);
-                    //    }
-                    //    break;
-                    //case background_repeat.repeat:
-                    //    {
-                    //        var bmp = new CachedBitmap(bgbmp, hdc);
-                    //        if (bgbmp.Height >= 0)
-                    //            for (var x = pos.left; x < pos.right; x += bgbmp.Width)
-                    //                for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
-                    //                    hdc.DrawCachedBitmap(&bmp, x, y);
-                    //    }
-                    //    break;
+                case background_repeat.repeat_x:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        for (var x = pos.left; x < pos.right; x += bgbmp.Width)
+                        //            hdc.DrawCachedBitmap(bmp, x, pos.top);
+                        //        for (var x = pos.left - bgbmp.Width; x + bgbmp.Width > draw_pos.left; x -= bgbmp.Width)
+                        //            hdc.DrawCachedBitmap(&bmp, x, pos.top);
+                    }
+                    break;
+                case background_repeat.repeat_y:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
+                        //            hdc.DrawCachedBitmap(bmp, pos.left, y);
+                        //        for (var y = pos.top - bgbmp.Height; y + bgbmp.Height > draw_pos.top; y -= bgbmp.Height)
+                        //            hdc.DrawCachedBitmap(&bmp, pos.left, y);
+                    }
+                    break;
+                case background_repeat.repeat:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        if (bgbmp.Height >= 0)
+                        //            for (var x = pos.left; x < pos.right; x += bgbmp.Width)
+                        //                for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
+                        //                    hdc.DrawCachedBitmap(&bmp, x, y);
+                    }
+                    break;
             }
         }
 

@@ -44,8 +44,8 @@ namespace H3ml.Layout
         element _root;
         document_container _container;
         Dictionary<string, font_item> _fonts = new Dictionary<string, font_item>();
-        IList<css_text> _css;
-        css _styles;
+        List<css_text> _css = new List<css_text>();
+        css _styles = new css();
         web_color _def_color;
         context _context;
         size _size;
@@ -114,7 +114,7 @@ namespace H3ml.Layout
             return ret;
         }
 
-        public void draw(IntPtr hdc, int x, int y, position clip)
+        public void draw(object hdc, int x, int y, position clip)
         {
             if (_root != null)
             {
@@ -124,6 +124,7 @@ namespace H3ml.Layout
         }
 
         public web_color get_def_color => _def_color;
+
         public int cvt_units(string str, int fontSize, out bool is_percent)
         {
             is_percent = false;
@@ -195,7 +196,6 @@ namespace H3ml.Layout
         {
             if (_root == null)
                 return false;
-
             var over_el = _root.get_element_by_point(x, y, client_x, client_y);
             var state_was_changed = false;
             if (over_el != _over_element)
@@ -325,9 +325,7 @@ namespace H3ml.Layout
             var doc = new document(objPainter, ctx); // Create litehtml::document
             var root_elements = new List<element>();
             using (var gumbo = new GumboWrapper(str))  // parse document into GumboOutput
-            {
                 doc.create_node(gumbo.Document.Root, root_elements); // Create litehtml::elements.
-            }
             if (root_elements.Count != 0)
                 doc._root = root_elements.Last();
             // Let's process created elements tree
@@ -336,8 +334,7 @@ namespace H3ml.Layout
                 doc.container.get_media_features(doc._media);
                 doc._root.apply_stylesheet(ctx.master_css); // apply master CSS
                 doc._root.parse_attributes(); // parse elements attributes
-                                              // parse style sheets linked in document
-                foreach (var css in doc._css)
+                foreach (var css in doc._css) // parse style sheets linked in document
                     doc._styles.parse_stylesheet(css.text, css.baseurl, doc, !string.IsNullOrEmpty(css.media) ? media_query_list.create_from_string(css.media, doc) : null);
                 doc._styles.sort_selectors(); // Sort css selectors using CSS rules.
                 if (doc._media_lists.Count != 0) doc.update_media_lists(doc._media); // get current media features
@@ -376,7 +373,6 @@ namespace H3ml.Layout
                     fw = int.Parse(weight);
                     if (fw < 100) fw = (int)font_weight.w400;
                 }
-
                 var decor = 0U;
                 if (decoration != null)
                 {

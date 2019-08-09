@@ -5,7 +5,7 @@ using System.Globalization;
 namespace H3ml.Layout
 {
     [DebuggerDisplay("{_value}:{_predef}{_units}")]
-    public class css_length
+    public struct css_length
     {
         float _value;
         int _predef;
@@ -21,11 +21,12 @@ namespace H3ml.Layout
         }
         public css_length(css_length val)
         {
-            if (val.is_predefined) _predef = val._predef;
-            else _value = val._value;
+            if (val.is_predefined) { _value = 0; _predef = val._predef; }
+            else { _value = val._value; _predef = 0; }
             _units = val._units;
             _is_predefined = val._is_predefined;
         }
+
         //public css_length assignTo(float val)
         //{
         //    _value = val;

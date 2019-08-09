@@ -296,8 +296,8 @@ namespace H3ml.Layout
         public virtual element_position get_element_position(out css_offsets offsets) { offsets = default(css_offsets); return element_position.@static; }
         public virtual void get_inline_boxes(IList<position> boxes) { }
         public virtual void parse_styles(bool is_reparse = false) { }
-        public virtual void draw(IntPtr hdc, int x, int y, position clip) { }
-        public virtual void draw_background(IntPtr hdc, int x, int y, position clip) { }
+        public virtual void draw(object hdc, int x, int y, position clip) { }
+        public virtual void draw_background(object hdc, int x, int y, position clip) { }
         public virtual string get_style_property(string name, bool inherited, string def = null) => null;
         public virtual object get_font(out font_metrics fm) { fm = default(font_metrics); return null; }
         public virtual int get_font_size => 0;
@@ -333,8 +333,8 @@ namespace H3ml.Layout
         public virtual void add_positioned(element el) { }
         public virtual int find_next_line_top(int top, int width, int def_right) => 0;
         public virtual int get_zindex => 0;
-        public virtual void draw_stacking_context(IntPtr hdc, int x, int y, position clip, bool with_positioned) { }
-        public virtual void draw_children(IntPtr hdc, int x, int y, position clip, draw_flag flag, int zindex) { }
+        public virtual void draw_stacking_context(object hdc, int x, int y, position clip, bool with_positioned) { }
+        public virtual void draw_children(object hdc, int x, int y, position clip, draw_flag flag, int zindex) { }
         public virtual bool is_nth_child(element el, int num, int off, bool of_type) => false;
         public virtual bool is_nth_last_child(element el, int num, int off, bool of_type) => false;
         public virtual bool is_only_child(element el, bool of_type) => false;

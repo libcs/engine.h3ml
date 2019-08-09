@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace H3ml.Layout
 {
@@ -11,6 +12,7 @@ namespace H3ml.Layout
         public const uint font_decoration_overline = 0x04;
     }
 
+    [DebuggerDisplay("margins: {left} {right} {top} {bottom}")]
     public struct margins
     {
         public int left;
@@ -22,12 +24,14 @@ namespace H3ml.Layout
         public int height => top + bottom;
     }
 
+    [DebuggerDisplay("size: {width} {height}")]
     public struct size
     {
         public int width;
         public int height;
     }
 
+    [DebuggerDisplay("position: {x},{y} {width},{height}")]
     public struct position
     {
         public int x;
@@ -91,6 +95,7 @@ namespace H3ml.Layout
         public bool is_point_inside(int x, int y) => x >= left && x <= right && y >= top && y <= bottom;
     }
 
+    [DebuggerDisplay("font_metrics: {height}")]
     public struct font_metrics
     {
         public int height;
@@ -557,6 +562,7 @@ namespace H3ml.Layout
         match_with_after = 0x20,
     }
 
+    [DebuggerDisplay("def_value: {_val}")]
     public class def_value<T>
     {
         T _val;

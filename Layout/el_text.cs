@@ -74,7 +74,7 @@ namespace H3ml.Layout
             return el_parent != null ? el_parent.get_base_line() : 0;
         }
 
-        public override void draw(IntPtr hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, position clip)
         {
             if (is_white_space() && !_draw_spaces)
                 return;

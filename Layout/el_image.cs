@@ -109,7 +109,7 @@ namespace H3ml.Layout
                 get_document().container.load_image(_src, null, !_css_height.is_predefined && !_css_width.is_predefined);
         }
 
-        public override void draw(IntPtr hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, position clip)
         {
             var pos = _pos;
             pos.x += x;
