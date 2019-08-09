@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace H3ml.Layout
 {
@@ -9,6 +10,7 @@ namespace H3ml.Layout
         public string rgb;
     }
 
+    [DebuggerDisplay("{red},{green},{blue},{alpha}")]
     public struct web_color
     {
         static def_color[] g_def_colors =
@@ -193,7 +195,7 @@ namespace H3ml.Layout
 
         public static web_color from_string(string str, document_container callback)
         {
-            if (str == null || str[0] == 0)
+            if (string.IsNullOrEmpty(str))
                 return new web_color(0, 0, 0);
             if (str[0] == '#')
             {

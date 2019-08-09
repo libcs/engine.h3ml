@@ -50,7 +50,7 @@ namespace H3ml.Layout
                 if (_text == "\n" || _text == "\r") { _transformed_text = ""; _use_transformed = true; }
             }
 
-            var font = IntPtr.Zero; font_metrics fm;
+            object font = null; font_metrics fm;
             var el_parent = parent();
             if (el_parent != null)
                 font = el_parent.get_font(out fm);
@@ -96,7 +96,7 @@ namespace H3ml.Layout
 
         public override int line_height => parent()?.line_height ?? 0;
 
-        public override IntPtr get_font(out font_metrics fm)
+        public override object get_font(out font_metrics fm)
         {
             var el_parent = parent();
             if (el_parent != null) return el_parent.get_font(out fm);

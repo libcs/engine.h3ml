@@ -1,8 +1,10 @@
-using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace H3ml.Layout
 {
+    [DebuggerDisplay("css:{_selectors.Count}")]
     public class css
     {
         List<css_selector> _selectors = new List<css_selector>();
@@ -54,6 +56,7 @@ namespace H3ml.Layout
                 if (pos != -1) pos = text.FindFirstNotOf(" \n\r\t", pos);
             }
         }
+
         public void sort_selectors() => _selectors.Sort((v1, v2) => v1 < v2 ? 1 : 0);
 
         public static void parse_css_url(string str, out string url)
@@ -67,11 +70,11 @@ namespace H3ml.Layout
                 if (url.Length != 0)
                 {
                     if (url[0] == '\'' || url[0] == '"')
-                        url = url.Remove(1);
+                        url = url.Substring(1);
                 }
                 if (url.Length != 0)
                     if (url[url.Length - 1] == '\'' || url[url.Length - 1] == '"')
-                        url = url.Substring(0, url.Length - 1);
+                        url = url.Remove(url.Length - 1);
             }
         }
 
@@ -79,10 +82,10 @@ namespace H3ml.Layout
         {
             if (text.StartsWith("@import"))
             {
-                int sPos = 7;
+                var sPos = 7;
                 var iStr = text.Substring(sPos);
                 if (iStr[iStr.Length - 1] == ';')
-                    iStr = iStr.Substring(0, iStr.Length - 1);
+                    iStr = iStr.Remove(iStr.Length - 1);
                 iStr = iStr.Trim();
                 var tokens = new List<string>();
                 html.split_string(iStr, tokens, " ", "", "(\"");

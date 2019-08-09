@@ -13,20 +13,20 @@ namespace H3ml.Layout
     }
 
     // call back interface to draw text, images and other elements
-    public interface document_container
+    public interface document_container : IDisposable
     {
-        IntPtr create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm);
-        void delete_font(IntPtr hFont);
-        int text_width(string text, IntPtr hFont);
-        void draw_text(IntPtr hdc, string text, IntPtr hFont, web_color color, position pos);
+        object create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm);
+        void delete_font(object hFont);
+        int text_width(string text, object hFont);
+        void draw_text(object hdc, string text, object hFont, web_color color, position pos);
         int pt_to_px(int pt);
         int get_default_font_size();
         string get_default_font_name();
-        void draw_list_marker(IntPtr hdc, list_marker marker);
+        void draw_list_marker(object hdc, list_marker marker);
         void load_image(string src, string baseurl, bool redraw_on_ready);
         void get_image_size(string src, string baseurl, out size sz);
-        void draw_background(IntPtr hdc, background_paint bg);
-        void draw_borders(IntPtr hdc, borders borders, position draw_pos, bool root);
+        void draw_background(object hdc, background_paint bg);
+        void draw_borders(object hdc, borders borders, position draw_pos, bool root);
 
         void set_caption(string caption);
         void set_base_url(string base_url);

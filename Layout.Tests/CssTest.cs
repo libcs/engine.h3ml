@@ -1,12 +1,39 @@
-﻿using H3ml.Layout;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
-namespace H3ml
+namespace H3ml.Layout
 {
     public class CssTest
     {
         [Test]
-        public void CssLengthTest()
+        public void CssParseTest()
+        {
+            var doc = new document(new container_test(), null);
+            var c = new css();
+            c.parse_stylesheet("/*Comment*/", null, doc, null);
+            c.parse_stylesheet("html { display: none }", null, doc, null);
+            // https://www.w3schools.com/cssref/pr_import_rule.asp
+            c.parse_stylesheet("@import \"navigation.css\"; /* Using a string */", null, doc, null);
+            c.parse_stylesheet("@import url(\"navigation.css\"); /* Using a url */", null, doc, null);
+            c.parse_stylesheet("@import \"navigation.css\"", null, doc, null);
+            c.parse_stylesheet("@import \"printstyle.css\" print;", null, doc, null);
+            c.parse_stylesheet("@import \"mobstyle.css\" screen and (max-width: 768px);", null, doc, null);
+            // https://www.w3schools.com/cssref/css3_pr_mediaquery.asp
+            c.parse_stylesheet("@media only screen and (max-width: 600px) { body { background-color: lightblue; } }", null, doc, null);
+        }
+
+        [Test]
+        public void CssParseUrlTest()
+        {
+            css.parse_css_url("", out var url); Assert.IsEmpty(url);
+            css.parse_css_url("value", out url); Assert.IsEmpty(url);
+            css.parse_css_url("url()", out url); Assert.IsEmpty(url);
+            css.parse_css_url("url(value)", out url); Assert.AreEqual(url, "value");
+            css.parse_css_url("url('value')", out url); Assert.AreEqual(url, "value");
+            css.parse_css_url("url(\"value\")", out url); Assert.AreEqual(url, "value");
+        }
+
+        [Test]
+        public void CssLengthParseTest()
         {
             var length = new css_length();
             length.fromString("calc(todo)"); Assert.AreEqual(length.is_predefined, true); Assert.AreEqual(length.predef, 0); Assert.AreEqual(length.val, 0); Assert.AreEqual(length.units, css_units.none);
@@ -18,7 +45,7 @@ namespace H3ml
         }
 
         [Test]
-        public void CssElementSelectorTest()
+        public void CssElementSelectorParseTest()
         {
             var selector = new css_element_selector();
             // https://www.w3schools.com/cssref/css_selectors.asp
@@ -78,7 +105,7 @@ namespace H3ml
         }
 
         [Test]
-        public void CssSelectorTest()
+        public void CssSelectorParseTest()
         {
             var selector = new css_selector();
             // https://www.w3schools.com/cssref/css_selectors.asp
@@ -90,6 +117,100 @@ namespace H3ml
             Assert.IsTrue(selector.parse("element>element")); Assert.AreEqual(selector._combinator, css_combinator.child); Assert.AreEqual(selector._right._tag, "element"); Assert.AreEqual(selector._right._attrs.Count, 0); Assert.AreEqual(selector._left._right._tag, "element");
             Assert.IsTrue(selector.parse("element+element")); Assert.AreEqual(selector._combinator, css_combinator.adjacent_sibling); Assert.AreEqual(selector._right._tag, "element"); Assert.AreEqual(selector._right._attrs.Count, 0); Assert.AreEqual(selector._left._right._tag, "element");
             Assert.IsTrue(selector.parse("element1~element2")); Assert.AreEqual(selector._combinator, css_combinator.general_sibling); Assert.AreEqual(selector._right._tag, "element2"); Assert.AreEqual(selector._right._attrs.Count, 0); Assert.AreEqual(selector._left._right._tag, "element1");
+        }
+
+        [Test]
+        public void StyleAddTest()
+        {
+            var style = new style();
+            style.add("border: 5px solid red; background-image: value", "base");
+            style.add("border: 5px solid red!important; background-image: value", "base");
+        }
+
+        [Test]
+        public void StyleAddPropertyTest()
+        {
+            var style = new style();
+            style.add_property("background-image", "value", "base", false);
+            style.add_property("border-spacing", "1", null, false);
+            style.add_property("border-spacing", "1 2", null, false);
+            style.add_property("border", "5px solid red", null, false);
+            style.add_property("border-left", "5px solid red", null, false);
+            style.add_property("border-right", "5px solid red", null, false);
+            style.add_property("border-top", "5px solid red", null, false);
+            style.add_property("border-bottom", "5px solid red", null, false);
+            style.add_property("border-bottom-left-radius", "1", null, false);
+            style.add_property("border-bottom-left-radius", "1 2", null, false);
+            style.add_property("border-bottom-right-radius", "1", null, false);
+            style.add_property("border-bottom-right-radius", "1 2", null, false);
+            style.add_property("border-top-right-radius", "1", null, false);
+            style.add_property("border-top-right-radius", "1 2", null, false);
+            style.add_property("border-top-left-radius", "1", null, false);
+            style.add_property("border-top-left-radius", "1 2", null, false);
+            style.add_property("border-radius", "1", null, false);
+            style.add_property("border-radius", "1 2", null, false);
+            style.add_property("border-radius-x", "1", null, false);
+            style.add_property("border-radius-x", "1 2", null, false);
+            style.add_property("border-radius-x", "1 2 3", null, false);
+            style.add_property("border-radius-x", "1 2 3 4", null, false);
+            style.add_property("border-radius-y", "1", null, false);
+            style.add_property("border-radius-y", "1 2", null, false);
+            style.add_property("border-radius-y", "1 2 3", null, false);
+            style.add_property("border-radius-y", "1 2 3 4", null, false);
+            style.add_property("list-style-image", "value", "base", false);
+            style.add_property("background", "url(value)", "base", false);
+            style.add_property("background", "repeat", null, false);
+            style.add_property("background", "fixed", null, false);
+            style.add_property("background", "border-box", null, false);
+            style.add_property("background", "border-box border-box", null, false);
+            style.add_property("background", "left", null, false);
+            style.add_property("background", "1", null, false);
+            style.add_property("background", "-1", null, false);
+            style.add_property("background", "-1", null, false);
+            style.add_property("background", "+1", null, false);
+            style.add_property("background", "left 1", null, false);
+            style.add_property("background", "red", null, false);
+            style.add_property("margin", "1", null, false);
+            style.add_property("margin", "1 2", null, false);
+            style.add_property("margin", "1 2 3", null, false);
+            style.add_property("margin", "1 2 3 4", null, false);
+            style.add_property("padding", "1", null, false);
+            style.add_property("padding", "1 2", null, false);
+            style.add_property("padding", "1 2 3", null, false);
+            style.add_property("padding", "1 2 3 4", null, false);
+            style.add_property("border-left", "TBD", null, false);
+            style.add_property("border-left", "TBD", null, false);
+            style.add_property("border-left", "TBD", null, false);
+            style.add_property("border-left", "TBD", null, false);
+            style.add_property("border-right", "TBD", null, false);
+            style.add_property("border-right", "TBD", null, false);
+            style.add_property("border-right", "TBD", null, false);
+            style.add_property("border-right", "TBD", null, false);
+            style.add_property("border-top", "TBD", null, false);
+            style.add_property("border-top", "TBD", null, false);
+            style.add_property("border-top", "TBD", null, false);
+            style.add_property("border-top", "TBD", null, false);
+            style.add_property("border-bottom", "TBD", null, false);
+            style.add_property("border-bottom", "TBD", null, false);
+            style.add_property("border-bottom", "TBD", null, false);
+            style.add_property("border-bottom", "TBD", null, false);
+            style.add_property("border-width", "1", null, false);
+            style.add_property("border-width", "1 2", null, false);
+            style.add_property("border-width", "1 2 3", null, false);
+            style.add_property("border-width", "1 2 3 4", null, false);
+            style.add_property("border-style", "1", null, false);
+            style.add_property("border-style", "1 2", null, false);
+            style.add_property("border-style", "1 2 3", null, false);
+            style.add_property("border-style", "1 2 3 4", null, false);
+            style.add_property("border-color", "1", null, false);
+            style.add_property("border-color", "1 2", null, false);
+            style.add_property("border-color", "1 2 3", null, false);
+            style.add_property("border-color", "1 2 3 4", null, false);
+            style.add_property("font", "TBD", null, false);
+            style.add_property("font", "TBD", null, false);
+            style.add_property("font", "TBD", null, false);
+            style.add_property("font", "TBD", null, false);
+            style.add_property("unknown", "value", null, false);
         }
     }
 }

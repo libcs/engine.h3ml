@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace H3ml.Layout
 {
+    [DebuggerDisplay("{feature} val={val}")]
     public class media_query_expression
     {
         public media_feature feature;
@@ -33,7 +35,7 @@ namespace H3ml.Layout
                     if (features.width <= val) return true;
                     break;
                 case media_feature.height:
-                    if (check_as_bool) return (features.height != 0);
+                    if (check_as_bool) return features.height != 0;
                     else if (features.height == val) return true;
                     break;
                 case media_feature.min_height:
@@ -44,7 +46,7 @@ namespace H3ml.Layout
                     break;
 
                 case media_feature.device_width:
-                    if (check_as_bool) return (features.device_width != 0);
+                    if (check_as_bool) return features.device_width != 0;
                     else if (features.device_width == val) return true;
                     break;
                 case media_feature.min_device_width:
@@ -54,11 +56,11 @@ namespace H3ml.Layout
                     if (features.device_width <= val) return true;
                     break;
                 case media_feature.device_height:
-                    if (check_as_bool) return (features.device_height != 0);
+                    if (check_as_bool) return features.device_height != 0;
                     else if (features.device_height == val) return true;
                     break;
                 case media_feature.min_device_height:
-                    if (features.device_height <= val) return true;
+                    if (features.device_height >= val) return true;
                     break;
                 case media_feature.max_device_height:
                     if (features.device_height <= val) return true;
@@ -172,6 +174,7 @@ namespace H3ml.Layout
         }
     }
 
+    [DebuggerDisplay("media_query: {_media_type} {_expressions.Count}")]
     public class media_query
     {
         List<media_query_expression> _expressions;
@@ -279,13 +282,10 @@ namespace H3ml.Layout
 
     public class media_query_list
     {
-        IList<media_query> _queries;
+        List<media_query> _queries = new List<media_query>();
         bool _is_used;
 
-        public media_query_list()
-        {
-            _is_used = false;
-        }
+        public media_query_list() { }
         public media_query_list(media_query_list val)
         {
             _is_used = val._is_used;
@@ -306,6 +306,7 @@ namespace H3ml.Layout
             }
             return list._queries.Count != 0 ? list : null;
         }
+
         public bool is_used => _is_used;
 
         public bool apply_media_features(media_features features)   // returns true if the _is_used changed

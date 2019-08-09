@@ -40,7 +40,7 @@ namespace H3ml.Layout
         protected List<string> _pseudo_classes = new List<string>();
         protected List<used_selector> _used_styles = new List<used_selector>();
 
-        protected IntPtr _font;
+        protected object _font;
         protected int _font_size;
         protected font_metrics _font_metrics;
 
@@ -1360,7 +1360,7 @@ namespace H3ml.Layout
             return ret;
         }
 
-        public override IntPtr get_font(out font_metrics fm)
+        public override object get_font(out font_metrics fm)
         {
             fm = _font_metrics;
             return _font;

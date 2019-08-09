@@ -299,7 +299,7 @@ namespace H3ml.Layout
         public virtual void draw(IntPtr hdc, int x, int y, position clip) { }
         public virtual void draw_background(IntPtr hdc, int x, int y, position clip) { }
         public virtual string get_style_property(string name, bool inherited, string def = null) => null;
-        public virtual IntPtr get_font(out font_metrics fm) { fm = default(font_metrics); return IntPtr.Zero; }
+        public virtual object get_font(out font_metrics fm) { fm = default(font_metrics); return null; }
         public virtual int get_font_size => 0;
         public virtual void get_text(ref string text) { }
         public virtual void parse_attributes() { }

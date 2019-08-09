@@ -73,7 +73,7 @@ namespace H3ml.Layout
 
         public document_container container => _container;
 
-        public IntPtr get_font(string name, int size, string weight, string style, string decoration, out font_metrics fm)
+        public object get_font(string name, int size, string weight, string style, string decoration, out font_metrics fm)
         {
             if (name == null || string.Equals(name, "inherit", StringComparison.OrdinalIgnoreCase))
                 name = _container.get_default_font_name();
@@ -350,10 +350,10 @@ namespace H3ml.Layout
             return doc;
         }
 
-        IntPtr add_font(string name, int size, string weight, string style, string decoration, out font_metrics fm)
+        object add_font(string name, int size, string weight, string style, string decoration, out font_metrics fm)
         {
             fm = default(font_metrics);
-            var ret = IntPtr.Zero;
+            object ret = null;
             if (name == null || string.Equals(name, "inherit", StringComparison.OrdinalIgnoreCase))
                 name = _container.get_default_font_name();
             if (size == 0)

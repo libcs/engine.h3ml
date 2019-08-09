@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Browser", "Browser\Browser.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Browser.Unity", "Browser.Unity\Browser.Unity.csproj", "{1295DE1F-82CD-43FB-BC9E-84DC24F35456}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.CairoContainer", "Layout.CairoContainer\Layout.CairoContainer.csproj", "{0F234627-F940-4258-BF93-3035EAC7A0F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.FormsContainer", "Layout.FormsContainer\Layout.FormsContainer.csproj", "{5571FC90-0F97-4D96-8AD2-3E3A2116D3BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +57,14 @@ Global
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F234627-F940-4258-BF93-3035EAC7A0F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F234627-F940-4258-BF93-3035EAC7A0F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F234627-F940-4258-BF93-3035EAC7A0F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F234627-F940-4258-BF93-3035EAC7A0F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5571FC90-0F97-4D96-8AD2-3E3A2116D3BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5571FC90-0F97-4D96-8AD2-3E3A2116D3BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5571FC90-0F97-4D96-8AD2-3E3A2116D3BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5571FC90-0F97-4D96-8AD2-3E3A2116D3BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

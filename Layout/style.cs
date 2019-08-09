@@ -1,16 +1,14 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace H3ml.Layout
 {
-    public class property_value
+    [DebuggerDisplay("{_value}{_important ? \"!important\" : null}")]
+    public struct property_value
     {
         public string _value;
         public bool _important;
 
-        public property_value()
-        {
-            _important = false;
-        }
         public property_value(string val, bool imp)
         {
             _important = imp;
@@ -23,6 +21,7 @@ namespace H3ml.Layout
         }
     }
 
+    [DebuggerDisplay("style:{_properties.Count}")]
     public class style
     {
         static readonly Dictionary<string, string> _valid_values = new Dictionary<string, string> { { "white-space", types.white_space_strings } };

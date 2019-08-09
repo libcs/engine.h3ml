@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace H3ml
+namespace H3ml.Layout
 {
     public class LayoutGlobalTest
     {

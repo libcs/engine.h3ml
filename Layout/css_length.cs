@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace H3ml.Layout
 {
+    [DebuggerDisplay("{_value}:{_predef}{_units}")]
     public class css_length
     {
         float _value;

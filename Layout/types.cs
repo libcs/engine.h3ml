@@ -112,7 +112,7 @@ namespace H3ml.Layout
 
     public struct font_item
     {
-        public IntPtr font;
+        public object font;
         public font_metrics metrics;
     }
 

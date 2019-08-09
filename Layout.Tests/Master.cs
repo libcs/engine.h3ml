@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 
-namespace H3ml
+namespace H3ml.Layout
 {
     public static class Master
     {
