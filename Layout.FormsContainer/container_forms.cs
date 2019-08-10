@@ -171,7 +171,7 @@ namespace H3ml.Layout.Containers
             {
                 _clips.RemoveAt(_clips.Count - 1);
                 //if (_clips.Count != 0)
-                //    var clip_pos = _clips.Last();
+                //    var clip_pos = _clips.Back();
             }
         }
 
@@ -186,7 +186,7 @@ namespace H3ml.Layout.Containers
             if (_clips.Count != 0)
             {
                 var ptView = hdc.RenderingOrigin;
-                var clip_pos = _clips.Last();
+                var clip_pos = _clips.Back();
                 _hClipRect = new Rectangle(clip_pos.left - ptView.X, clip_pos.top - ptView.Y, clip_pos.right - ptView.X, clip_pos.bottom - ptView.Y);
                 hdc.SetClip(_hClipRect);
             }

@@ -149,13 +149,13 @@ namespace H3ml.Layout
                 var line_top = 0;
                 if (_boxes.Count != 0)
                 {
-                    if (_boxes.Last().get_type == box_type.line)
+                    if (_boxes.Back().get_type == box_type.line)
                     {
-                        line_top = _boxes.Last().top;
-                        if (!_boxes.Last().is_empty)
+                        line_top = _boxes.Back().top;
+                        if (!_boxes.Back().is_empty)
                             line_top += line_height;
                     }
-                    else line_top = _boxes.Last().bottom;
+                    else line_top = _boxes.Back().bottom;
                 }
                 el.render(0, line_top, 0, max_width); //:h3ml
                 el._pos.x += el.content_margins_left;
@@ -171,7 +171,7 @@ namespace H3ml.Layout
                     {
                         var line_top = 0;
                         if (_boxes.Count != 0)
-                            line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
+                            line_top = _boxes.Back().get_type == box_type.line ? _boxes.Back().top : _boxes.Back().bottom;
                         line_top = get_cleared_top(el, line_top);
                         var line_left = 0;
                         var line_right = max_width;
@@ -196,7 +196,7 @@ namespace H3ml.Layout
                     {
                         var line_top = 0;
                         if (_boxes.Count != 0)
-                            line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
+                            line_top = _boxes.Back().get_type == box_type.line ? _boxes.Back().top : _boxes.Back().bottom;
                         line_top = get_cleared_top(el, line_top);
                         var line_left = 0;
                         var line_right = max_width;
@@ -229,7 +229,7 @@ namespace H3ml.Layout
                         var line_ctx = new line_context();
                         line_ctx.top = 0;
                         if (_boxes.Count != 0)
-                            line_ctx.top = _boxes.Last().top;
+                            line_ctx.top = _boxes.Back().top;
                         line_ctx.left = 0;
                         line_ctx.right = max_width;
                         line_ctx.fix_top();
@@ -261,12 +261,12 @@ namespace H3ml.Layout
 
                         var add_box = true;
                         if (_boxes.Count != 0)
-                            if (_boxes.Last().can_hold(el, _white_space))
+                            if (_boxes.Back().can_hold(el, _white_space))
                                 add_box = false;
                         if (add_box)
                             new_box(el, max_width, line_ctx);
                         else if (_boxes.Count != 0)
-                            line_ctx.top = _boxes.Last().top;
+                            line_ctx.top = _boxes.Back().top;
                         if (line_ctx.top != line_ctx.calculatedTop)
                         {
                             line_ctx.left = 0;
@@ -285,7 +285,7 @@ namespace H3ml.Layout
                                     if (shift >= 0)
                                     {
                                         line_ctx.top -= shift;
-                                        _boxes.Last().y_shift(-shift);
+                                        _boxes.Back().y_shift(-shift);
                                     }
                                 }
                             }
@@ -297,7 +297,7 @@ namespace H3ml.Layout
                                 if (shift >= 0)
                                 {
                                     line_ctx.top -= shift;
-                                    _boxes.Last().y_shift(-shift);
+                                    _boxes.Back().y_shift(-shift);
                                 }
                             }
                         }
@@ -321,7 +321,7 @@ namespace H3ml.Layout
                                 break;
                         }
 
-                        _boxes.Last().add_element(el);
+                        _boxes.Back().add_element(el);
                         if (el.is_inline_box && !el.skip)
                             ret_width = el.right + (max_width - line_ctx.right);
                     }
@@ -668,14 +668,14 @@ namespace H3ml.Layout
             var line_top = 0;
             if (_boxes.Count != 0)
             {
-                _boxes.Last().finish(end_of_render);
-                if (_boxes.Last().is_empty)
+                _boxes.Back().finish(end_of_render);
+                if (_boxes.Back().is_empty)
                 {
-                    line_top = _boxes.Last().top;
+                    line_top = _boxes.Back().top;
                     _boxes.RemoveAt(_boxes.Count - 1);
                 }
                 if (_boxes.Count != 0)
-                    line_top = _boxes.Last().bottom;
+                    line_top = _boxes.Back().bottom;
             }
             return line_top;
         }
@@ -865,7 +865,7 @@ namespace H3ml.Layout
                 return 0;
             var bl = 0;
             if (_boxes.Count != 0)
-                bl = _boxes.Last().baseline + content_margins_bottom;
+                bl = _boxes.Back().baseline + content_margins_bottom;
             return bl;
         }
         public override bool on_mouse_over()
@@ -2245,7 +2245,7 @@ namespace H3ml.Layout
                 if (points.Count != 0)
                 {
                     points.Sort(); // SKY: check was less
-                    new_top = points.Last();
+                    new_top = points.Back();
                     foreach (var pt in points)
                     {
                         var pos_left = 0;
@@ -2274,7 +2274,7 @@ namespace H3ml.Layout
             if (_boxes.Count != 0)
             {
                 var add = 0;
-                var content_height = _boxes.Last().bottom;
+                var content_height = _boxes.Back().bottom;
                 if (_pos.height > content_height)
                 {
                     switch (_vertical_align)
@@ -2803,6 +2803,7 @@ namespace H3ml.Layout
             calc_auto_margins(parent_width);
 
             if (_boxes.Count != 0)
+            {
                 if (collapse_top_margin)
                 {
                     var old_top = _margins.top;
@@ -2810,13 +2811,14 @@ namespace H3ml.Layout
                     if (_margins.top != old_top)
                         update_floats(_margins.top - old_top, this);
                 }
-            if (collapse_bottom_margin)
-            {
-                _margins.bottom = Math.Max(_boxes.Last().bottom_margin, _margins.bottom);
-                _pos.height = _boxes.Last().bottom - _boxes.Last().bottom_margin;
+                if (collapse_bottom_margin)
+                {
+                    _margins.bottom = Math.Max(_boxes.Back().bottom_margin, _margins.bottom);
+                    _pos.height = _boxes.Back().bottom - _boxes.Back().bottom_margin;
+                }
+                else
+                    _pos.height = _boxes.Back().bottom;
             }
-            else
-                _pos.height = _boxes.Last().bottom;
 
             // add the floats height to the block height
             if (is_floats_holder)
@@ -3193,7 +3195,7 @@ namespace H3ml.Layout
             if (_boxes.Count != 0)
             {
                 var els = new List<element>();
-                _boxes.Last().get_elements(els);
+                _boxes.Back().get_elements(els);
                 var was_cleared = false;
                 if (els.Count != 0 && els.First().get_clear != element_clear.none)
                 {
@@ -3214,11 +3216,11 @@ namespace H3ml.Layout
                 }
                 else
                 {
-                    var line_top = _boxes.Last().get_type == box_type.line ? _boxes.Last().top : _boxes.Last().bottom;
+                    var line_top = _boxes.Back().get_type == box_type.line ? _boxes.Back().top : _boxes.Back().bottom;
                     var line_left = 0;
                     var line_right = max_width;
                     get_line_left_right(line_top, max_width, ref line_left, ref line_right);
-                    if (_boxes.Last().get_type == box_type.line)
+                    if (_boxes.Back().get_type == box_type.line)
                     {
                         if (_boxes.Count == 1 && _list_style_type != list_style_type.none && _list_style_position == list_style_position.inside)
                             line_left += get_font_size;
@@ -3236,7 +3238,7 @@ namespace H3ml.Layout
                         }
                     }
                     var els2 = new List<element>();
-                    _boxes.Last().new_width(line_left, line_right, els2);
+                    _boxes.Back().new_width(line_left, line_right, els2);
                     foreach (var el in els2)
                     {
                         var rw = place_element(el, max_width);
@@ -3514,7 +3516,7 @@ namespace H3ml.Layout
             }
             if (_children.Count != 0)
             {
-                if (_children.Last().get_tagName() == "::after")
+                if (_children.Back().get_tagName() == "::after")
                     _children.RemoveAt(_children.Count - 1);
             }
         }
@@ -3534,7 +3536,7 @@ namespace H3ml.Layout
         {
             if (_children.Count != 0)
                 if (_children.First().get_tagName() == "::after")
-                    return _children.Last();
+                    return _children.Back();
             var el = new el_after(get_document());
             appendChild(el);
             return el;

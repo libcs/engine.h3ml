@@ -328,7 +328,7 @@ namespace H3ml.Layout
             using (var gumbo = new GumboWrapper(str))  // parse document into GumboOutput
                 doc.create_node(gumbo.Document.Root, root_elements); // Create litehtml::elements.
             if (root_elements.Count != 0)
-                doc._root = root_elements.Last();
+                doc._root = root_elements.Back();
             // Let's process created elements tree
             if (doc._root != null)
             {

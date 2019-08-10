@@ -210,11 +210,11 @@ namespace H3ml.Layout
                 rowspan = int.Parse(el.get_attr("rowspan", "1")),
                 borders = el.get_borders,
             };
-            while (is_rowspanned(_cells.Count - 1, _cells.Last().Count))
-                _cells.Last().Add(new table_cell());
-            _cells.Last().Add(cell);
+            while (is_rowspanned(_cells.Count - 1, _cells.Back().Count))
+                _cells.Back().Add(new table_cell());
+            _cells.Back().Add(cell);
             for (var i = 1; i < cell.colspan; i++)
-                _cells.Last().Add(new table_cell());
+                _cells.Back().Add(new table_cell());
         }
 
         public bool is_rowspanned(int r, int c)
@@ -356,7 +356,7 @@ namespace H3ml.Layout
                     }
                     else
                     {
-                        distribute_columns.Last().width += width;
+                        distribute_columns.Back().width += width;
                         added_width = width;
                     }
                 }

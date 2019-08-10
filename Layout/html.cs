@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace H3ml.Layout
@@ -132,6 +131,9 @@ namespace H3ml.Layout
                     if (chars.IndexOf(source[i]) == -1) return i;
             return -1;
         }
+
+        public static T Back<T>(this T[] source) => source.Length != 0 ? source[source.Length - 1] : default(T);
+        public static T Back<T>(this IList<T> source) => source.Count != 0 ? source[source.Count - 1] : default(T);
 
         public static string Substr(this string source, int start, int end) => end < 0 ? source.Substring(start) : source.Substring(start, end);
 
