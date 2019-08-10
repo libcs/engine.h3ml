@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace H3ml.Layout.Containers
 {
-    public class container_cairo : document_container, IDisposable
+    public class container_cairo : Idocument_container, IDisposable
     {
         class cairo_font
         {

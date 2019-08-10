@@ -7,14 +7,14 @@ using System.Windows.Forms;
 
 namespace H3ml.Layout.Containers
 {
-    public class container_win : document_container
+    public class container_form : UserControl, Idocument_container
     {
         Dictionary<string, object> _images = new Dictionary<string, object>();
         List<position> _clips = new List<position>();
         Rectangle _hClipRect;
-        readonly Func<Graphics> _getDC;
+        //readonly Func<Graphics> _getDC;
 
-        public container_win(Func<Graphics> getDC) => _getDC = getDC;
+        //public container_win(Func<Graphics> getDC) => _getDC = getDC;
 
         public object create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm)
         {
@@ -58,13 +58,13 @@ namespace H3ml.Layout.Containers
             release_clip((Graphics)hdc);
         }
 
-        public object get_temp_dc() => _getDC();
+        public object get_temp_dc() => CreateGraphics(); // _getDC()
 
         public void release_temp_dc(object hdc) => ((Graphics)hdc).Dispose();
 
         public int pt_to_px(int pt)
         {
-            using (var dc = _getDC())
+            using (var dc = CreateGraphics()) //: _getDC()
                 return (int)(pt * dc.DpiY / 72);
         }
 
@@ -209,9 +209,16 @@ namespace H3ml.Layout.Containers
             _images.Clear();
         }
 
-        protected void make_url(string url, string basepath, out string urlout) { urlout = null; }
+        protected virtual void make_url(string url, string basepath, out string urlout) => throw new NotImplementedException();
 
-        protected object get_image(string url) => null;
+        protected static string urljoin(string base_, string relative)
+        {
+            try { return new Uri(new Uri(base_), relative).ToString(); }
+            catch { return relative; }
+        }
+
+        protected virtual object get_image(string url) => throw new NotImplementedException();
+
         //protected void get_client_rect(position client) { }
 
         /////// container_gdi ///////
@@ -347,7 +354,7 @@ namespace H3ml.Layout.Containers
         public virtual void draw_borders(object hdc, borders borders, position draw_pos, bool root) { }
         public void draw_list_marker(object hdc, list_marker marker) { }
         public void get_client_rect(out position client) { client = default(position); }
-        public string get_default_font_name() => null;
+        public string get_default_font_name() => "Arial";
         public void get_language(string language, out string culture) { culture = null; }
         public void get_media_features(media_features media) { }
         public void import_css(out string text, string url, string baseurl) { text = null; }

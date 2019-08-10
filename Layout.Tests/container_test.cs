@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace H3ml.Layout
 {
-    public class container_test : document_container
+    public class container_test : Idocument_container
     {
         public void Dispose() { }
         public element create_element(string tag_name, Dictionary<string, string> attributes, document doc) => null;

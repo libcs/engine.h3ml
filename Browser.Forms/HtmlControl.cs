@@ -13,7 +13,7 @@ using System.IO;
 
 namespace Browser.Forms
 {
-    public partial class HtmlControl : UserControl
+    public partial class HtmlControl : container_form
     {
         public HtmlControl()
         {
@@ -28,14 +28,14 @@ namespace Browser.Forms
         string _cursor;
         string _clicked_url;
         BrowserForm _browser;
-        container_win _container;
+        //container_win _container;
         http_loader _http = new http_loader();
 
         public void set(context html_context, BrowserForm browser)
         {
             _browser = browser;
             _html_context = html_context;
-            _container = new container_win(CreateGraphics);
+            //_container = new container_win(CreateGraphics);
         }
 
         public void open_page(string url)
@@ -46,7 +46,7 @@ namespace Browser.Forms
             _url = _http.url;
             _base_url = _http.url;
             _browser.set_url(_url);
-            _html = document.createFromString(html, _container, _html_context);
+            _html = document.createFromString(html, this, _html_context);
             if (_html != null)
             {
                 _rendered_width = Width;
@@ -66,10 +66,12 @@ namespace Browser.Forms
             base.OnResize(e);
         }
 
+        protected override void make_url(string url, string basepath, out string urlout) => urlout = string.IsNullOrEmpty(basepath) ? !string.IsNullOrEmpty(_base_url) ? urljoin(_base_url, url) : url : urljoin(basepath, url);
 
-        void make_url(string url, string basepath, out string out_)
+        protected override object get_image(string url)
         {
-            out_ = string.IsNullOrEmpty(basepath) ? !string.IsNullOrEmpty(_base_url) ? urljoin(_base_url, url) : url : urljoin(basepath, url);
+            var stream = _http.load_file(url);
+            return Image.FromStream(stream);
         }
 
         void load_text_file(string url, out string out_)
@@ -77,12 +79,6 @@ namespace Browser.Forms
             var stream = _http.load_file(url);
             using (var r = new StreamReader(stream))
                 out_ = r.ReadToEnd();
-        }
-
-        static string urljoin(string base_, string relative)
-        {
-            try { return new Uri(new Uri(base_), relative).ToString(); }
-            catch { return relative; }
         }
     }
 }

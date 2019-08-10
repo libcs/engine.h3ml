@@ -42,7 +42,7 @@ namespace H3ml.Layout
     public class document
     {
         element _root;
-        document_container _container;
+        Idocument_container _container;
         Dictionary<string, font_item> _fonts = new Dictionary<string, font_item>();
         List<css_text> _css = new List<css_text>();
         css _styles = new css();
@@ -57,7 +57,7 @@ namespace H3ml.Layout
         string _lang;
         string _culture;
 
-        public document(document_container objContainer, context ctx)
+        public document(Idocument_container objContainer, context ctx)
         {
             _container = objContainer;
             _context = ctx;
@@ -71,7 +71,7 @@ namespace H3ml.Layout
                     _container.delete_font(f.Value.font);
         }
 
-        public document_container container => _container;
+        public Idocument_container container => _container;
 
         public object get_font(string name, int size, string weight, string style, string decoration, out font_metrics fm)
         {
@@ -320,8 +320,8 @@ namespace H3ml.Layout
 
         public element get_over_element => _over_element;
 
-        public static document createFromString(string str, document_container objPainter, context ctx, css user_styles = null) => createFromUTF8(Encoding.UTF8.GetString(Encoding.Default.GetBytes(str)), objPainter, ctx, user_styles);
-        public static document createFromUTF8(string str, document_container objPainter, context ctx, css user_styles = null)
+        public static document createFromString(string str, Idocument_container objPainter, context ctx, css user_styles = null) => createFromUTF8(Encoding.UTF8.GetString(Encoding.Default.GetBytes(str)), objPainter, ctx, user_styles);
+        public static document createFromUTF8(string str, Idocument_container objPainter, context ctx, css user_styles = null)
         {
             var doc = new document(objPainter, ctx); // Create litehtml::document
             var root_elements = new List<element>();

@@ -193,7 +193,7 @@ namespace H3ml.Layout
             alpha = val.alpha;
         }
 
-        public static web_color from_string(string str, document_container callback)
+        public static web_color from_string(string str, Idocument_container callback)
         {
             if (string.IsNullOrEmpty(str))
                 return new web_color(0, 0, 0);
@@ -254,7 +254,7 @@ namespace H3ml.Layout
             return new web_color(0, 0, 0);
         }
 
-        public static string resolve_name(string name, document_container callback)
+        public static string resolve_name(string name, Idocument_container callback)
         {
             for (var i = 0; g_def_colors[i].name != null; i++)
                 if (string.Equals(name, g_def_colors[i].name, StringComparison.OrdinalIgnoreCase))

@@ -106,7 +106,7 @@ namespace H3ml.Layout
 
         public override void parse_styles(bool is_reparse = false)
         {
-            parse_styles(is_reparse);
+            base.parse_styles(is_reparse);
             if (!string.IsNullOrEmpty(_src))
                 get_document().container.load_image(_src, null, !_css_height.is_predefined && !_css_width.is_predefined);
         }

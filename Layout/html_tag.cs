@@ -3312,9 +3312,9 @@ namespace H3ml.Layout
                 if (res.Count != 0)
                 {
                     _bg._position.width.fromString(res[0], types.background_size_strings);
-                    if (res.Count >= 1) _bg._position.height.fromString(res[1], types.background_size_strings);
+                    if (res.Count > 1) _bg._position.height.fromString(res[1], types.background_size_strings);
                     else _bg._position.height.predef = (int)background_size.auto;
-                    if (res.Count >= 2) _bg._position.depth.fromString(res[2], types.background_size_strings); //:h3ml
+                    if (res.Count > 2) _bg._position.depth.fromString(res[2], types.background_size_strings); //:h3ml
                     else _bg._position.depth.predef = (int)background_size.auto; //:h3ml
                 }
                 else
