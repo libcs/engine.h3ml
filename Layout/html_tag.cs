@@ -758,7 +758,6 @@ namespace H3ml.Layout
                         if ((apply & select_result.match_pseudo_class) != 0)
                         {
                             if (select(sel, true) != 0)
-                            {
                                 if ((apply & select_result.match_with_after) != 0)
                                 {
                                     var el = get_element_after();
@@ -776,7 +775,6 @@ namespace H3ml.Layout
                                     add_style(sel._style);
                                     us._used = true;
                                 }
-                            }
                         }
                         else if ((apply & select_result.match_with_after) != 0)
                         {

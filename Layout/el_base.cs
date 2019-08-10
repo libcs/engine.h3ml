@@ -4,9 +4,6 @@ namespace H3ml.Layout
     {
         public el_base(document doc) : base(doc) { }
 
-        public override void parse_attributes()
-        {
-            get_document().container.set_base_url(get_attr("href"));
-        }
+        public override void parse_attributes() => get_document().container.set_base_url(get_attr("href"));
     }
 }

@@ -6,10 +6,7 @@ namespace H3ml.Layout
 
         public el_comment(document doc) : base(doc) => _skip = true;
 
-        public override void get_text(ref string text)
-        {
-            text += _text;
-        }
+        public override void get_text(ref string text) => text += _text;
 
         public override void set_data(string data)
         {

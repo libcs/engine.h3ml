@@ -12,7 +12,7 @@ namespace H3ml.Layout
         public override void apply_stylesheet(css stylesheet)
         {
             if (get_attr("href") != null) _pseudo_classes.Add("link");
-            apply_stylesheet(stylesheet);
+            base.apply_stylesheet(stylesheet);
         }
     }
 }

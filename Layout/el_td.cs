@@ -11,7 +11,7 @@ namespace H3ml.Layout
             str = get_attr("align"); if (str != null) _style.add_property("text-align", str, null, false);
             str = get_attr("bgcolor"); if (str != null) _style.add_property("background-color", str, null, false);
             str = get_attr("valign"); if (str != null) _style.add_property("vertical-align", str, null, false);
-            parse_attributes();
+            base.parse_attributes();
         }
     }
 }

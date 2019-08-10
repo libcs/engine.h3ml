@@ -17,6 +17,7 @@ namespace Browser.Forms
         {
             InitializeComponent();
             html.set(ctx, this);
+            on_go_clicked(null, null);
         }
 
         void on_go_clicked(object sender, EventArgs e) => html.open_page(address_bar.Text);

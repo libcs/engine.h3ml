@@ -1,5 +1,3 @@
-using System;
-
 namespace H3ml.Layout
 {
     public class el_image : html_tag
@@ -24,6 +22,7 @@ namespace H3ml.Layout
             {
                 _pos.height = sz.height;
                 _pos.width = sz.width;
+                _pos.depth = sz.depth; //:h3ml
                 // check for max-height
                 if (!_css_max_width.is_predefined)
                 {
@@ -71,6 +70,7 @@ namespace H3ml.Layout
             {
                 _pos.width = _css_width.calc_percent(parent_width);
                 _pos.height = 0;
+                _pos.depth = 0; //:h3ml
                 if (!get_predefined_height(out _pos.height))
                     _pos.height = (int)_css_height.val;
 
@@ -135,7 +135,6 @@ namespace H3ml.Layout
 
             // draw image as background
             if (pos.does_intersect(clip))
-            {
                 if (pos.width > 0 && pos.height > 0)
                 {
                     var bg = new background_paint();
@@ -155,7 +154,6 @@ namespace H3ml.Layout
                     bg.position_z = pos.z; //:h3ml
                     get_document().container.draw_background(hdc, bg);
                 }
-            }
 
             // draw borders
             if (el_pos.does_intersect(clip))

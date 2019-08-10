@@ -22,7 +22,7 @@ namespace H3ml.Layout
                     case 5: _style.add_property("font-size", "x-large", null, false); break;
                 }
             }
-            parse_attributes();
+            base.parse_attributes();
         }
     }
 }

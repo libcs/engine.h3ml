@@ -619,7 +619,6 @@ namespace H3ml.Layout
         {
             var is_valid = !_valid_values.TryGetValue(name, out var vals) || html.value_in_list(val, vals);
             if (is_valid)
-            {
                 if (_properties.TryGetValue(name, out var prop))
                 {
                     if (!prop._important || (important && prop._important))
@@ -629,7 +628,6 @@ namespace H3ml.Layout
                     }
                 }
                 else _properties[name] = new property_value(val, important);
-            }
         }
 
         void remove_property(string name, bool important)

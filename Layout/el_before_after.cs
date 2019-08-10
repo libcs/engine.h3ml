@@ -59,7 +59,6 @@ namespace H3ml.Layout
             string word = null;
             string esc = null;
             for (var i = 0; i < txt.Length; i++)
-            {
                 if (txt[i] == ' ' || txt[i] == '\t' || (txt[i] == '\\' && !string.IsNullOrEmpty(esc)))
                 {
                     if (string.IsNullOrEmpty(esc))
@@ -84,7 +83,6 @@ namespace H3ml.Layout
                     if (!string.IsNullOrEmpty(esc) || txt[i] == '\\') esc += txt[i];
                     else word += txt[i];
                 }
-            }
             if (!string.IsNullOrEmpty(esc))
                 word += convert_escape(esc.Substring(1));
             if (!string.IsNullOrEmpty(word))

@@ -12,6 +12,7 @@ namespace H3ml.Layout
         {
             _border_spacing_x = 0;
             _border_spacing_y = 0;
+            _border_spacing_z = 0; //:h3ml
             _border_collapse = border_collapse.separate;
         }
 
@@ -29,23 +30,30 @@ namespace H3ml.Layout
             {
                 _css_border_spacing_x.fromString(get_style_property("-litehtml-border-spacing-x", true, "0px"));
                 _css_border_spacing_y.fromString(get_style_property("-litehtml-border-spacing-y", true, "0px"));
+                _css_border_spacing_z.fromString(get_style_property("-litehtml-border-spacing-z", true, "0px")); //:h3ml
                 var fntsz = get_font_size;
                 var doc = get_document();
                 _border_spacing_x = doc.cvt_units(_css_border_spacing_x, fntsz);
                 _border_spacing_y = doc.cvt_units(_css_border_spacing_y, fntsz);
+                _border_spacing_z = doc.cvt_units(_css_border_spacing_z, fntsz); //:h3ml
             }
             else
             {
                 _border_spacing_x = 0;
                 _border_spacing_y = 0;
+                _border_spacing_z = 0; //:h3ml
                 _padding.bottom = 0;
                 _padding.top = 0;
                 _padding.left = 0;
                 _padding.right = 0;
+                _padding.front = 0; //:h3ml
+                _padding.back = 0; //:h3ml
                 _css_padding.bottom.set_value(0, css_units.px);
                 _css_padding.top.set_value(0, css_units.px);
                 _css_padding.left.set_value(0, css_units.px);
                 _css_padding.right.set_value(0, css_units.px);
+                _css_padding.front.set_value(0, css_units.px); //:h3ml
+                _css_padding.back.set_value(0, css_units.px); //:h3ml
             }
         }
 
@@ -64,7 +72,7 @@ namespace H3ml.Layout
             str = get_attr("cellspacing"); if (str != null) _style.add_property("border-spacing", $"{str} {str}", null, false);
             str = get_attr("border"); if (str != null) _style.add_property("border-width", str, null, false);
             str = get_attr("bgcolor"); if (str != null) _style.add_property("background-color", str, null, false);
-            parse_attributes();
+            base.parse_attributes();
         }
     }
 }
