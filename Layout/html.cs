@@ -26,7 +26,6 @@ namespace H3ml.Layout
         void get_image_size(string src, string baseurl, out size sz);
         void draw_background(object hdc, background_paint bg);
         void draw_borders(object hdc, borders borders, position draw_pos, bool root);
-
         void set_caption(string caption);
         void set_base_url(string base_url);
         void link(document doc, element el);
@@ -38,10 +37,9 @@ namespace H3ml.Layout
         void del_clip();
         void get_client_rect(out position client);
         element create_element(string tag_name, Dictionary<string, string> attributes, document doc);
-
         void get_media_features(media_features media);
-        void get_language(string language, out string culture);
-        string resolve_color(string color); // => "";
+        void get_language(out string language, out string culture);
+        string resolve_color(string color);
     }
 
     public static partial class html

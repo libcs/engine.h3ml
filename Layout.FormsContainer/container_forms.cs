@@ -2,19 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace H3ml.Layout.Containers
 {
     public class container_form : UserControl, Idocument_container
     {
-        Dictionary<string, object> _images = new Dictionary<string, object>();
-        List<position> _clips = new List<position>();
+        readonly Dictionary<string, object> _images = new Dictionary<string, object>();
+        readonly List<position> _clips = new List<position>();
         Rectangle _hClipRect;
-        //readonly Func<Graphics> _getDC;
 
-        //public container_win(Func<Graphics> getDC) => _getDC = getDC;
+        //public object get_temp_dc() => CreateGraphics(); // _getDC()
+        //public void release_temp_dc(object hdc) => ((Graphics)hdc).Dispose();
+        //public void fill_rect(object hdc, position pos, web_color color, css_border_radius radius)
+        //{
+        //    var gdi = (Graphics)hdc;
+        //    apply_clip(gdi);
+        //    fill_rect(gdi, pos.x, pos.y, pos.width, pos.height, color, radius);
+        //    release_clip(gdi);
+        //}
+
+        public virtual void get_client_rect(out position client) => throw new NotImplementedException();
+        public virtual void import_css(out string text, string url, string baseurl) => throw new NotImplementedException();
+        public virtual void on_anchor_click(string url, element el) => throw new NotImplementedException();
+        public string resolve_color(string color) => null;
+        public virtual void set_base_url(string base_url) => throw new NotImplementedException();
+        public virtual void set_caption(string caption) => throw new NotImplementedException();
+        public virtual void set_cursor(string cursor) => throw new NotImplementedException();
+        protected virtual object get_image(string url) => throw new NotImplementedException();
 
         public object create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm)
         {
@@ -32,11 +47,9 @@ namespace H3ml.Layout.Containers
 
         public void delete_font(object hFont) => ((Font)hFont).Dispose();
 
-        public int line_height(object hdc, object hFont) => ((Font)hFont).FontFamily.GetEmHeight(FontStyle.Regular);
-
-        public int get_text_base_line(object hdc, object hFont) => ((Font)hFont).FontFamily.GetCellDescent(FontStyle.Regular);
-
-        public int text_width(object hdc, string text, object hFont) => TextRenderer.MeasureText(text, (Font)hFont).Width;  //(int)((Graphics)hdc).MeasureString(text, (Font)hFont).Width;
+        //public int line_height(object hdc, object hFont) => ((Font)hFont).FontFamily.GetEmHeight(FontStyle.Regular);
+        //public int get_text_base_line(object hdc, object hFont) => ((Font)hFont).FontFamily.GetCellDescent(FontStyle.Regular);
+        public int text_width(string text, object hFont) => TextRenderer.MeasureText(text, (Font)hFont).Width;  //(int)((Graphics)hdc).MeasureString(text, (Font)hFont).Width;
 
         public void draw_text(object hdc, string text, object hFont, web_color color, position pos)
         {
@@ -51,50 +64,44 @@ namespace H3ml.Layout.Containers
             release_clip((Graphics)hdc);
         }
 
-        public void fill_rect(object hdc, position pos, web_color color, css_border_radius radius)
-        {
-            apply_clip((Graphics)hdc);
-            fill_rect((Graphics)hdc, pos.x, pos.y, pos.width, pos.height, color, radius);
-            release_clip((Graphics)hdc);
-        }
-
-        public object get_temp_dc() => CreateGraphics(); // _getDC()
-
-        public void release_temp_dc(object hdc) => ((Graphics)hdc).Dispose();
-
         public int pt_to_px(int pt)
         {
-            using (var dc = CreateGraphics()) //: _getDC()
+            using (var dc = CreateGraphics())
                 return (int)(pt * dc.DpiY / 72);
         }
 
-        public void draw_list_marker(object hdc, list_style_type marker_type, int x, int y, int height, web_color color)
+        public int get_default_font_size() => 16;
+
+        public void draw_list_marker(object hdc, list_marker marker)
         {
-            apply_clip((Graphics)hdc);
-            var top_margin = height / 3;
-            var draw_x = x;
-            var draw_y = y + top_margin;
-            var draw_width = height - top_margin * 2;
-            var draw_height = height - top_margin * 2;
-            switch (marker_type)
+            var gdi = (Graphics)hdc;
+            apply_clip(gdi);
+            if (!string.IsNullOrEmpty(marker.image))
             {
-                case list_style_type.circle:
-                    {
-                        draw_ellipse((Graphics)hdc, draw_x, draw_y, draw_width, draw_height, color, 1);
-                    }
-                    break;
-                case list_style_type.disc:
-                    {
-                        fill_ellipse((Graphics)hdc, draw_x, draw_y, draw_width, draw_height, color);
-                    }
-                    break;
-                case list_style_type.square:
-                    {
-                        fill_rect((Graphics)hdc, draw_x, draw_y, draw_width, draw_height, color, new css_border_radius());
-                    }
-                    break;
+                make_url(marker.image, marker.baseurl, out var url);
+                if (_images.TryGetValue(url, out var img) && img is Bitmap bmp)
+                    draw_bmp(gdi, bmp, marker.pos);
             }
-            release_clip((Graphics)hdc);
+            else
+                switch (marker.marker_type)
+                {
+                    case list_style_type.circle:
+                        {
+                            draw_ellipse(gdi, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, marker.color, 1);
+                        }
+                        break;
+                    case list_style_type.disc:
+                        {
+                            fill_ellipse(gdi, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, marker.color);
+                        }
+                        break;
+                    case list_style_type.square:
+                        {
+                            fill_rect(gdi, marker.pos.x, marker.pos.y, marker.pos.width, marker.pos.height, marker.color, new css_border_radius());
+                        }
+                        break;
+                }
+            release_clip(gdi);
         }
 
         public void load_image(string src, string baseurl, bool redraw_on_ready)
@@ -110,45 +117,119 @@ namespace H3ml.Layout.Containers
 
         public void get_image_size(string src, string baseurl, out size sz)
         {
-            sz = default(size);
+            sz = new size();
             make_url(src, baseurl, out var url);
-            if (_images.TryGetValue(url, out var img))
-                get_img_size(img, out sz);
+            if (_images.TryGetValue(url, out var img) && img is Bitmap bmp)
+            {
+                sz.width = bmp.Width;
+                sz.height = bmp.Height;
+            }
         }
 
         public void draw_image(object hdc, string src, string baseurl, position pos)
         {
-            apply_clip((Graphics)hdc);
+            var gdi = (Graphics)hdc;
+            apply_clip(gdi);
             make_url(src, baseurl, out var url);
-            if (_images.TryGetValue(url, out var img))
-                draw_img((Graphics)hdc, img, pos);
-            release_clip((Graphics)hdc);
+            if (_images.TryGetValue(url, out var img) && img is Bitmap bmp)
+                draw_bmp(gdi, bmp, pos);
+            release_clip(gdi);
         }
 
-        public void draw_background(object hdc, string image, string baseurl, position draw_pos, css_position bg_pos, background_repeat repeat, background_attachment attachment)
+        void draw_bmp(Graphics hdc, Bitmap bmp, position pos)
         {
-            apply_clip((Graphics)hdc);
-            make_url(image, baseurl, out var url);
-            if (_images.TryGetValue(url, out var img))
-            {
-                get_img_size(img, out var img_sz);
-                var pos = draw_pos;
-                if (bg_pos.x.units != css_units.percentage)
-                    pos.x += (int)bg_pos.x.val;
-                else
-                    pos.x += (int)((draw_pos.width - img_sz.width) * bg_pos.x.val / 100.0);
-                if (bg_pos.y.units != css_units.percentage)
-                    pos.y += (int)bg_pos.y.val;
-                else
-                    pos.y += (int)((draw_pos.height - img_sz.height) * bg_pos.y.val / 100.0);
-                draw_img_bg((Graphics)hdc, img, draw_pos, pos, repeat, attachment);
-            }
-            release_clip((Graphics)hdc);
+            hdc.InterpolationMode = InterpolationMode.NearestNeighbor;
+            hdc.PixelOffsetMode = PixelOffsetMode.Half;
+            hdc.DrawImage(bmp, pos.x, pos.y, pos.width, pos.height);
         }
 
-        public int get_default_font_size() => 16;
+        public void draw_background(object hdc, background_paint bg)
+        {
+            var gdi = (Graphics)hdc;
+            apply_clip(gdi);
+            make_url(bg.image, bg.baseurl, out var url);
+            if (_images.TryGetValue(url, out var img) && img is Bitmap bmp)
+                draw_img_bg(gdi, bmp, bg);
+            release_clip(gdi);
+        }
 
-        public void set_clip(position pos, bool valid_x, bool valid_y)
+        protected void draw_img_bg(Graphics hdc, Bitmap bmp, background_paint bg)
+        {
+            var bmp_Width = bmp.Width;
+            var bmp_Height = bmp.Height;
+            hdc.InterpolationMode = InterpolationMode.NearestNeighbor;
+            hdc.PixelOffsetMode = PixelOffsetMode.Half;
+            var rect = new Rectangle(bg.clip_box.left, bg.clip_box.top, bg.clip_box.width, bg.clip_box.height);
+            hdc.SetClip(rect);
+            switch (bg.repeat)
+            {
+                case background_repeat.no_repeat:
+                    {
+                        hdc.DrawImage(bmp, bg.position_x, bg.position_y, bmp_Width, bmp_Height);
+                    }
+                    break;
+                case background_repeat.repeat_x:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        for (var x = pos.left; x < pos.right; x += bgbmp_Width)
+                        //            hdc.DrawCachedBitmap(bmp, x, pos.top);
+                        //        for (var x = pos.left - bgbmp_Width; x + bgbmp_Width > draw_pos.left; x -= bgbmp_Width)
+                        //            hdc.DrawCachedBitmap(&bmp, x, pos.top);
+                    }
+                    break;
+                case background_repeat.repeat_y:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        for (var y = pos.top; y < pos.bottom; y += bgbmp_Height)
+                        //            hdc.DrawCachedBitmap(bmp, pos.left, y);
+                        //        for (var y = pos.top - bgbmp_Height; y + bgbmp_Height > draw_pos.top; y -= bgbmp_Height)
+                        //            hdc.DrawCachedBitmap(&bmp, pos.left, y);
+                    }
+                    break;
+                case background_repeat.repeat:
+                    {
+                        //        var bmp = new CachedBitmap(bgbmp, hdc);
+                        //        if (bgbmp_Height >= 0)
+                        //            for (var x = pos.left; x < pos.right; x += bgbmp_Width)
+                        //                for (var y = pos.top; y < pos.bottom; y += bgbmp_Height)
+                        //                    hdc.DrawCachedBitmap(&bmp, x, y);
+                    }
+                    break;
+            }
+        }
+
+        protected virtual void make_url(string url, string basepath, out string urlout) => urlout = url;
+
+        public void draw_borders(object hdc, borders borders, position draw_pos, bool root = false)
+        {
+            var gdi = (Graphics)hdc;
+            apply_clip(gdi);
+            // draw left border
+            if (borders.left.width != 0 && borders.left.style > border_style.hidden)
+                using (var pen = new Pen(Color.FromArgb(borders.left.color.red, borders.left.color.green, borders.left.color.blue)))
+                    for (var x = 0; x < borders.left.width; x++)
+                        gdi.DrawLine(pen, new Point(draw_pos.left + x, draw_pos.top), new Point(draw_pos.left + x, draw_pos.bottom));
+            // draw right border
+            if (borders.right.width != 0 && borders.right.style > border_style.hidden)
+                using (var pen = new Pen(Color.FromArgb(borders.right.color.red, borders.right.color.green, borders.right.color.blue)))
+                    for (var x = 0; x < borders.right.width; x++)
+                        gdi.DrawLine(pen, new Point(draw_pos.right - x - 1, draw_pos.top), new Point(draw_pos.right - x - 1, draw_pos.bottom));
+            // draw top border
+            if (borders.top.width != 0 && borders.top.style > border_style.hidden)
+                using (var pen = new Pen(Color.FromArgb(borders.top.color.red, borders.top.color.green, borders.top.color.blue)))
+                    for (var y = 0; y < borders.top.width; y++)
+                        gdi.DrawLine(pen, new Point(draw_pos.left, draw_pos.top + y), new Point(draw_pos.right, draw_pos.top + y));
+            // draw bottom border
+            if (borders.bottom.width != 0 && borders.bottom.style > border_style.hidden)
+                using (var pen = new Pen(Color.FromArgb(borders.bottom.color.red, borders.bottom.color.green, borders.bottom.color.blue)))
+                    for (var y = 0; y < borders.bottom.width; y++)
+                        gdi.DrawLine(pen, new Point(draw_pos.left, draw_pos.bottom - y - 1), new Point(draw_pos.right, draw_pos.bottom - y - 1));
+            release_clip(gdi);
+        }
+
+        public void transform_text(string text, text_transform tt) { }
+
+        public void set_clip(position pos, border_radiuses bdr_radius, bool valid_x, bool valid_y)
         {
             var clip_pos = pos;
             get_client_rect(out var client_pos);
@@ -202,26 +283,11 @@ namespace H3ml.Layout.Containers
             //}
         }
 
-        protected void clear_images()
+        protected void fill_rect(Graphics hdc, int x, int y, int width, int height, web_color color, css_border_radius radius)
         {
-            foreach (var i in _images)
-                free_image(i);
-            _images.Clear();
+            var brush = new SolidBrush(Color.FromArgb(color.alpha, color.red, color.green, color.blue));
+            hdc.FillRectangle(brush, x, y, width, height);
         }
-
-        protected virtual void make_url(string url, string basepath, out string urlout) => throw new NotImplementedException();
-
-        protected static string urljoin(string base_, string relative)
-        {
-            try { return new Uri(new Uri(base_), relative).ToString(); }
-            catch { return relative; }
-        }
-
-        protected virtual object get_image(string url) => throw new NotImplementedException();
-
-        //protected void get_client_rect(position client) { }
-
-        /////// container_gdi ///////
 
         protected void draw_ellipse(Graphics hdc, int x, int y, int width, int height, web_color color, int line_width)
         {
@@ -239,133 +305,45 @@ namespace H3ml.Layout.Containers
             hdc.FillEllipse(brush, x, y, width, height);
         }
 
-        protected void fill_rect(Graphics hdc, int x, int y, int width, int height, web_color color, css_border_radius radius)
+        protected void clear_images()
         {
-            var brush = new SolidBrush(Color.FromArgb(color.alpha, color.red, color.green, color.blue));
-            hdc.FillRectangle(brush, x, y, width, height);
+            foreach (var i in _images)
+                ((Bitmap)i.Value).Dispose();
+            _images.Clear();
         }
 
-        protected void get_img_size(object img, out size sz)
-        {
-            sz = new size();
-            var bmp = (Bitmap)img;
-            if (bmp != null)
-            {
-                sz.width = bmp.Width;
-                sz.height = bmp.Height;
-            }
-        }
-
-        protected void draw_img(Graphics hdc, object img, position pos)
-        {
-            var bmp = (Bitmap)img;
-            if (bmp != null)
-            {
-                hdc.InterpolationMode = InterpolationMode.NearestNeighbor;
-                hdc.PixelOffsetMode = PixelOffsetMode.Half;
-                hdc.DrawImage(bmp, pos.x, pos.y, pos.width, pos.height);
-            }
-        }
-
-        protected void free_image(object img)
-        {
-            var bmp = (Bitmap)img;
-            if (bmp != null)
-                bmp.Dispose();
-        }
-
-        protected void draw_img_bg(Graphics hdc, object img, position draw_pos, position pos, background_repeat repeat, background_attachment attachment)
-        {
-            var bgbmp = (Bitmap)img;
-            //var img_width = bgbmp.Width;
-            //var img_height = bgbmp.Height;
-            hdc.InterpolationMode = InterpolationMode.NearestNeighbor;
-            hdc.PixelOffsetMode = PixelOffsetMode.Half;
-            var rect = new Rectangle(draw_pos.left, draw_pos.top, draw_pos.width, draw_pos.height);
-            hdc.SetClip(rect);
-            switch (repeat)
-            {
-                case background_repeat.no_repeat:
-                    {
-                        hdc.DrawImage(bgbmp, pos.x, pos.y, bgbmp.Width, bgbmp.Height);
-                    }
-                    break;
-                case background_repeat.repeat_x:
-                    {
-                        //        var bmp = new CachedBitmap(bgbmp, hdc);
-                        //        for (var x = pos.left; x < pos.right; x += bgbmp.Width)
-                        //            hdc.DrawCachedBitmap(bmp, x, pos.top);
-                        //        for (var x = pos.left - bgbmp.Width; x + bgbmp.Width > draw_pos.left; x -= bgbmp.Width)
-                        //            hdc.DrawCachedBitmap(&bmp, x, pos.top);
-                    }
-                    break;
-                case background_repeat.repeat_y:
-                    {
-                        //        var bmp = new CachedBitmap(bgbmp, hdc);
-                        //        for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
-                        //            hdc.DrawCachedBitmap(bmp, pos.left, y);
-                        //        for (var y = pos.top - bgbmp.Height; y + bgbmp.Height > draw_pos.top; y -= bgbmp.Height)
-                        //            hdc.DrawCachedBitmap(&bmp, pos.left, y);
-                    }
-                    break;
-                case background_repeat.repeat:
-                    {
-                        //        var bmp = new CachedBitmap(bgbmp, hdc);
-                        //        if (bgbmp.Height >= 0)
-                        //            for (var x = pos.left; x < pos.right; x += bgbmp.Width)
-                        //                for (var y = pos.top; y < pos.bottom; y += bgbmp.Height)
-                        //                    hdc.DrawCachedBitmap(&bmp, x, y);
-                    }
-                    break;
-            }
-        }
-
-        public void draw_borders(object hdc, css_borders borders, position draw_pos, bool root = false)
-        {
-            var gdi = (Graphics)hdc;
-            apply_clip(gdi);
-            // draw left border
-            if (borders.left.width.val != 0 && borders.left.style > border_style.hidden)
-                using (var pen = new Pen(Color.FromArgb(borders.left.color.red, borders.left.color.green, borders.left.color.blue)))
-                    for (var x = 0; x < borders.left.width.val; x++)
-                        gdi.DrawLine(pen, new Point(draw_pos.left + x, draw_pos.top), new Point(draw_pos.left + x, draw_pos.bottom));
-            // draw right border
-            if (borders.right.width.val != 0 && borders.right.style > border_style.hidden)
-                using (var pen = new Pen(Color.FromArgb(borders.right.color.red, borders.right.color.green, borders.right.color.blue)))
-                    for (var x = 0; x < borders.right.width.val; x++)
-                        gdi.DrawLine(pen, new Point(draw_pos.right - x - 1, draw_pos.top), new Point(draw_pos.right - x - 1, draw_pos.bottom));
-            // draw top border
-            if (borders.top.width.val != 0 && borders.top.style > border_style.hidden)
-                using (var pen = new Pen(Color.FromArgb(borders.top.color.red, borders.top.color.green, borders.top.color.blue)))
-                    for (var y = 0; y < borders.top.width.val; y++)
-                        gdi.DrawLine(pen, new Point(draw_pos.left, draw_pos.top + y), new Point(draw_pos.right, draw_pos.top + y));
-            // draw bottom border
-            if (borders.bottom.width.val != 0 && borders.bottom.style > border_style.hidden)
-                using (var pen = new Pen(Color.FromArgb(borders.bottom.color.red, borders.bottom.color.green, borders.bottom.color.blue)))
-                    for (var y = 0; y < borders.bottom.width.val; y++)
-                        gdi.DrawLine(pen, new Point(draw_pos.left, draw_pos.bottom - y - 1), new Point(draw_pos.right, draw_pos.bottom - y - 1));
-            release_clip(gdi);
-        }
-
-        // LEFT OVER //
+        public string get_default_font_name() => "Times New Roman";
 
         public element create_element(string tag_name, Dictionary<string, string> attributes, document doc) => null;
-        public void draw_background(object hdc, background_paint bg) { }
-        public virtual void draw_borders(object hdc, borders borders, position draw_pos, bool root) { }
-        public void draw_list_marker(object hdc, list_marker marker) { }
-        public void get_client_rect(out position client) { client = default(position); }
-        public string get_default_font_name() => "Arial";
-        public void get_language(string language, out string culture) { culture = null; }
-        public void get_media_features(media_features media) { }
-        public void import_css(out string text, string url, string baseurl) { text = null; }
+
+        //void container_linux::rounded_rectangle(cairo_t* cr, const litehtml::position &pos, const litehtml::border_radiuses &radius )
+        //void container_linux::draw_pixbuf(cairo_t* cr, const Glib::RefPtr<Gdk::Pixbuf>& bmp, int x, int y, int cx, int cy)
+        //cairo_surface_t* container_linux::surface_from_pixbuf(const Glib::RefPtr<Gdk::Pixbuf>& bmp)
+
+        public void get_media_features(media_features media)
+        {
+            get_client_rect(out var client);
+            media.type = media_type.screen;
+            media.width = client.width;
+            media.height = client.height;
+            var screen = Screen.FromControl(this);
+            var screenBounds = screen.Bounds;
+            media.device_width = screenBounds.Width;
+            media.device_height = screenBounds.Height;
+            media.color = 8;
+            media.monochrome = 0;
+            media.color_index = 256;
+            media.resolution = 96;
+        }
+
+        public void get_language(out string language, out string culture) { language = "en"; culture = string.Empty; }
+
         public void link(document doc, element el) { }
-        public void on_anchor_click(string url, element el) { }
-        public string resolve_color(string color) => null;
-        public void set_base_url(string base_url) { }
-        public void set_caption(string caption) { }
-        public void set_clip(position pos, border_radiuses bdr_radius, bool valid_x, bool valid_y) { }
-        public void set_cursor(string cursor) { }
-        public int text_width(string text, object hFont) => 0;
-        public void transform_text(string text, text_transform tt) { }
+
+        protected static string urljoin(string base_, string relative)
+        {
+            try { return new Uri(new Uri(base_), relative).ToString(); }
+            catch { return relative; }
+        }
     }
 }

@@ -2526,7 +2526,7 @@ namespace H3ml.Layout
         public override bool is_nth_last_child(element el, int num, int off, bool of_type)
         {
             var idx = 1;
-            for (var childi = _children.Count - 1; childi >= 0; childi++)
+            for (var childi = _children.Count - 1; childi >= 0; childi--)
             {
                 var child = _children[childi];
                 if (child.get_display != style_display.inline_text)

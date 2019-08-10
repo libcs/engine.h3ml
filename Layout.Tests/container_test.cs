@@ -18,7 +18,7 @@ namespace H3ml.Layout
         public string get_default_font_name() => "Arial";
         public int get_default_font_size() => 12;
         public void get_image_size(string src, string baseurl, out size sz) { sz = default(size); }
-        public void get_language(string language, out string culture) { culture = null; }
+        public void get_language(out string language, out string culture) { language = "en"; culture = string.Empty; }
         public void get_media_features(media_features media) { }
         public void import_css(out string text, string url, string baseurl) { text = null; }
         public void link(document doc, element el) { }

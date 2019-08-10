@@ -12,7 +12,7 @@ namespace H3ml.Layout
 
         public override void add_style(style st)
         {
-            add_style(st);
+            base.add_style(st);
             var content = get_style_property("content", false, "");
             if (!string.IsNullOrEmpty(content))
             {

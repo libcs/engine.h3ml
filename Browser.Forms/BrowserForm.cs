@@ -13,11 +13,16 @@ namespace Browser.Forms
 {
     public partial class BrowserForm : Form
     {
+        readonly int _widthAdjust;
+        readonly int _heightAdjust;
+
         public BrowserForm(context ctx)
         {
             InitializeComponent();
             html.set(ctx, this);
             on_go_clicked(null, null);
+            _widthAdjust = Width - html.Width;
+            _heightAdjust = Height - html.Height;
         }
 
         void on_go_clicked(object sender, EventArgs e) => html.open_page(address_bar.Text);
@@ -39,5 +44,11 @@ namespace Browser.Forms
         }
 
         public void set_url(string url) => address_bar.Text = url;
+
+        void BrowserForm_Resize(object sender, EventArgs e)
+        {
+            html.Width = Width - _widthAdjust;
+            html.Height = Height - _heightAdjust;
+        }
     }
 }

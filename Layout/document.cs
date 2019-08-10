@@ -305,7 +305,7 @@ namespace H3ml.Layout
         {
             if (_media_lists.Count != 0)
             {
-                container.get_language(_lang, out var culture);
+                container.get_language(out _lang, out var culture);
                 _culture = !string.IsNullOrEmpty(culture) ? $"{_lang}-{culture}" : string.Empty;
                 _root.refresh_styles();
                 _root.parse_styles();
@@ -425,44 +425,40 @@ namespace H3ml.Layout
                 case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_TEXT:
                     {
                         elements.Add(new el_space(textNode.Value, this));
-                        //std::wstring str;
-                        //var str_in = textNode.Value;
-                        //ucode_t c;
-                        //for (size_t i = 0; i < str_in.length(); i++)
-                        //{
-                        //    c = (ucode_t)str_in[i];
-                        //    if (c <= ' ' && (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f'))
-                        //    {
-                        //        if (!str.empty())
-                        //        {
-                        //            elements.push_back(std::make_shared<el_text>(litehtml_from_wchar(str.c_str()), shared_from_this()));
-                        //            str.clear();
-                        //        }
-                        //        str += c;
-                        //        elements.push_back(std::make_shared<el_space>(litehtml_from_wchar(str.c_str()), shared_from_this()));
-                        //        str.clear();
-                        //    }
-                        //    // CJK character range
-                        //    else if (c >= 0x4E00 && c <= 0x9FCC)
-                        //    {
-                        //        if (!str.empty())
-                        //        {
-                        //            elements.push_back(std::make_shared<el_text>(litehtml_from_wchar(str.c_str()), shared_from_this()));
-                        //            str.clear();
-                        //        }
-                        //        str += c;
-                        //        elements.push_back(std::make_shared<el_text>(litehtml_from_wchar(str.c_str()), shared_from_this()));
-                        //        str.clear();
-                        //    }
-                        //    else
-                        //    {
-                        //        str += c;
-                        //    }
-                        //}
-                        //if (!str.empty())
-                        //{
-                        //    elements.push_back(std::make_shared<el_text>(litehtml_from_wchar(str.c_str()), shared_from_this()));
-                        //}
+                        var str = string.Empty;
+                        var str_in = textNode.Value;
+                        char c;
+                        for (var i = 0; i < str_in.Length; i++)
+                        {
+                            c = str_in[i];
+                            if (c <= ' ' && (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f'))
+                            {
+                                if (str.Length != 0)
+                                {
+                                    elements.Add(new el_text(str, this));
+                                    str = string.Empty;
+                                }
+                                str += c;
+                                elements.Add(new el_space(str, this));
+                                str = string.Empty;
+                            }
+                            // CJK character range
+                            else if (c >= 0x4E00 && c <= 0x9FCC)
+                            {
+                                if (str.Length != 0)
+                                {
+                                    elements.Add(new el_text(str, this));
+                                    str = string.Empty;
+                                }
+                                str += c;
+                                elements.Add(new el_text(str, this));
+                                str = string.Empty;
+                            }
+                            else
+                                str += c;
+                        }
+                        if (str.Length != 0)
+                            elements.Add(new el_text(str, this));
                     }
                     break;
                 case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_CDATA:

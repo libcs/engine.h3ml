@@ -10,6 +10,8 @@ namespace Browser.Forms
 
         public Stream load_file(string url)
         {
+            if (url.IndexOf("://") == -1)
+                url = "https://" + url;
             _url = url;
             return _client.GetStreamAsync(url).Result;
         }

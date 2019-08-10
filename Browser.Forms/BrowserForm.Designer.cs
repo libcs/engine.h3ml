@@ -70,6 +70,7 @@
             this.Controls.Add(this.address_bar);
             this.Name = "BrowserForm";
             this.Text = "Browser";
+            this.Resize += new System.EventHandler(this.BrowserForm_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
