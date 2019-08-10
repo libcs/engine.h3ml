@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -6,16 +7,14 @@ using System.Windows.Forms;
 
 namespace H3ml.Layout.Containers
 {
-    public class container_win : UserControl, document_container
+    public class container_win : document_container
     {
         Dictionary<string, object> _images = new Dictionary<string, object>();
         List<position> _clips = new List<position>();
         Rectangle _hClipRect;
+        readonly Func<Graphics> _getDC;
 
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-        }
+        public container_win(Func<Graphics> getDC) => _getDC = getDC;
 
         public object create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm)
         {
@@ -59,13 +58,13 @@ namespace H3ml.Layout.Containers
             release_clip((Graphics)hdc);
         }
 
-        public object get_temp_dc() => CreateGraphics();
+        public object get_temp_dc() => _getDC();
 
         public void release_temp_dc(object hdc) => ((Graphics)hdc).Dispose();
 
         public int pt_to_px(int pt)
         {
-            using (var dc = CreateGraphics())
+            using (var dc = _getDC())
                 return (int)(pt * dc.DpiY / 72);
         }
 

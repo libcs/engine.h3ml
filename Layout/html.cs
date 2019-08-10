@@ -13,7 +13,7 @@ namespace H3ml.Layout
     }
 
     // call back interface to draw text, images and other elements
-    public interface document_container : IDisposable
+    public interface document_container
     {
         object create_font(string faceName, int size, int weight, font_style italic, uint decoration, out font_metrics fm);
         void delete_font(object hFont);

@@ -79,6 +79,8 @@ namespace H3ml.Layout
                         add_property("border-right-style", tok, baseurl, important);
                         add_property("border-top-style", tok, baseurl, important);
                         add_property("border-bottom-style", tok, baseurl, important);
+                        add_property("border-front-style", tok, baseurl, important); //:h3ml
+                        add_property("border-back-style", tok, baseurl, important); //:h3ml
                     }
                     else
                     {
@@ -88,6 +90,8 @@ namespace H3ml.Layout
                             add_property("border-right-width", tok, baseurl, important);
                             add_property("border-top-width", tok, baseurl, important);
                             add_property("border-bottom-width", tok, baseurl, important);
+                            add_property("border-front-width", tok, baseurl, important); //:h3ml
+                            add_property("border-back-width", tok, baseurl, important); //:h3ml
                         }
                         else
                         {
@@ -95,11 +99,13 @@ namespace H3ml.Layout
                             add_property("border-right-color", tok, baseurl, important);
                             add_property("border-top-color", tok, baseurl, important);
                             add_property("border-bottom-color", tok, baseurl, important);
+                            add_property("border-front-color", tok, baseurl, important);
+                            add_property("border-back-color", tok, baseurl, important);
                         }
                     }
                 }
             }
-            else if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom")
+            else if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom" || name == "border-front" || name == "border-back") //:h3ml
             {
                 var tokens = new List<string>();
                 html.split_string(val, tokens, " ", "", "(");
@@ -121,11 +127,13 @@ namespace H3ml.Layout
                 {
                     add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-left-radius-y", tokens[1], baseurl, important);
+                    add_property("border-bottom-left-radius-z", tokens.Count == 2 ? tokens[1] : tokens[2], baseurl, important); //:h3ml
                 }
                 else if (tokens.Count == 1)
                 {
                     add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-bottom-left-radius-z", tokens[0], baseurl, important); //:h3ml
                 }
             }
             else if (name == "border-bottom-right-radius")
@@ -136,11 +144,13 @@ namespace H3ml.Layout
                 {
                     add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-right-radius-y", tokens[1], baseurl, important);
+                    add_property("border-bottom-right-radius-z", tokens.Count == 2 ? tokens[1] : tokens[2], baseurl, important); //:h3ml
                 }
                 else if (tokens.Count == 1)
                 {
                     add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-right-radius-y", tokens[0], baseurl, important);
+                    add_property("border-bottom-right-radius-z", tokens[0], baseurl, important); //:h3ml
                 }
 
             }
@@ -152,11 +162,13 @@ namespace H3ml.Layout
                 {
                     add_property("border-top-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-right-radius-y", tokens[1], baseurl, important);
+                    add_property("border-top-right-radius-z", tokens.Count == 2 ? tokens[1] : tokens[2], baseurl, important); //:h3ml
                 }
                 else if (tokens.Count == 1)
                 {
                     add_property("border-top-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-right-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-z", tokens[0], baseurl, important); //:h3ml
                 }
 
             }
@@ -168,11 +180,13 @@ namespace H3ml.Layout
                 {
                     add_property("border-top-left-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-left-radius-y", tokens[1], baseurl, important);
+                    add_property("border-top-left-radius-z", tokens.Count == 2 ? tokens[1] : tokens[2], baseurl, important); //:h3ml
                 }
                 else if (tokens.Count == 1)
                 {
                     add_property("border-top-left-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-left-radius-y", tokens[0], baseurl, important);
+                    add_property("border-top-left-radius-z", tokens[0], baseurl, important); //:h3ml
                 }
             }
             else
@@ -186,11 +200,13 @@ namespace H3ml.Layout
                 {
                     add_property("border-radius-x", tokens[0], baseurl, important);
                     add_property("border-radius-y", tokens[0], baseurl, important);
+                    add_property("border-radius-z", tokens[0], baseurl, important); //:h3ml
                 }
                 else if (tokens.Count >= 2)
                 {
                     add_property("border-radius-x", tokens[0], baseurl, important);
                     add_property("border-radius-y", tokens[1], baseurl, important);
+                    add_property("border-radius-z", tokens.Count == 2 ? tokens[1] : tokens[2], baseurl, important); //:h3ml
                 }
             }
             else if (name == "border-radius-x")
@@ -200,6 +216,7 @@ namespace H3ml.Layout
                 if (tokens.Count == 1)
                 {
                     add_property("border-top-left-radius-x", tokens[0], baseurl, important);
+                    add_property("border-top-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-top-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-right-radius-x", tokens[0], baseurl, important);
                     add_property("border-bottom-left-radius-x", tokens[0], baseurl, important);
@@ -259,6 +276,40 @@ namespace H3ml.Layout
                     add_property("border-bottom-left-radius-y", tokens[3], baseurl, important);
                 }
             }
+            //:h3ml
+            else if (name == "border-radius-z")
+            {
+                var tokens = new List<string>(); //:h3ml
+                html.split_string(val, tokens, " "); //:h3ml
+                if (tokens.Count == 1) //:h3ml
+                {
+                    add_property("border-top-left-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-top-right-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-bottom-right-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-bottom-left-radius-z", tokens[0], baseurl, important); //:h3ml
+                }
+                else if (tokens.Count == 2) //:h3ml
+                {
+                    add_property("border-top-left-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-top-right-radius-z", tokens[1], baseurl, important); //:h3ml
+                    add_property("border-bottom-right-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-bottom-left-radius-z", tokens[1], baseurl, important); //:h3ml
+                }
+                else if (tokens.Count == 3) //:h3ml
+                {
+                    add_property("border-top-left-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-top-right-radius-z", tokens[1], baseurl, important); //:h3ml
+                    add_property("border-bottom-right-radius-z", tokens[2], baseurl, important); //:h3ml
+                    add_property("border-bottom-left-radius-z", tokens[1], baseurl, important); //:h3ml
+                }
+                else if (tokens.Count >= 4) //:h3ml
+                {
+                    add_property("border-top-left-radius-z", tokens[0], baseurl, important); //:h3ml
+                    add_property("border-top-right-radius-z", tokens[1], baseurl, important); //:h3ml
+                    add_property("border-bottom-right-radius-z", tokens[2], baseurl, important); //:h3ml
+                    add_property("border-bottom-left-radius-z", tokens[3], baseurl, important); //:h3ml
+                }
+            }
             else
 
             // Parse list-style shorthand properties 
@@ -309,6 +360,7 @@ namespace H3ml.Layout
             // Parse margin and padding shorthand properties 
             if (name == "margin" || name == "padding")
             {
+                //:h3ml parse for front,back?
                 var tokens = new List<string>();
                 html.split_string(val, tokens, " ");
                 if (tokens.Count >= 4)
@@ -343,13 +395,14 @@ namespace H3ml.Layout
             else
 
             // Parse border-* shorthand properties 
-            if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom")
+            if (name == "border-left" || name == "border-right" || name == "border-top" || name == "border-bottom" || name == "border-front" || name == "border-back") //:h3ml
                 parse_short_border(name, val, important);
             else
 
             // Parse border-width/style/color shorthand properties 
             if (name == "border-width" || name == "border-style" || name == "border-color")
             {
+                //:h3ml parse for front,back?
                 var nametokens = new List<string>();
                 html.split_string(name, nametokens, "-");
                 var tokens = new List<string>();

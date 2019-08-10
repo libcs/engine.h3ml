@@ -9,6 +9,7 @@ namespace H3ml.Layout
         public int calculatedTop;
         public int top;
         public int left;
+        public int front; //:h3ml
         public int right;
 
         public int width => right - left;
@@ -49,10 +50,13 @@ namespace H3ml.Layout
         protected css_borders _css_borders;
         protected css_length _css_width;
         protected css_length _css_height;
+        protected css_length _css_depth; //:h3ml
         protected css_length _css_min_width;
         protected css_length _css_min_height;
+        protected css_length _css_min_depth; //:h3ml
         protected css_length _css_max_width;
         protected css_length _css_max_height;
+        protected css_length _css_max_depth; //:h3ml
         protected css_offsets _css_offsets;
         protected css_length _css_text_indent;
 
@@ -68,8 +72,10 @@ namespace H3ml.Layout
         protected table_grid _grid = new table_grid();
         protected css_length _css_border_spacing_x;
         protected css_length _css_border_spacing_y;
+        protected css_length _css_border_spacing_z; //:h3ml
         protected int _border_spacing_x;
         protected int _border_spacing_y;
+        protected int _border_spacing_z; //:h3ml
         protected border_collapse _border_collapse;
 
         public html_tag(document doc) : base(doc)
@@ -94,14 +100,15 @@ namespace H3ml.Layout
             _visibility = visibility.visible;
             _border_spacing_x = 0;
             _border_spacing_y = 0;
+            _border_spacing_z = 0; //:h3ml
             _border_collapse = border_collapse.separate;
         }
 
         /* render functions */
 
-        public override int render(int x, int y, int max_width, bool second_pass = false) => _display == style_display.table || _display == style_display.inline_table
-            ? render_table(x, y, max_width, second_pass)
-            : render_box(x, y, max_width, second_pass);
+        public override int render(int x, int y, int z, int max_width, bool second_pass = false) => _display == style_display.table || _display == style_display.inline_table
+            ? render_table(x, y, z, max_width, second_pass) //:h3ml
+            : render_box(x, y, z, max_width, second_pass); //:h3ml
 
         public override int render_inline(element container, int max_width)
         {
@@ -114,7 +121,6 @@ namespace H3ml.Layout
             {
                 // skip spaces to make rendering a bit faster
                 if (skip_spaces)
-                {
                     if (el.is_white_space())
                     {
                         if (was_space)
@@ -125,7 +131,6 @@ namespace H3ml.Layout
                         else was_space = true;
                     }
                     else was_space = false;
-                }
                 rw = container.place_element(el, max_width);
                 if (rw > ret_width)
                     ret_width = rw;
@@ -152,9 +157,10 @@ namespace H3ml.Layout
                     }
                     else line_top = _boxes.Last().bottom;
                 }
-                el.render(0, line_top, max_width);
+                el.render(0, line_top, 0, max_width); //:h3ml
                 el._pos.x += el.content_margins_left;
                 el._pos.y += el.content_margins_top;
+                el._pos.z += el.content_margins_front; //:h3ml
                 return 0;
             }
 
@@ -171,15 +177,16 @@ namespace H3ml.Layout
                         var line_right = max_width;
                         get_line_left_right(line_top, max_width, ref line_left, ref line_right);
 
-                        el.render(line_left, line_top, line_right);
+                        el.render(line_left, line_top, 0, line_right); //:h3ml
 
                         if (el.right > line_right)
                         {
                             var new_top = find_next_line_top(el.top, el.width, max_width);
                             el._pos.x = get_line_left(new_top) + el.content_margins_left;
                             el._pos.y = new_top + el.content_margins_top;
+                            //el._pos.z = get_line_front(new_top) + el.content_margins_front; //:h3ml
                         }
-                        add_float(el, 0, 0);
+                        add_float(el, 0, 0, 0);
                         ret_width = fix_line_width(max_width, element_float.left);
                         if (ret_width == 0)
                             ret_width = el.right;
@@ -195,17 +202,18 @@ namespace H3ml.Layout
                         var line_right = max_width;
                         get_line_left_right(line_top, max_width, ref line_left, ref line_right);
 
-                        el.render(0, line_top, line_right);
+                        el.render(0, line_top, 0, line_right); //:h3ml
 
                         if (line_left + el.width > line_right)
                         {
                             var new_top = find_next_line_top(el.top, el.width, max_width);
                             el._pos.x = get_line_right(new_top, max_width) - el.width + el.content_margins_left;
                             el._pos.y = new_top + el.content_margins_top;
+                            //el._pos.z = get_line_back(new_top, max_width) - el.depth + el.content_margins_front; //:h3ml
                         }
                         else
                             el._pos.x = line_right - el.width + el.content_margins_left;
-                        add_float(el, 0, 0);
+                        add_float(el, 0, 0, 0); //:h3ml
                         ret_width = fix_line_width(max_width, element_float.right);
                         if (ret_width == 0)
                         {
@@ -230,7 +238,7 @@ namespace H3ml.Layout
                         switch (el.get_display)
                         {
                             case style_display.inline_block:
-                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.right);
+                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.front, line_ctx.right); //:h3ml
                                 break;
                             case style_display.block:
                                 if (el.is_replaced || el.is_floats_holder)
@@ -238,6 +246,7 @@ namespace H3ml.Layout
                                     var el_parent = el.parent();
                                     el._pos.width = el.get_css_width().calc_percent(line_ctx.right - line_ctx.left);
                                     el._pos.height = el.get_css_height().calc_percent(el_parent != null ? el_parent._pos.height : 0);
+                                    el._pos.depth = el.get_css_depth().calc_percent(el_parent != null ? el_parent._pos.depth : 0); //:h3ml
                                 }
                                 el.calc_outlines(line_ctx.right - line_ctx.left);
                                 break;
@@ -297,15 +306,15 @@ namespace H3ml.Layout
                         {
                             case style_display.table:
                             case style_display.list_item:
-                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.width);
+                                ret_width = el.render(line_ctx.left, line_ctx.top, line_ctx.front, line_ctx.width); //:h3ml
                                 break;
                             case style_display.block:
                             case style_display.table_cell:
                             case style_display.table_caption:
                             case style_display.table_row:
                                 ret_width = el.is_replaced || el.is_floats_holder
-                                    ? el.render(line_ctx.left, line_ctx.top, line_ctx.width) + line_ctx.left + (max_width - line_ctx.right)
-                                    : el.render(0, line_ctx.top, max_width);
+                                    ? el.render(line_ctx.left, line_ctx.top, line_ctx.front, line_ctx.width) + line_ctx.left + (max_width - line_ctx.right) //:h3ml
+                                    : el.render(0, line_ctx.top, line_ctx.front, max_width); //:h3ml
                                 break;
                             default:
                                 ret_width = 0;
@@ -366,14 +375,18 @@ namespace H3ml.Layout
                 {
                     var parent_height = 0;
                     var parent_width = 0;
+                    var parent_depth = 0; //:h3ml
                     var client_x = 0;
                     var client_y = 0;
+                    var client_z = 0; //:h3ml
                     if (el_position == element_position.@fixed)
                     {
                         parent_height = wnd_position.height;
                         parent_width = wnd_position.width;
+                        parent_depth = wnd_position.depth; //:h3ml
                         client_x = wnd_position.left;
                         client_y = wnd_position.top;
+                        client_z = wnd_position.depth; //:h3ml
                     }
                     else
                     {
@@ -382,6 +395,7 @@ namespace H3ml.Layout
                         {
                             parent_height = el_parent.height;
                             parent_width = el_parent.width;
+                            parent_depth = el_parent.depth; //:h3ml
                         }
                     }
 
@@ -389,14 +403,18 @@ namespace H3ml.Layout
                     var css_right = el.get_css_right();
                     var css_top = el.get_css_top();
                     var css_bottom = el.get_css_bottom();
+                    var css_front = el.get_css_front(); //:h3ml
+                    var css_back = el.get_css_back(); //:h3ml
 
                     var need_render = false;
 
                     var el_w = el.get_css_width();
                     var el_h = el.get_css_height();
+                    var el_d = el.get_css_depth(); //:h3ml
 
                     var new_width = -1;
                     var new_height = -1;
+                    var new_depth = -1; //:h3ml
                     if (el_w.units == css_units.percentage && parent_width != 0)
                     {
                         new_width = el_w.calc_percent(parent_width);
@@ -406,7 +424,6 @@ namespace H3ml.Layout
                             el._pos.width = new_width;
                         }
                     }
-
                     if (el_h.units == css_units.percentage && parent_height != 0)
                     {
                         new_height = el_h.calc_percent(parent_height);
@@ -416,18 +433,26 @@ namespace H3ml.Layout
                             el._pos.height = new_height;
                         }
                     }
+                    //:h3ml
+                    if (el_h.units == css_units.percentage && parent_depth != 0) //:h3ml
+                    {
+                        new_depth = el_d.calc_percent(parent_depth); //:h3ml
+                        if (el._pos.depth != new_depth) //:h3ml
+                        {
+                            need_render = true;
+                            el._pos.depth = new_depth; //:h3ml
+                        }
+                    }
 
                     var cvt_x = false;
                     var cvt_y = false;
-
+                    var cvt_z = false; //:h3ml
                     if (el_position == element_position.@fixed)
                     {
                         if (!css_left.is_predefined || !css_right.is_predefined)
                         {
-                            if (!css_left.is_predefined && css_right.is_predefined)
-                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left;
-                            else if (css_left.is_predefined && !css_right.is_predefined)
-                                el._pos.x = parent_width - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
+                            if (!css_left.is_predefined && css_right.is_predefined) el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left;
+                            else if (css_left.is_predefined && !css_right.is_predefined) el._pos.x = parent_width - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
                             else
                             {
                                 el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left;
@@ -435,17 +460,26 @@ namespace H3ml.Layout
                                 need_render = true;
                             }
                         }
-
                         if (!css_top.is_predefined || !css_bottom.is_predefined)
                         {
-                            if (!css_top.is_predefined && css_bottom.is_predefined)
-                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top;
-                            else if (css_top.is_predefined && !css_bottom.is_predefined)
-                                el._pos.y = parent_height - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
+                            if (!css_top.is_predefined && css_bottom.is_predefined) el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top;
+                            else if (css_top.is_predefined && !css_bottom.is_predefined) el._pos.y = parent_height - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
                             else
                             {
                                 el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top;
                                 el._pos.height = parent_height - css_top.calc_percent(parent_height) - css_bottom.calc_percent(parent_height) - (el.content_margins_top + el.content_margins_bottom);
+                                need_render = true;
+                            }
+                        }
+                        //:h3ml
+                        if (!css_front.is_predefined || !css_back.is_predefined) //:h3ml
+                        {
+                            if (!css_front.is_predefined && css_back.is_predefined) el._pos.z = css_front.calc_percent(parent_depth) + el.content_margins_front; //:h3ml
+                            else if (css_front.is_predefined && !css_back.is_predefined) el._pos.z = parent_depth - css_back.calc_percent(parent_depth) - el._pos.depth - el.content_margins_back; //:h3ml
+                            else
+                            {
+                                el._pos.z = css_front.calc_percent(parent_depth) + el.content_margins_front; //:h3ml
+                                el._pos.depth = parent_depth - css_front.calc_percent(parent_depth) - css_back.calc_percent(parent_depth) - (el.content_margins_front + el.content_margins_back); //:h3ml
                                 need_render = true;
                             }
                         }
@@ -454,10 +488,8 @@ namespace H3ml.Layout
                     {
                         if (!css_left.is_predefined || !css_right.is_predefined)
                         {
-                            if (!css_left.is_predefined && css_right.is_predefined)
-                                el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left - _padding.left;
-                            else if (css_left.is_predefined && !css_right.is_predefined)
-                                el._pos.x = _pos.width + _padding.right - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
+                            if (!css_left.is_predefined && css_right.is_predefined) el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left - _padding.left;
+                            else if (css_left.is_predefined && !css_right.is_predefined) el._pos.x = _pos.width + _padding.right - css_right.calc_percent(parent_width) - el._pos.width - el.content_margins_right;
                             else
                             {
                                 el._pos.x = css_left.calc_percent(parent_width) + el.content_margins_left - _padding.left;
@@ -471,13 +503,10 @@ namespace H3ml.Layout
                             }
                             cvt_x = true;
                         }
-
                         if (!css_top.is_predefined || !css_bottom.is_predefined)
                         {
-                            if (!css_top.is_predefined && css_bottom.is_predefined)
-                                el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top - _padding.top;
-                            else if (css_top.is_predefined && !css_bottom.is_predefined)
-                                el._pos.y = _pos.height + _padding.bottom - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
+                            if (!css_top.is_predefined && css_bottom.is_predefined) el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top - _padding.top;
+                            else if (css_top.is_predefined && !css_bottom.is_predefined) el._pos.y = _pos.height + _padding.bottom - css_bottom.calc_percent(parent_height) - el._pos.height - el.content_margins_bottom;
                             else
                             {
                                 el._pos.y = css_top.calc_percent(parent_height) + el.content_margins_top - _padding.top;
@@ -491,28 +520,49 @@ namespace H3ml.Layout
                             }
                             cvt_y = true;
                         }
+                        //:h3ml
+                        if (!css_front.is_predefined || !css_back.is_predefined) //:h3ml
+                        {
+                            if (!css_front.is_predefined && css_back.is_predefined) el._pos.z = css_front.calc_percent(parent_depth) + el.content_margins_front - _padding.front; //:h3ml
+                            else if (css_front.is_predefined && !css_back.is_predefined) el._pos.z = _pos.depth + _padding.bottom - css_back.calc_percent(parent_depth) - el._pos.depth - el.content_margins_back; //:h3ml
+                            else
+                            {
+                                el._pos.z = css_front.calc_percent(parent_depth) + el.content_margins_front - _padding.front; //:h3ml
+                                el._pos.depth = _pos.depth + _padding.top + _padding.bottom - css_front.calc_percent(parent_depth) - css_back.calc_percent(parent_depth) - (el.content_margins_front + el.content_margins_back); //:h3ml
+                                if (new_depth != -1)
+                                {
+                                    el._pos.z += (el._pos.depth - new_depth) / 2; //:h3ml
+                                    el._pos.depth = new_depth; //:h3ml
+                                }
+                                need_render = true;
+                            }
+                            cvt_z = true; //:h3ml
+                        }
                     }
 
-                    if (cvt_x || cvt_y)
+                    if (cvt_x || cvt_y || cvt_z) //:h3ml
                     {
-                        int offset_x = 0;
-                        int offset_y = 0;
+                        var offset_x = 0;
+                        var offset_y = 0;
+                        var offset_z = 0; //:h3ml
                         var cur_el = el.parent();
                         var this_el = (element)this;
                         while (cur_el != null && cur_el != this_el)
                         {
                             offset_x += cur_el._pos.x;
                             offset_y += cur_el._pos.y;
+                            offset_z += cur_el._pos.z; //:h3ml
                             cur_el = cur_el.parent();
                         }
                         if (cvt_x) el._pos.x -= offset_x;
                         if (cvt_y) el._pos.y -= offset_y;
+                        if (cvt_z) el._pos.z -= offset_z; //:h3ml
                     }
 
                     if (need_render)
                     {
                         var pos = el._pos;
-                        el.render(el.left, el.top, el.width, true);
+                        el.render(el.left, el.top, el.front, el.width, true);
                         el._pos = pos;
                     }
 
@@ -534,8 +584,8 @@ namespace H3ml.Layout
         public int new_box(element el, int max_width, line_context line_ctx)
         {
             line_ctx.top = get_cleared_top(el, finish_last_box());
-
             line_ctx.left = 0;
+            line_ctx.front = 0; //:h3ml
             line_ctx.right = max_width;
             line_ctx.fix_top();
             get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
@@ -545,6 +595,7 @@ namespace H3ml.Layout
                 {
                     line_ctx.top = find_next_line_top(line_ctx.top, el.width, max_width);
                     line_ctx.left = 0;
+                    line_ctx.front = 0; //:h3ml
                     line_ctx.right = max_width;
                     line_ctx.fix_top();
                     get_line_left_right(line_ctx.top, max_width, ref line_ctx.left, ref line_ctx.right);
@@ -570,9 +621,9 @@ namespace H3ml.Layout
                         text_indent = _css_text_indent.calc_percent(max_width);
                 }
                 get_font(out var fm);
-                _boxes.Add(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.right, line_height, fm, _text_align));
+                _boxes.Add(new line_box(line_ctx.top, line_ctx.left + first_line_margin + text_indent, line_ctx.front, line_ctx.right, line_height, fm, _text_align)); //:h3ml
             }
-            else _boxes.Add(new block_box(line_ctx.top, line_ctx.left, line_ctx.right));
+            else _boxes.Add(new block_box(line_ctx.top, line_ctx.left, line_ctx.front, line_ctx.right));
             return line_ctx.top;
         }
 
@@ -644,8 +695,7 @@ namespace H3ml.Layout
             if (el != null && el.parent() == this)
             {
                 el.parent(null);
-                throw new NotImplementedException("SKY:TODO");
-                //_children.erase(std::remove(m_children.begin(), m_children.end(), el), m_children.end());
+                _children.Remove(el); //_children.erase(std::remove(m_children.begin(), m_children.end(), el), m_children.end());
                 return true;
             }
             return false;
@@ -705,7 +755,6 @@ namespace H3ml.Layout
                 {
                     var us = new used_selector(sel, false);
                     if (sel.is_media_valid)
-                    {
                         if ((apply & select_result.match_pseudo_class) != 0)
                         {
                             if (select(sel, true) != 0)
@@ -746,7 +795,6 @@ namespace H3ml.Layout
                             add_style(sel._style);
                             us._used = true;
                         }
-                    }
                     _used_styles.Add(us);
                 }
             }
@@ -768,11 +816,9 @@ namespace H3ml.Layout
                 {
                     var apply = select(usel._selector, false);
                     if (apply != select_result.no_match)
-                    {
                         if ((apply & select_result.match_pseudo_class) != 0)
                         {
                             if (select(usel._selector, true) != 0)
-                            {
                                 if ((apply & select_result.match_with_after) != 0)
                                 {
                                     var el = get_element_after();
@@ -790,7 +836,6 @@ namespace H3ml.Layout
                                     add_style(usel._selector._style);
                                     usel._used = true;
                                 }
-                            }
                         }
                         else if ((apply & select_result.match_with_after) != 0)
                         {
@@ -809,7 +854,6 @@ namespace H3ml.Layout
                             add_style(usel._selector._style);
                             usel._used = true;
                         }
-                    }
                 }
             }
         }
@@ -882,14 +926,13 @@ namespace H3ml.Layout
                     el_parent.on_click();
             }
         }
-        public override bool find_styles_changes(IList<position> redraw_boxes, int x, int y)
+        public override bool find_styles_changes(IList<position> redraw_boxes, int x, int y, int z)
         {
             if (_display == style_display.inline_text)
                 return false;
             var ret = false;
             var apply = false;
             foreach (var iter in _used_styles)
-            {
                 if (iter._selector.is_media_valid)
                 {
                     var res = select(iter._selector, true);
@@ -899,8 +942,6 @@ namespace H3ml.Layout
                         break;
                     }
                 }
-            }
-
             if (apply)
             {
                 if (_display == style_display.inline || _display == style_display.table_row)
@@ -912,6 +953,7 @@ namespace H3ml.Layout
                         var pos = boxes[i];
                         pos.x += x;
                         pos.y += y;
+                        pos.z += z; //:h3ml
                         redraw_boxes.Add(pos);
                     }
                 }
@@ -922,6 +964,7 @@ namespace H3ml.Layout
                     {
                         pos.x += x;
                         pos.y += y;
+                        pos.z += z; //:h3ml
                     }
                     pos += _padding;
                     pos += _borders;
@@ -933,21 +976,17 @@ namespace H3ml.Layout
                 parse_styles();
             }
             foreach (var el in _children)
-            {
                 if (!el.skip)
-                {
                     if (_el_position != element_position.@fixed)
                     {
-                        if (el.find_styles_changes(redraw_boxes, x + _pos.x, y + _pos.y))
+                        if (el.find_styles_changes(redraw_boxes, x + _pos.x, y + _pos.y, z + _pos.z)) //:h3ml
                             ret = true;
                     }
                     else
                     {
-                        if (el.find_styles_changes(redraw_boxes, _pos.x, _pos.y))
+                        if (el.find_styles_changes(redraw_boxes, _pos.x, _pos.y, _pos.z)) //:h3ml
                             ret = true;
                     }
-                }
-            }
             return ret;
         }
 
@@ -969,7 +1008,6 @@ namespace H3ml.Layout
         {
             // initialize font size
             var str = get_style_property("font-size", false, null);
-
             var parent_sz = 0;
             var doc_font_size = get_document().container.get_default_font_size();
             var el_parent = parent();
@@ -979,7 +1017,6 @@ namespace H3ml.Layout
             else
             {
                 _font_size = parent_sz;
-
                 var sz = new css_length();
                 sz.fromString(str, types.font_size_strings);
                 if (sz.is_predefined)
@@ -1005,7 +1042,6 @@ namespace H3ml.Layout
                     else _font_size = get_document().cvt_units(sz, parent_sz);
                 }
             }
-
             // initialize font
             var name = get_style_property("font-family", true, "inherit");
             var weight = get_style_property("font-weight", true, "normal");
@@ -1025,8 +1061,7 @@ namespace H3ml.Layout
                     ret = true;
                 }
             }
-            else
-                ret = _pseudo_classes.Remove(pclass);
+            else ret = _pseudo_classes.Remove(pclass);
             return ret;
         }
 
@@ -1077,7 +1112,8 @@ namespace H3ml.Layout
             _box_sizing = (box_sizing)html.value_index(get_style_property("box-sizing", false, "content-box"), types.box_sizing_strings, (int)box_sizing.content_box);
             if (_el_position != element_position.@static)
             {
-                var val = get_style_property("z-index", false, null); if (val != null) _z_index = int.Parse(val);
+                var val = get_style_property("z-index", false, null);
+                if (val != null) _z_index = int.Parse(val);
             }
             var va = get_style_property("vertical-align", true, "baseline");
             _vertical_align = (vertical_align)html.value_index(va, types.vertical_align_strings, (int)vertical_align.baseline);
@@ -1109,39 +1145,54 @@ namespace H3ml.Layout
             _css_text_indent.fromString(get_style_property("text-indent", true, "0"), "0");
             _css_width.fromString(get_style_property("width", false, "auto"), "auto");
             _css_height.fromString(get_style_property("height", false, "auto"), "auto");
+            _css_depth.fromString(get_style_property("depth", false, "auto"), "auto"); //:h3ml
             doc.cvt_units(_css_width, _font_size);
             doc.cvt_units(_css_height, _font_size);
+            doc.cvt_units(_css_depth, _font_size);
 
             _css_min_width.fromString(get_style_property("min-width", false, "0"));
             _css_min_height.fromString(get_style_property("min-height", false, "0"));
+            _css_min_depth.fromString(get_style_property("min-depth", false, "0")); //:h3ml
             _css_max_width.fromString(get_style_property("max-width", false, "none"), "none");
             _css_max_height.fromString(get_style_property("max-height", false, "none"), "none");
+            _css_max_depth.fromString(get_style_property("max-depth", false, "none"), "none"); //:h3ml
             doc.cvt_units(_css_min_width, _font_size);
             doc.cvt_units(_css_min_height, _font_size);
+            doc.cvt_units(_css_min_depth, _font_size);
 
             _css_offsets.left.fromString(get_style_property("left", false, "auto"), "auto");
             _css_offsets.right.fromString(get_style_property("right", false, "auto"), "auto");
             _css_offsets.top.fromString(get_style_property("top", false, "auto"), "auto");
             _css_offsets.bottom.fromString(get_style_property("bottom", false, "auto"), "auto");
+            _css_offsets.front.fromString(get_style_property("front", false, "auto"), "auto"); //:h3ml
+            _css_offsets.back.fromString(get_style_property("back", false, "auto"), "auto"); //:h3ml
             doc.cvt_units(_css_offsets.left, _font_size);
             doc.cvt_units(_css_offsets.right, _font_size);
             doc.cvt_units(_css_offsets.top, _font_size);
             doc.cvt_units(_css_offsets.bottom, _font_size);
+            doc.cvt_units(_css_offsets.front, _font_size); //:h3ml
+            doc.cvt_units(_css_offsets.back, _font_size); //:h3ml
 
             _css_margins.left.fromString(get_style_property("margin-left", false, "0"), "auto");
             _css_margins.right.fromString(get_style_property("margin-right", false, "0"), "auto");
             _css_margins.top.fromString(get_style_property("margin-top", false, "0"), "auto");
             _css_margins.bottom.fromString(get_style_property("margin-bottom", false, "0"), "auto");
+            _css_margins.front.fromString(get_style_property("margin-front", false, "0"), "auto"); //:h3ml
+            _css_margins.back.fromString(get_style_property("margin-back", false, "0"), "auto"); //:h3ml
 
             _css_padding.left.fromString(get_style_property("padding-left", false, "0"), "");
             _css_padding.right.fromString(get_style_property("padding-right", false, "0"), "");
             _css_padding.top.fromString(get_style_property("padding-top", false, "0"), "");
             _css_padding.bottom.fromString(get_style_property("padding-bottom", false, "0"), "");
+            _css_padding.front.fromString(get_style_property("padding-front", false, "0"), ""); //:h3ml
+            _css_padding.back.fromString(get_style_property("padding-back", false, "0"), ""); //:h3ml
 
             _css_borders.left.width.fromString(get_style_property("border-left-width", false, "medium"), types.border_width_strings);
             _css_borders.right.width.fromString(get_style_property("border-right-width", false, "medium"), types.border_width_strings);
             _css_borders.top.width.fromString(get_style_property("border-top-width", false, "medium"), types.border_width_strings);
             _css_borders.bottom.width.fromString(get_style_property("border-bottom-width", false, "medium"), types.border_width_strings);
+            _css_borders.front.width.fromString(get_style_property("border-front-width", false, "medium"), types.border_width_strings); //:h3ml
+            _css_borders.back.width.fromString(get_style_property("border-back-width", false, "medium"), types.border_width_strings); //:h3ml
 
             _css_borders.left.color = web_color.from_string(get_style_property("border-left-color", false, ""), doc.container);
             _css_borders.left.style = (border_style)html.value_index(get_style_property("border-left-style", false, "none"), types.border_style_strings, (int)border_style.none);
@@ -1155,26 +1206,40 @@ namespace H3ml.Layout
             _css_borders.bottom.color = web_color.from_string(get_style_property("border-bottom-color", false, ""), doc.container);
             _css_borders.bottom.style = (border_style)html.value_index(get_style_property("border-bottom-style", false, "none"), types.border_style_strings, (int)border_style.none);
 
+            _css_borders.front.color = web_color.from_string(get_style_property("border-front-color", false, ""), doc.container); //:h3ml
+            _css_borders.front.style = (border_style)html.value_index(get_style_property("border-front-style", false, "none"), types.border_style_strings, (int)border_style.none); //:h3ml
+
+            _css_borders.back.color = web_color.from_string(get_style_property("border-back-color", false, ""), doc.container); //:h3ml
+            _css_borders.back.style = (border_style)html.value_index(get_style_property("border-back-style", false, "none"), types.border_style_strings, (int)border_style.none); //:h3ml
+
             _css_borders.radius.top_left_x.fromString(get_style_property("border-top-left-radius-x", false, "0"));
             _css_borders.radius.top_left_y.fromString(get_style_property("border-top-left-radius-y", false, "0"));
+            _css_borders.radius.top_left_z.fromString(get_style_property("border-top-left-radius-z", false, "0")); //:h3ml
 
             _css_borders.radius.top_right_x.fromString(get_style_property("border-top-right-radius-x", false, "0"));
             _css_borders.radius.top_right_y.fromString(get_style_property("border-top-right-radius-y", false, "0"));
+            _css_borders.radius.top_right_z.fromString(get_style_property("border-top-right-radius-z", false, "0")); //:h3ml
 
             _css_borders.radius.bottom_right_x.fromString(get_style_property("border-bottom-right-radius-x", false, "0"));
             _css_borders.radius.bottom_right_y.fromString(get_style_property("border-bottom-right-radius-y", false, "0"));
+            _css_borders.radius.bottom_right_z.fromString(get_style_property("border-bottom-right-radius-z", false, "0")); //:h3ml
 
             _css_borders.radius.bottom_left_x.fromString(get_style_property("border-bottom-left-radius-x", false, "0"));
             _css_borders.radius.bottom_left_y.fromString(get_style_property("border-bottom-left-radius-y", false, "0"));
+            _css_borders.radius.bottom_left_z.fromString(get_style_property("border-bottom-left-radius-z", false, "0")); //:h3ml
 
             doc.cvt_units(_css_borders.radius.bottom_left_x, _font_size);
             doc.cvt_units(_css_borders.radius.bottom_left_y, _font_size);
+            doc.cvt_units(_css_borders.radius.bottom_left_z, _font_size); //:h3ml
             doc.cvt_units(_css_borders.radius.bottom_right_x, _font_size);
             doc.cvt_units(_css_borders.radius.bottom_right_y, _font_size);
+            doc.cvt_units(_css_borders.radius.bottom_right_z, _font_size); //:h3ml
             doc.cvt_units(_css_borders.radius.top_left_x, _font_size);
             doc.cvt_units(_css_borders.radius.top_left_y, _font_size);
+            doc.cvt_units(_css_borders.radius.top_left_z, _font_size); //:h3ml
             doc.cvt_units(_css_borders.radius.top_right_x, _font_size);
             doc.cvt_units(_css_borders.radius.top_right_y, _font_size);
+            doc.cvt_units(_css_borders.radius.top_right_z, _font_size); //:h3ml
 
             doc.cvt_units(_css_text_indent, _font_size);
 
@@ -1182,16 +1247,22 @@ namespace H3ml.Layout
             _margins.right = doc.cvt_units(_css_margins.right, _font_size);
             _margins.top = doc.cvt_units(_css_margins.top, _font_size);
             _margins.bottom = doc.cvt_units(_css_margins.bottom, _font_size);
+            _margins.front = doc.cvt_units(_css_margins.front, _font_size); //:h3ml
+            _margins.back = doc.cvt_units(_css_margins.back, _font_size); //:h3ml
 
             _padding.left = doc.cvt_units(_css_padding.left, _font_size);
             _padding.right = doc.cvt_units(_css_padding.right, _font_size);
             _padding.top = doc.cvt_units(_css_padding.top, _font_size);
             _padding.bottom = doc.cvt_units(_css_padding.bottom, _font_size);
+            _padding.front = doc.cvt_units(_css_padding.front, _font_size); //:h3ml
+            _padding.back = doc.cvt_units(_css_padding.back, _font_size); //:h3ml
 
             _borders.left = doc.cvt_units(_css_borders.left.width, _font_size);
             _borders.right = doc.cvt_units(_css_borders.right.width, _font_size);
             _borders.top = doc.cvt_units(_css_borders.top.width, _font_size);
             _borders.bottom = doc.cvt_units(_css_borders.bottom.width, _font_size);
+            _borders.front = doc.cvt_units(_css_borders.front.width, _font_size); //:h3ml
+            _borders.back = doc.cvt_units(_css_borders.back.width, _font_size); //:h3ml
 
             var line_height = new css_length();
             line_height.fromString(get_style_property("line-height", true, "normal"), "normal");
@@ -1234,12 +1305,13 @@ namespace H3ml.Layout
                     el.parse_styles();
         }
 
-        public override void draw(object hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, int z, position clip)
         {
             var pos = _pos;
             pos.x += x;
             pos.y += y;
-            draw_background(hdc, x, y, clip);
+            pos.z += z; //:h3ml
+            draw_background(hdc, x, y, z, clip); //:h3ml
             if (_display == style_display.list_item && _list_style_type != list_style_type.none)
             {
                 if (_overflow > overflow.visible)
@@ -1247,7 +1319,7 @@ namespace H3ml.Layout
                     var border_box = pos;
                     border_box += _padding;
                     border_box += _borders;
-                    var bdr_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                    var bdr_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height, border_box.depth); //:h3ml
                     bdr_radius -= _borders;
                     bdr_radius -= _padding;
                     get_document().container.set_clip(pos, bdr_radius, true, true);
@@ -1258,11 +1330,12 @@ namespace H3ml.Layout
             }
         }
 
-        public override void draw_background(object hdc, int x, int y, position clip)
+        public override void draw_background(object hdc, int x, int y, int z, position clip)
         {
             var pos = _pos;
             pos.x += x;
             pos.y += y;
+            pos.z += z; //:h3ml
             var el_pos = pos;
             el_pos += _padding;
             el_pos += _borders;
@@ -1281,7 +1354,7 @@ namespace H3ml.Layout
                     border_box += _padding;
                     border_box += _borders;
                     var bdr = new borders(_css_borders);
-                    bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                    bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height, border_box.depth); //:h3ml
                     get_document().container.draw_borders(hdc, bdr, border_box, !have_parent);
                 }
             }
@@ -1299,6 +1372,7 @@ namespace H3ml.Layout
                     var box = boxes[i];
                     box.x += x;
                     box.y += y;
+                    box.z += z; //:h3ml
 
                     if (box.does_intersect(clip))
                     {
@@ -1315,8 +1389,10 @@ namespace H3ml.Layout
                         {
                             bdr.radius.bottom_left_x = _css_borders.radius.bottom_left_x;
                             bdr.radius.bottom_left_y = _css_borders.radius.bottom_left_y;
+                            bdr.radius.bottom_left_z = _css_borders.radius.bottom_left_z; //:h3ml
                             bdr.radius.top_left_x = _css_borders.radius.top_left_x;
                             bdr.radius.top_left_y = _css_borders.radius.top_left_y;
+                            bdr.radius.top_left_z = _css_borders.radius.top_left_z; //:h3ml
                         }
 
                         // set right borders radius for the last box
@@ -1324,8 +1400,10 @@ namespace H3ml.Layout
                         {
                             bdr.radius.bottom_right_x = _css_borders.radius.bottom_right_x;
                             bdr.radius.bottom_right_y = _css_borders.radius.bottom_right_y;
+                            bdr.radius.bottom_right_z = _css_borders.radius.bottom_right_z; //:h3ml
                             bdr.radius.top_right_x = _css_borders.radius.top_right_x;
                             bdr.radius.top_right_y = _css_borders.radius.top_right_y;
+                            bdr.radius.top_right_z = _css_borders.radius.top_right_z; //:h3ml
                         }
 
                         bdr.top = _css_borders.top;
@@ -1337,11 +1415,11 @@ namespace H3ml.Layout
 
                         if (bg != null)
                         {
-                            bg_paint.border_radius = bdr.radius.calc_percents(bg_paint.border_box.width, bg_paint.border_box.width);
+                            bg_paint.border_radius = bdr.radius.calc_percents(bg_paint.border_box.width, bg_paint.border_box.width, bg_paint.border_box.depth); //:h3ml
                             get_document().container.draw_background(hdc, bg_paint);
                         }
                         var b = new borders(bdr);
-                        b.radius = bdr.radius.calc_percents(box.width, box.height);
+                        b.radius = bdr.radius.calc_percents(box.width, box.height, box.depth); //:h3ml
                         get_document().container.draw_borders(hdc, b, box, false);
                     }
                 }
@@ -1374,18 +1452,20 @@ namespace H3ml.Layout
         {
             _padding.left = _css_padding.left.calc_percent(parent_width);
             _padding.right = _css_padding.right.calc_percent(parent_width);
-
             _borders.left = _css_borders.left.width.calc_percent(parent_width);
             _borders.right = _css_borders.right.width.calc_percent(parent_width);
-
             _margins.left = _css_margins.left.calc_percent(parent_width);
             _margins.right = _css_margins.right.calc_percent(parent_width);
 
             _margins.top = _css_margins.top.calc_percent(parent_width);
             _margins.bottom = _css_margins.bottom.calc_percent(parent_width);
-
             _padding.top = _css_padding.top.calc_percent(parent_width);
             _padding.bottom = _css_padding.bottom.calc_percent(parent_width);
+
+            _margins.front = _css_margins.front.calc_percent(parent_width); //:h3ml
+            _margins.back = _css_margins.back.calc_percent(parent_width); //:h3ml
+            _padding.front = _css_padding.front.calc_percent(parent_width); //:h3ml
+            _padding.back = _css_padding.back.calc_percent(parent_width); //:h3ml
         }
 
         public override void calc_auto_margins(int parent_width)
@@ -1761,6 +1841,7 @@ namespace H3ml.Layout
         {
             sz.height = 0;
             sz.width = _display == style_display.block ? max_width : 0;
+            sz.depth = 0;
         }
 
         public override void init()
@@ -1797,9 +1878,7 @@ namespace H3ml.Layout
             box old_box = null;
             var pos = new position();
             foreach (var el in _children)
-            {
                 if (!el.skip)
-                {
                     if (el._box != null)
                     {
                         if (el._box != old_box)
@@ -1816,11 +1895,14 @@ namespace H3ml.Layout
                             old_box = el._box;
                             pos.x = el.left + el.margin_left;
                             pos.y = el.top - _padding.top - _borders.top;
+                            pos.z = el.front - _padding.front - _borders.front; //:h3ml
                             pos.width = 0;
                             pos.height = 0;
+                            pos.depth = 0; //:h3ml
                         }
                         pos.width = el.right - pos.x - el.margin_right - el.margin_left;
                         pos.height = Math.Max(pos.height, el.height + _padding.top + _padding.bottom + _borders.top + _borders.bottom);
+                        pos.depth = Math.Max(pos.depth, el.depth + _padding.front + _padding.back + _borders.front + _borders.back); //:h3ml
                     }
                     else if (el.get_display == style_display.inline)
                     {
@@ -1840,10 +1922,9 @@ namespace H3ml.Layout
                             p = sub_boxes[sub_boxes.Count - 1]; p.width += el.margin_right; sub_boxes[sub_boxes.Count - 1] = p;
                             ((List<position>)boxes).AddRange(sub_boxes);
                         }
+
                     }
-                }
-            }
-            if (pos.width != 0 || pos.height != 0)
+            if (pos.width != 0 || pos.height != 0 || pos.depth != 0) //:h3ml
             {
                 if (boxes.Count == 0)
                 {
@@ -1956,14 +2037,12 @@ namespace H3ml.Layout
                     return _cahe_line_left.val;
                 var w = 0;
                 foreach (var fb in _floats_left)
-                {
                     if (y >= fb.pos.top && y < fb.pos.bottom)
                     {
                         w = Math.Max(w, fb.pos.right);
                         if (w < fb.pos.right)
                             break;
                     }
-                }
                 _cahe_line_left.set_value(y, w);
                 return w;
             }
@@ -1987,7 +2066,6 @@ namespace H3ml.Layout
                 var w = def_right;
                 _cahe_line_right.is_default = true;
                 foreach (var fb in _floats_right)
-                {
                     if (y >= fb.pos.top && y < fb.pos.bottom)
                     {
                         w = Math.Min(w, fb.pos.left);
@@ -1995,7 +2073,6 @@ namespace H3ml.Layout
                         if (w > fb.pos.left)
                             break;
                     }
-                }
                 _cahe_line_right.set_value(y, w);
                 return w;
             }
@@ -2027,15 +2104,17 @@ namespace H3ml.Layout
             }
         }
 
-        public override void add_float(element el, int x, int y)
+        public override void add_float(element el, int x, int y, int z)
         {
             if (is_floats_holder)
             {
                 floated_box fb;
                 fb.pos.x = el.left + x;
                 fb.pos.y = el.top + y;
+                fb.pos.z = el.front + z; //:h3ml
                 fb.pos.width = el.width;
                 fb.pos.height = el.height;
+                fb.pos.depth = el.depth; //:h3ml
                 fb.float_side = el.get_float;
                 fb.clear_floats = el.get_clear;
                 fb.el = el;
@@ -2088,7 +2167,7 @@ namespace H3ml.Layout
             {
                 var el_parent = parent();
                 if (el_parent != null)
-                    el_parent.add_float(el, x + _pos.x, y + _pos.y);
+                    el_parent.add_float(el, x + _pos.x, y + _pos.y, z + _pos.z); //:h3ml
             }
         }
 
@@ -2213,15 +2292,15 @@ namespace H3ml.Layout
             }
         }
 
-        public override void draw_children(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        public override void draw_children(object hdc, int x, int y, int z, position clip, draw_flag flag, int zindex)
         {
-            if (_display == style_display.table || _display == style_display.inline_table) draw_children_table(hdc, x, y, clip, flag, zindex);
-            else draw_children_box(hdc, x, y, clip, flag, zindex);
+            if (_display == style_display.table || _display == style_display.inline_table) draw_children_table(hdc, x, y, z, clip, flag, zindex); //:h3ml
+            else draw_children_box(hdc, x, y, z, clip, flag, zindex); //:h3ml
         }
 
         public override int get_zindex => _z_index;
 
-        public override void draw_stacking_context(object hdc, int x, int y, position clip, bool with_positioned)
+        public override void draw_stacking_context(object hdc, int x, int y, int z, position clip, bool with_positioned)
         {
             if (!is_visible) return;
             var zindexes = new HashSet<int>();
@@ -2231,55 +2310,56 @@ namespace H3ml.Layout
                     zindexes.Add(i.get_zindex);
                 foreach (var idx in zindexes)
                     if (idx < 0)
-                        draw_children(hdc, x, y, clip, draw_flag.positioned, idx);
+                        draw_children(hdc, x, y, z, clip, draw_flag.positioned, idx); //:h3ml
             }
-            draw_children(hdc, x, y, clip, draw_flag.block, 0);
-            draw_children(hdc, x, y, clip, draw_flag.floats, 0);
-            draw_children(hdc, x, y, clip, draw_flag.inlines, 0);
+            draw_children(hdc, x, y, z, clip, draw_flag.block, 0); //:h3ml
+            draw_children(hdc, x, y, z, clip, draw_flag.floats, 0); //:h3ml
+            draw_children(hdc, x, y, z, clip, draw_flag.inlines, 0); //:h3ml
             if (with_positioned)
             {
                 foreach (var idx in zindexes)
                     if (idx == 0)
-                        draw_children(hdc, x, y, clip, draw_flag.positioned, idx);
+                        draw_children(hdc, x, y, z, clip, draw_flag.positioned, idx); //:h3ml
                 foreach (var idx in zindexes)
                     if (idx > 0)
-                        draw_children(hdc, x, y, clip, draw_flag.positioned, idx);
+                        draw_children(hdc, x, y, z, clip, draw_flag.positioned, idx); //:h3ml
             }
         }
 
-        public override void calc_document_size(ref size sz, int x = 0, int y = 0)
+        public override void calc_document_size(ref size sz, int x = 0, int y = 0, int z = 0)
         {
             if (is_visible && _el_position != element_position.@fixed)
             {
-                base.calc_document_size(ref sz, x, y);
+                base.calc_document_size(ref sz, x, y, z); //:h3ml
                 if (_overflow == overflow.visible)
                     foreach (var el in _children)
-                        el.calc_document_size(ref sz, x + _pos.x, y + _pos.y);
+                        el.calc_document_size(ref sz, x + _pos.x, y + _pos.y, z + _pos.z); //:h3ml
                 // root element (<html>) must to cover entire window
                 if (!have_parent)
                 {
                     get_document().container.get_client_rect(out var client_pos);
                     _pos.height = Math.Max(sz.height, client_pos.height) - content_margins_top - content_margins_bottom;
                     _pos.width = Math.Max(sz.width, client_pos.width) - content_margins_left - content_margins_right;
+                    _pos.depth = Math.Max(sz.depth, client_pos.depth) - content_margins_front - content_margins_back; //:h3ml
                 }
             }
         }
 
-        public override void get_redraw_box(ref position pos, int x = 0, int y = 0)
+        public override void get_redraw_box(ref position pos, int x = 0, int y = 0, int z = 0)
         {
             if (is_visible)
             {
-                get_redraw_box(ref pos, x, y);
+                get_redraw_box(ref pos, x, y, z); //:h3ml
                 if (_overflow == overflow.visible)
                     foreach (var el in _children)
                         if (el.get_element_position(out var junk) != element_position.@fixed)
-                            el.get_redraw_box(ref pos, x + _pos.x, y + _pos.y);
+                            el.get_redraw_box(ref pos, x + _pos.x, y + _pos.y, z + _pos.z); //:h3ml
             }
         }
 
         public override void add_style(style st) => _style.combine(st);
 
-        public override element get_element_by_point(int x, int y, int client_x, int client_y)
+        public override element get_element_by_point(int x, int y, int z, int client_x, int client_y, int client_z)
         {
             if (!is_visible) return null;
             element ret = null;
@@ -2289,7 +2369,7 @@ namespace H3ml.Layout
             foreach (var idx in zindexes)
                 if (idx > 0)
                 {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.positioned, idx); //:h3ml
                     if (ret != null) break;
                 }
             if (ret != null) return ret;
@@ -2298,51 +2378,52 @@ namespace H3ml.Layout
             {
                 if (idx == 0)
                 {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.positioned, idx); //:h3ml
                     if (ret != null) break;
                 }
             }
             if (ret != null) return ret;
 
-            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.inlines, 0);
+            ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.inlines, 0); //:h3ml
             if (ret != null) return ret;
 
-            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.floats, 0);
+            ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.floats, 0); //:h3ml
             if (ret != null) return ret;
 
-            ret = get_child_by_point(x, y, client_x, client_y, draw_flag.block, 0);
+            ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.block, 0); //:h3ml
             if (ret != null) return ret;
 
             foreach (var idx in zindexes)
                 if (idx < 0)
                 {
-                    ret = get_child_by_point(x, y, client_x, client_y, draw_flag.positioned, idx);
+                    ret = get_child_by_point(x, y, z, client_x, client_y, client_z, draw_flag.positioned, idx); //:h3ml
                     if (ret != null) break;
                 }
             if (ret != null) return ret;
 
             if (_el_position == element_position.@fixed)
             {
-                if (is_point_inside(client_x, client_y))
+                if (is_point_inside(client_x, client_y, client_z)) //:h3ml
                     ret = this;
             }
             else
             {
-                if (is_point_inside(x, y))
+                if (is_point_inside(x, y, z)) //:h3ml
                     ret = this;
             }
             return ret;
         }
 
-        public override element get_child_by_point(int x, int y, int client_x, int client_y, draw_flag flag, int zindex)
+        public override element get_child_by_point(int x, int y, int z, int client_x, int client_y, int client_z, draw_flag flag, int zindex)
         {
             element ret = null;
             if (_overflow > overflow.visible)
-                if (!_pos.is_point_inside(x, y))
+                if (!_pos.is_point_inside(x, y, z)) //:h3ml
                     return ret;
             var pos = _pos;
             pos.x = x - pos.x;
             pos.y = y - pos.y;
+            pos.z = z - pos.z; //:h3ml
             for (var ii = _children.Count - 1; ii >= 0 && ret == null; ii++)
             {
                 var i = _children[ii];
@@ -2356,14 +2437,14 @@ namespace H3ml.Layout
                             {
                                 if (el.get_element_position(out var junk) == element_position.@fixed)
                                 {
-                                    ret = el.get_element_by_point(client_x, client_y, client_x, client_y);
-                                    if (ret == null && i.is_point_inside(client_x, client_y))
+                                    ret = el.get_element_by_point(client_x, client_y, client_z, client_x, client_y, client_z); //:h3ml
+                                    if (ret == null && i.is_point_inside(client_x, client_y, client_z)) //:h3ml
                                         ret = i;
                                 }
                                 else
                                 {
-                                    ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
-                                    if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                    ret = el.get_element_by_point(pos.x, pos.y, pos.z, client_x, client_y, client_z); //:h3ml
+                                    if (ret == null && i.is_point_inside(pos.x, pos.y, pos.z)) //:h3ml
                                         ret = i;
                                 }
                                 el = null;
@@ -2371,14 +2452,14 @@ namespace H3ml.Layout
                             break;
                         case draw_flag.block:
                             if (!el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
-                                if (el.is_point_inside(pos.x, pos.y))
+                                if (el.is_point_inside(pos.x, pos.y, pos.z)) //:h3ml
                                     ret = el;
                             break;
                         case draw_flag.floats:
                             if (el.get_float != element_float.none && !el.is_positioned)
                             {
-                                ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
-                                if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                ret = el.get_element_by_point(pos.x, pos.y, pos.z, client_x, client_y, client_z); //:h3ml
+                                if (ret == null && i.is_point_inside(pos.x, pos.y, pos.z)) //:h3ml
                                     ret = i;
                                 el = null;
                             }
@@ -2388,10 +2469,10 @@ namespace H3ml.Layout
                             {
                                 if (el.get_display == style_display.inline_block)
                                 {
-                                    ret = el.get_element_by_point(pos.x, pos.y, client_x, client_y);
+                                    ret = el.get_element_by_point(pos.x, pos.y, pos.z, client_x, client_y, client_z); //:h3ml
                                     el = null;
                                 }
-                                if (ret == null && i.is_point_inside(pos.x, pos.y))
+                                if (ret == null && i.is_point_inside(pos.x, pos.y, pos.z)) //:h3ml
                                     ret = i;
                             }
                             break;
@@ -2402,13 +2483,13 @@ namespace H3ml.Layout
                     {
                         if (flag == draw_flag.positioned)
                         {
-                            var child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
+                            var child = el.get_child_by_point(pos.x, pos.y, pos.z, client_x, client_y, client_z, flag, zindex); //:h3ml
                             if (child != null)
                                 ret = child;
                         }
                         else if (el.get_float == element_float.none && el.get_display != style_display.inline_block)
                         {
-                            var child = el.get_child_by_point(pos.x, pos.y, client_x, client_y, flag, zindex);
+                            var child = el.get_child_by_point(pos.x, pos.y, pos.z, client_x, client_y, client_z, flag, zindex); //:h3ml
                             if (child != null)
                                 ret = child;
                         }
@@ -2520,18 +2601,19 @@ namespace H3ml.Layout
             return _bg;
         }
 
-        protected void draw_children_box(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_box(object hdc, int x, int y, int z, position clip, draw_flag flag, int zindex) //:h3ml
         {
             var pos = _pos;
             pos.x += x;
             pos.y += y;
+            pos.z += z; //:h3ml
             var doc = get_document();
             if (_overflow > overflow.visible)
             {
                 var border_box = pos;
                 border_box += _padding;
                 border_box += _borders;
-                var bdr_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                var bdr_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height, border_box.depth); //:h3ml
                 bdr_radius -= _borders;
                 bdr_radius -= _padding;
                 doc.container.set_clip(pos, bdr_radius, true, true);
@@ -2552,36 +2634,36 @@ namespace H3ml.Layout
                             {
                                 if (el.get_element_position(out var junk) == element_position.@fixed)
                                 {
-                                    el.draw(hdc, browser_wnd.x, browser_wnd.y, clip);
-                                    el.draw_stacking_context(hdc, browser_wnd.x, browser_wnd.y, clip, true);
+                                    el.draw(hdc, browser_wnd.x, browser_wnd.y, browser_wnd.z, clip); //:h3ml
+                                    el.draw_stacking_context(hdc, browser_wnd.x, browser_wnd.y, browser_wnd.z, clip, true); //:h3ml
                                 }
                                 else
                                 {
-                                    el.draw(hdc, pos.x, pos.y, clip);
-                                    el.draw_stacking_context(hdc, pos.x, pos.y, clip, true);
+                                    el.draw(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
+                                    el.draw_stacking_context(hdc, pos.x, pos.y, pos.z, clip, true); //:h3ml
                                 }
                                 el = null;
                             }
                             break;
                         case draw_flag.block:
                             if (!el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
-                                el.draw(hdc, pos.x, pos.y, clip);
+                                el.draw(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
                             break;
                         case draw_flag.floats:
                             if (el.get_float != element_float.none && !el.is_positioned)
                             {
-                                el.draw(hdc, pos.x, pos.y, clip);
-                                el.draw_stacking_context(hdc, pos.x, pos.y, clip, false);
+                                el.draw(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
+                                el.draw_stacking_context(hdc, pos.x, pos.y, pos.z, clip, false); //:h3ml
                                 el = null;
                             }
                             break;
                         case draw_flag.inlines:
                             if (el.is_inline_box && el.get_float == element_float.none && !el.is_positioned)
                             {
-                                el.draw(hdc, pos.x, pos.y, clip);
+                                el.draw(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
                                 if (el.get_display == style_display.inline_block)
                                 {
-                                    el.draw_stacking_context(hdc, pos.x, pos.y, clip, false);
+                                    el.draw_stacking_context(hdc, pos.x, pos.y, pos.z, clip, false); //:h3ml
                                     el = null;
                                 }
                             }
@@ -2590,18 +2672,16 @@ namespace H3ml.Layout
                     }
 
                     if (el != null)
-                    {
                         if (flag == draw_flag.positioned)
                         {
                             if (!el.is_positioned)
-                                el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
+                                el.draw_children(hdc, pos.x, pos.y, pos.z, clip, flag, zindex); //:h3ml
                         }
                         else
                         {
                             if (el.get_float == element_float.none && el.get_display != style_display.inline_block && !el.is_positioned)
-                                el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
+                                el.draw_children(hdc, pos.x, pos.y, pos.z, clip, flag, zindex); //:h3ml
                         }
-                    }
                 }
             }
 
@@ -2609,37 +2689,39 @@ namespace H3ml.Layout
                 doc.container.del_clip();
         }
 
-        protected void draw_children_table(object hdc, int x, int y, position clip, draw_flag flag, int zindex)
+        protected void draw_children_table(object hdc, int x, int y, int z, position clip, draw_flag flag, int zindex) //:h3ml
         {
             if (_grid == null) return;
             var pos = _pos;
             pos.x += x;
             pos.y += y;
+            pos.z += z; //:h3ml
             for (var row = 0; row < _grid.rows_count; row++)
             {
                 if (flag == draw_flag.block)
-                    _grid.row(row).el_row.draw_background(hdc, pos.x, pos.y, clip);
+                    _grid.row(row).el_row.draw_background(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
                 for (var col = 0; col < _grid.cols_count; col++)
                 {
                     var cell = _grid.cell(col, row);
                     if (cell.el != null)
                     {
                         if (flag == draw_flag.block)
-                            cell.el.draw(hdc, pos.x, pos.y, clip);
-                        cell.el.draw_children(hdc, pos.x, pos.y, clip, flag, zindex);
+                            cell.el.draw(hdc, pos.x, pos.y, pos.z, clip); //:h3ml
+                        cell.el.draw_children(hdc, pos.x, pos.y, pos.z, clip, flag, zindex); //:h3ml
                     }
                 }
             }
         }
 
-        protected int render_box(int x, int y, int max_width, bool second_pass = false)
+        protected int render_box(int x, int y, int z, int max_width, bool second_pass = false) //:h3ml
         {
             var parent_width = max_width;
             calc_outlines(parent_width);
             _pos.clear();
-            _pos.move_to(x, y);
+            _pos.move_to(x, y, z); //:h3ml
             _pos.x += content_margins_left;
             _pos.y += content_margins_top;
+            _pos.z += content_margins_front; //:h3ml
             var ret_width = 0;
 
             var block_width = new def_value<int>(0);
@@ -2673,11 +2755,14 @@ namespace H3ml.Layout
             _cahe_line_left.invalidate();
             _cahe_line_right.invalidate();
 
-            var block_height = 0;
             _pos.height = 0;
-
-            if (get_predefined_height(block_height))
+            if (get_predefined_height(out var block_height))
                 _pos.height = block_height;
+
+            //:h3ml
+            _pos.depth = 0; //:h3ml
+            if (get_predefined_depth(out var block_depth)) //:h3ml
+                _pos.depth = block_depth; //:h3ml
 
             var ws = get_white_space;
             var skip_spaces = ws == white_space.normal || ws == white_space.nowrap || ws == white_space.pre_line;
@@ -2720,7 +2805,6 @@ namespace H3ml.Layout
             calc_auto_margins(parent_width);
 
             if (_boxes.Count != 0)
-            {
                 if (collapse_top_margin)
                 {
                     var old_top = _margins.top;
@@ -2728,14 +2812,13 @@ namespace H3ml.Layout
                     if (_margins.top != old_top)
                         update_floats(_margins.top - old_top, this);
                 }
-                if (collapse_bottom_margin)
-                {
-                    _margins.bottom = Math.Max(_boxes.Last().bottom_margin, _margins.bottom);
-                    _pos.height = _boxes.Last().bottom - _boxes.Last().bottom_margin;
-                }
-                else
-                    _pos.height = _boxes.Last().bottom;
+            if (collapse_bottom_margin)
+            {
+                _margins.bottom = Math.Max(_boxes.Last().bottom_margin, _margins.bottom);
+                _pos.height = _boxes.Last().bottom - _boxes.Last().bottom_margin;
             }
+            else
+                _pos.height = _boxes.Last().bottom;
 
             // add the floats height to the block height
             if (is_floats_holder)
@@ -2746,17 +2829,20 @@ namespace H3ml.Layout
             }
 
             // calculate the final position
-            _pos.move_to(x, y);
+            _pos.move_to(x, y, z); //:h3ml
             _pos.x += content_margins_left;
             _pos.y += content_margins_top;
-            if (get_predefined_height(block_height))
+            _pos.z += content_margins_front; //:h3ml
+            if (get_predefined_height(out block_height))
                 _pos.height = block_height;
+            if (get_predefined_depth(out block_depth)) //:h3ml
+                _pos.depth = block_depth; //:h3ml
 
             var min_height = 0;
             if (!_css_min_height.is_predefined && _css_min_height.units == css_units.percentage)
             {
                 var el_parent = parent();
-                if (el_parent != null && el_parent.get_predefined_height(block_height))
+                if (el_parent != null && el_parent.get_predefined_height(out block_height))
                     min_height = _css_min_height.calc_percent(block_height);
             }
             else
@@ -2765,6 +2851,22 @@ namespace H3ml.Layout
             {
                 min_height -= _padding.top + _borders.top + _padding.bottom + _borders.bottom;
                 if (min_height < 0) min_height = 0;
+            }
+
+            //:h3ml
+            var min_depth = 0; //:h3ml
+            if (!_css_min_depth.is_predefined && _css_min_depth.units == css_units.percentage) //:h3ml
+            {
+                var el_parent = parent(); //:h3ml
+                if (el_parent != null && el_parent.get_predefined_depth(out block_depth)) //:h3ml
+                    min_depth = _css_min_depth.calc_percent(block_depth); //:h3ml
+            }
+            else
+                min_depth = (int)_css_min_depth.val; //:h3ml
+            if (min_depth != 0 && _box_sizing == box_sizing.border_box) //:h3ml
+            {
+                min_depth -= _padding.front + _borders.front + _padding.back + _borders.back; //:h3ml
+                if (min_depth < 0) min_depth = 0; //:h3ml
             }
 
             if (_display == style_display.list_item)
@@ -2777,20 +2879,22 @@ namespace H3ml.Layout
                     get_document().container.get_image_size(url, list_image_baseurl, out var sz);
                     if (min_height < sz.height)
                         min_height = sz.height;
+                    if (min_depth < sz.depth) //:h3ml
+                        min_depth = sz.depth; //:h3ml
                 }
             }
 
             if (min_height > _pos.height)
                 _pos.height = min_height;
+            if (min_depth > _pos.depth) //:h3ml
+                _pos.depth = min_depth; //:h3ml
 
             var min_width = _css_min_width.calc_percent(parent_width);
-
             if (min_width != 0 && _box_sizing == box_sizing.border_box)
             {
                 min_width -= _padding.left + _borders.left + _padding.right + _borders.right;
                 if (min_width < 0) min_width = 0;
             }
-
             if (min_width != 0)
             {
                 if (min_width > _pos.width)
@@ -2805,7 +2909,7 @@ namespace H3ml.Layout
             if (ret_width < max_width && !second_pass && have_parent)
                 if (_display == style_display.inline_block || _css_width.is_predefined && (_float != element_float.none || _display == style_display.table || _el_position == element_position.absolute || _el_position == element_position.@fixed))
                 {
-                    render(x, y, ret_width, true);
+                    render(x, y, z, ret_width, true); //:h3ml
                     _pos.width = ret_width - (content_margins_left + content_margins_right);
                 }
 
@@ -2816,7 +2920,7 @@ namespace H3ml.Layout
             return ret_width;
         }
 
-        protected int render_table(int x, int y, int max_width, bool second_pass = false)
+        protected int render_table(int x, int y, int z, int max_width, bool second_pass = false) //:h3ml
         {
             if (_grid == null) return 0;
 
@@ -2825,7 +2929,7 @@ namespace H3ml.Layout
             calc_outlines(parent_width);
 
             _pos.clear();
-            _pos.move_to(x, y);
+            _pos.move_to(x, y, z); //:h3ml
             _pos.x += content_margins_left;
             _pos.y += content_margins_top;
 
@@ -2847,7 +2951,6 @@ namespace H3ml.Layout
                     table_width_spacing -= Math.Min(border_left, _grid.column(0).border_left);
                     table_width_spacing -= Math.Min(border_right, _grid.column(_grid.cols_count - 1).border_right);
                 }
-
                 for (var col = 1; col < _grid.cols_count; col++)
                     table_width_spacing -= Math.Min(_grid.column(col).border_left, _grid.column(col - 1).border_right);
             }
@@ -2865,7 +2968,7 @@ namespace H3ml.Layout
                     var cell = _grid.cell(0, row);
                     if (cell != null && cell.el != null)
                     {
-                        cell.min_width = cell.max_width = cell.el.render(0, 0, max_width - table_width_spacing);
+                        cell.min_width = cell.max_width = cell.el.render(0, 0, 0, max_width - table_width_spacing); //:h3ml
                         cell.el._pos.width = cell.min_width - cell.el.content_margins_left - cell.el.content_margins_right;
                     }
                 }
@@ -2877,22 +2980,20 @@ namespace H3ml.Layout
                     {
                         var cell = _grid.cell(col, row);
                         if (cell != null && cell.el != null)
-                        {
                             if (!_grid.column(col).css_width.is_predefined && _grid.column(col).css_width.units != css_units.percentage)
                             {
                                 var css_w = _grid.column(col).css_width.calc_percent(block_width.val);
-                                var el_w = cell.el.render(0, 0, css_w);
+                                var el_w = cell.el.render(0, 0, 0, css_w); //:h3ml
                                 cell.min_width = cell.max_width = Math.Max(css_w, el_w);
                                 cell.el._pos.width = cell.min_width - cell.el.content_margins_left - cell.el.content_margins_right;
                             }
                             else
                             {
                                 // calculate minimum content width
-                                cell.min_width = cell.el.render(0, 0, 1);
+                                cell.min_width = cell.el.render(0, 0, 0, 1); //:h3ml
                                 // calculate maximum content width
-                                cell.max_width = cell.el.render(0, 0, max_width - table_width_spacing);
+                                cell.max_width = cell.el.render(0, 0, 0, max_width - table_width_spacing); //:h3ml
                             }
-                        }
                     }
             }
 
@@ -2970,7 +3071,7 @@ namespace H3ml.Layout
 
                         if (cell.el._pos.width != cell_width - cell.el.content_margins_left - cell.el.content_margins_right)
                         {
-                            cell.el.render(_grid.column(col).left, 0, cell_width);
+                            cell.el.render(_grid.column(col).left, 0, 0, cell_width); //:h3ml
                             cell.el._pos.width = cell_width - cell.el.content_margins_left - cell.el.content_margins_right;
                         }
                         else
@@ -2985,7 +3086,6 @@ namespace H3ml.Layout
             }
 
             if (row_span_found)
-            {
                 for (var col = 0; col < _grid.cols_count; col++)
                     for (var row = 0; row < _grid.rows_count; row++)
                     {
@@ -3005,7 +3105,6 @@ namespace H3ml.Layout
                             }
                         }
                     }
-            }
 
             // Calculate vertical table spacing
             var table_height_spacing = 0;
@@ -3023,10 +3122,8 @@ namespace H3ml.Layout
                     table_height_spacing -= Math.Min(_grid.row(row).border_top, _grid.row(row - 1).border_bottom);
             }
 
-
             // calculate block height
-            var block_height = 0;
-            if (get_predefined_height(block_height))
+            if (get_predefined_height(out var block_height))
                 block_height -= _padding.height + _borders.height;
 
             // calculate minimum height from m_css_min_height
@@ -3037,7 +3134,7 @@ namespace H3ml.Layout
                 if (el_parent != null)
                 {
                     var parent_height = 0;
-                    if (el_parent.get_predefined_height(parent_height))
+                    if (el_parent.get_predefined_height(out parent_height))
                         min_height = _css_min_height.calc_percent(parent_height);
                 }
             }
@@ -3050,6 +3147,7 @@ namespace H3ml.Layout
             _grid.calc_vertical_positions(_borders, _border_collapse, _border_spacing_y);
 
             var table_height = 0;
+            var table_depth = 0; //:h3ml
 
             // place cells vertically
             for (var col = 0; col < _grid.cols_count; col++)
@@ -3080,11 +3178,13 @@ namespace H3ml.Layout
 
             calc_auto_margins(parent_width);
 
-            _pos.move_to(x, y);
+            _pos.move_to(x, y, z); //:h3ml
             _pos.x += content_margins_left;
             _pos.y += content_margins_top;
+            _pos.z += content_margins_front;//:h3ml
             _pos.width = table_width;
             _pos.height = table_height;
+            _pos.depth = table_depth;
 
             return max_table_width;
         }
@@ -3104,7 +3204,6 @@ namespace H3ml.Layout
                     else if ((flt == element_float.left && els.First().get_clear == element_clear.left) || (flt == element_float.right && els.First().get_clear == element_clear.right))
                         was_cleared = true;
                 }
-
                 if (!was_cleared)
                 {
                     _boxes.RemoveAt(_boxes.Count - 1);
@@ -3121,7 +3220,6 @@ namespace H3ml.Layout
                     var line_left = 0;
                     var line_right = max_width;
                     get_line_left_right(line_top, max_width, ref line_left, ref line_right);
-
                     if (_boxes.Last().get_type == box_type.line)
                     {
                         if (_boxes.Count == 1 && _list_style_type != list_style_type.none && _list_style_position == list_style_position.inside)
@@ -3139,7 +3237,6 @@ namespace H3ml.Layout
                                 line_left += _css_text_indent.calc_percent(max_width);
                         }
                     }
-
                     var els2 = new List<element>();
                     _boxes.Last().new_width(line_left, line_right, els2);
                     foreach (var el in els2)
@@ -3168,17 +3265,18 @@ namespace H3ml.Layout
                 {
                     if (res.Count == 1)
                     {
-                        if (html.value_in_list(res[0], "left;right;center")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); }
-                        else if (html.value_in_list(res[0], "top;bottom;center")) { _bg._position.y.fromString(res[0], "top;bottom;center"); _bg._position.x.set_value(50, css_units.percentage); }
-                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); }
+                        if (html.value_in_list(res[0], "left;right;center")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else if (html.value_in_list(res[0], "top;bottom;center")) { _bg._position.y.fromString(res[0], "top;bottom;center"); _bg._position.x.set_value(50, css_units.percentage); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else if (html.value_in_list(res[0], "front;back;center")) { _bg._position.z.fromString(res[0], "front;back;center"); _bg._position.x.set_value(50, css_units.percentage); _bg._position.y.set_value(50, css_units.percentage); } //:h3ml
+                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.set_value(50, css_units.percentage); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
                     }
                     else
                     {
-                        if (html.value_in_list(res[0], "left;right")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
-                        else if (html.value_in_list(res[0], "top;bottom")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); }
-                        else if (html.value_in_list(res[1], "left;right")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); }
-                        else if (html.value_in_list(res[1], "top;bottom")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
-                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); }
+                        if (html.value_in_list(res[0], "left;right")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else if (html.value_in_list(res[0], "top;bottom")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else if (html.value_in_list(res[1], "left;right")) { _bg._position.x.fromString(res[1], "left;right;center"); _bg._position.y.fromString(res[0], "top;bottom;center"); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else if (html.value_in_list(res[1], "top;bottom")) { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
+                        else { _bg._position.x.fromString(res[0], "left;right;center"); _bg._position.y.fromString(res[1], "top;bottom;center"); _bg._position.z.set_value(50, css_units.percentage); } //:h3ml
                     }
 
                     if (_bg._position.x.is_predefined)
@@ -3195,10 +3293,18 @@ namespace H3ml.Layout
                             case 1: _bg._position.y.set_value(100, css_units.percentage); break;
                             case 2: _bg._position.y.set_value(50, css_units.percentage); break;
                         }
+                    //:h3ml
+                    if (_bg._position.z.is_predefined) //:h3ml
+                        switch (_bg._position.z.predef) //:h3ml
+                        {
+                            case 0: _bg._position.z.set_value(0, css_units.percentage); break; //:h3ml
+                            case 1: _bg._position.z.set_value(100, css_units.percentage); break; //:h3ml
+                            case 2: _bg._position.z.set_value(50, css_units.percentage); break; //:h3ml
+                        }
                 }
-                else { _bg._position.x.set_value(0, css_units.percentage); _bg._position.y.set_value(0, css_units.percentage); }
+                else { _bg._position.x.set_value(0, css_units.percentage); _bg._position.y.set_value(0, css_units.percentage); _bg._position.z.set_value(0, css_units.percentage); } //:h3ml
             }
-            else { _bg._position.y.set_value(0, css_units.percentage); _bg._position.x.set_value(0, css_units.percentage); }
+            else { _bg._position.y.set_value(0, css_units.percentage); _bg._position.x.set_value(0, css_units.percentage); _bg._position.z.set_value(0, css_units.percentage); } //:h3ml
 
             str = get_style_property("background-size", false, "auto");
             if (str != null)
@@ -3208,21 +3314,26 @@ namespace H3ml.Layout
                 if (res.Count != 0)
                 {
                     _bg._position.width.fromString(res[0], types.background_size_strings);
-                    if (res.Count > 1) _bg._position.height.fromString(res[1], types.background_size_strings);
+                    if (res.Count >= 1) _bg._position.height.fromString(res[1], types.background_size_strings);
                     else _bg._position.height.predef = (int)background_size.auto;
+                    if (res.Count >= 2) _bg._position.depth.fromString(res[2], types.background_size_strings); //:h3ml
+                    else _bg._position.depth.predef = (int)background_size.auto; //:h3ml
                 }
                 else
                 {
                     _bg._position.width.predef = (int)background_size.auto;
                     _bg._position.height.predef = (int)background_size.auto;
+                    _bg._position.depth.predef = (int)background_size.auto; //:h3ml
                 }
             }
 
             var doc = get_document();
             doc.cvt_units(_bg._position.x, _font_size);
             doc.cvt_units(_bg._position.y, _font_size);
+            doc.cvt_units(_bg._position.z, _font_size); //:h3ml
             doc.cvt_units(_bg._position.width, _font_size);
             doc.cvt_units(_bg._position.height, _font_size);
+            doc.cvt_units(_bg._position.depth, _font_size); //:h3ml
 
             // parse background_attachment
             _bg._attachment = (background_attachment)html.value_index(get_style_property("background-attachment", false, "scroll"), types.background_attachment_strings, (int)background_attachment.scroll);
@@ -3278,11 +3389,13 @@ namespace H3ml.Layout
                                 {
                                     img_new_sz.width = bg_paint.origin_box.width;
                                     img_new_sz.height = (int)(bg_paint.origin_box.width * img_ar_height);
+                                    img_new_sz.depth = 0; //:h3ml
                                 }
                                 else
                                 {
                                     img_new_sz.height = bg_paint.origin_box.height;
                                     img_new_sz.width = (int)(bg_paint.origin_box.height * img_ar_width);
+                                    img_new_sz.depth = 0; //:h3ml
                                 }
                                 break;
                             case background_size.cover:
@@ -3290,11 +3403,13 @@ namespace H3ml.Layout
                                 {
                                     img_new_sz.width = bg_paint.origin_box.width;
                                     img_new_sz.height = (int)(bg_paint.origin_box.width * img_ar_height);
+                                    img_new_sz.depth = 0; //:h3ml
                                 }
                                 else
                                 {
                                     img_new_sz.height = bg_paint.origin_box.height;
                                     img_new_sz.width = (int)(bg_paint.origin_box.height * img_ar_width);
+                                    img_new_sz.depth = 0; //:h3ml
                                 }
                                 break;
                             case background_size.auto:
@@ -3302,6 +3417,7 @@ namespace H3ml.Layout
                                 {
                                     img_new_sz.height = bg._position.height.calc_percent(bg_paint.origin_box.height);
                                     img_new_sz.width = (int)(img_new_sz.height * img_ar_width);
+                                    img_new_sz.depth = 0; //:h3ml
                                 }
                                 break;
                         }
@@ -3311,15 +3427,16 @@ namespace H3ml.Layout
                         img_new_sz.height = bg._position.height.is_predefined
                             ? (int)(img_new_sz.width * img_ar_height)
                             : bg._position.height.calc_percent(bg_paint.origin_box.height);
+                        img_new_sz.depth = 0; //:h3ml
                     }
 
                     bg_paint.image_size = img_new_sz;
-                    bg_paint.position_x = bg_paint.origin_box.x + (int)bg._position.x.calc_percent(bg_paint.origin_box.width - bg_paint.image_size.width);
-                    bg_paint.position_y = bg_paint.origin_box.y + (int)bg._position.y.calc_percent(bg_paint.origin_box.height - bg_paint.image_size.height);
+                    bg_paint.position_x = bg_paint.origin_box.x + bg._position.x.calc_percent(bg_paint.origin_box.width - bg_paint.image_size.width);
+                    bg_paint.position_y = bg_paint.origin_box.y + bg._position.y.calc_percent(bg_paint.origin_box.height - bg_paint.image_size.height);
+                    bg_paint.position_z = bg_paint.origin_box.z + bg._position.z.calc_percent(bg_paint.origin_box.depth - bg_paint.image_size.depth); //:h3ml
                 }
-
             }
-            bg_paint.border_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+            bg_paint.border_radius = _css_borders.radius.calc_percents(border_box.width, border_box.height, border_box.depth); //:h3ml
             bg_paint.border_box = border_box;
             bg_paint.is_root = !have_parent;
         }
@@ -3342,7 +3459,9 @@ namespace H3ml.Layout
             lm.pos.x = pos.x;
             lm.pos.width = sz_font - sz_font * 2 / 3;
             lm.pos.height = sz_font - sz_font * 2 / 3;
+            lm.pos.depth = 0; //:h3ml
             lm.pos.y = pos.y + ln_height / 2 - lm.pos.height / 2;
+            lm.pos.z = pos.z; //:h3ml
 
             if (img_size.width != 0 && img_size.height != 0)
             {
@@ -3350,8 +3469,11 @@ namespace H3ml.Layout
                     lm.pos.y = pos.y + pos.height - img_size.height;
                 if (img_size.width > lm.pos.width)
                     lm.pos.x -= img_size.width - lm.pos.width;
+                if (lm.pos.z + img_size.depth > pos.z + pos.depth) //:h3ml
+                    lm.pos.z = pos.z + pos.depth - img_size.depth; //:h3ml
                 lm.pos.width = img_size.width;
                 lm.pos.height = img_size.height;
+                lm.pos.depth = img_size.depth; //:h3ml
             }
             if (_list_style_position == list_style_position.outside)
                 lm.pos.x -= sz_font;

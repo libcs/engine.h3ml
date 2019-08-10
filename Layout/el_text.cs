@@ -49,7 +49,6 @@ namespace H3ml.Layout
                 if (_text == "\t") { _transformed_text = "    "; _use_transformed = true; }
                 if (_text == "\n" || _text == "\r") { _transformed_text = ""; _use_transformed = true; }
             }
-
             object font = null; font_metrics fm;
             var el_parent = parent();
             if (el_parent != null)
@@ -59,11 +58,13 @@ namespace H3ml.Layout
             {
                 _size.height = 0;
                 _size.width = 0;
+                _size.depth = 0; //:h3ml
             }
             else
             {
                 _size.height = fm.height;
                 _size.width = get_document().container.text_width(_use_transformed ? _transformed_text : _text, font);
+                _size.depth = 0; //:h3ml
             }
             _draw_spaces = fm.draw_spaces;
         }
@@ -74,13 +75,14 @@ namespace H3ml.Layout
             return el_parent != null ? el_parent.get_base_line() : 0;
         }
 
-        public override void draw(object hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, int z, position clip)
         {
             if (is_white_space() && !_draw_spaces)
                 return;
             var pos = _pos;
             pos.x += x;
             pos.y += y;
+            pos.z += z; //:h3ml
             if (pos.does_intersect(clip))
             {
                 var el_parent = parent();

@@ -59,7 +59,6 @@
       <DependentUpon>HtmlControl.cs</DependentUpon>
     </Compile>
     <Compile Include="http_loader.cs" />
-    <Compile Include="Master.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BrowserForm.resx">

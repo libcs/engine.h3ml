@@ -10,15 +10,16 @@ namespace H3ml.Layout
 
         public override int line_height => height;
         public override bool is_replaced => true;
-        public override int render(int x, int y, int max_width, bool second_pass = false)
+        public override int render(int x, int y, int z, int max_width, bool second_pass = false)
         {
             var parent_width = max_width;
             calc_outlines(parent_width);
-            _pos.move_to(x, y);
+            _pos.move_to(x, y, z); //:h3ml
             var doc = get_document();
             doc.container.get_image_size(_src, null, out var sz);
             _pos.width = sz.width;
             _pos.height = sz.height;
+            _pos.depth = sz.depth; //:h3ml
             if (_css_height.is_predefined && _css_width.is_predefined)
             {
                 _pos.height = sz.height;
@@ -43,7 +44,7 @@ namespace H3ml.Layout
             }
             else if (!_css_height.is_predefined && _css_width.is_predefined)
             {
-                if (!get_predefined_height(_pos.height))
+                if (!get_predefined_height(out _pos.height))
                     _pos.height = (int)_css_height.val;
                 // check for max-height
                 if (!_css_max_height.is_predefined)
@@ -70,7 +71,7 @@ namespace H3ml.Layout
             {
                 _pos.width = _css_width.calc_percent(parent_width);
                 _pos.height = 0;
-                if (!get_predefined_height(_pos.height))
+                if (!get_predefined_height(out _pos.height))
                     _pos.height = (int)_css_height.val;
 
                 // check for max-height
@@ -92,6 +93,7 @@ namespace H3ml.Layout
             calc_auto_margins(parent_width);
             _pos.x += content_margins_left;
             _pos.y += content_margins_top;
+            _pos.z += content_margins_front; //:h3ml
             return _pos.width + content_margins_left + content_margins_right;
         }
 
@@ -109,11 +111,12 @@ namespace H3ml.Layout
                 get_document().container.load_image(_src, null, !_css_height.is_predefined && !_css_width.is_predefined);
         }
 
-        public override void draw(object hdc, int x, int y, position clip)
+        public override void draw(object hdc, int x, int y, int z, position clip)
         {
             var pos = _pos;
             pos.x += x;
             pos.y += y;
+            pos.z += z; //:h3ml
             var el_pos = pos;
             el_pos += _padding;
             el_pos += _borders;
@@ -145,9 +148,11 @@ namespace H3ml.Layout
                     bg.repeat = background_repeat.no_repeat;
                     bg.image_size.width = pos.width;
                     bg.image_size.height = pos.height;
-                    bg.border_radius = _css_borders.radius.calc_percents(bg.border_box.width, bg.border_box.height);
+                    bg.image_size.depth = pos.depth; //:h3ml
+                    bg.border_radius = _css_borders.radius.calc_percents(bg.border_box.width, bg.border_box.height, bg.border_box.depth); //:h3ml
                     bg.position_x = pos.x;
                     bg.position_y = pos.y;
+                    bg.position_z = pos.z; //:h3ml
                     get_document().container.draw_background(hdc, bg);
                 }
             }
@@ -159,7 +164,7 @@ namespace H3ml.Layout
                 border_box += _padding;
                 border_box += _borders;
                 var bdr = new borders(_css_borders);
-                bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height);
+                bdr.radius = _css_borders.radius.calc_percents(border_box.width, border_box.height, border_box.depth); //:h3ml
                 get_document().container.draw_borders(hdc, bdr, border_box, !have_parent);
             }
         }

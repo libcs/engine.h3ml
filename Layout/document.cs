@@ -100,7 +100,7 @@ namespace H3ml.Layout
                 }
                 else
                 {
-                    ret = _root.render(0, 0, max_width);
+                    ret = _root.render(0, 0, 0, max_width); //:h3ml
                     if (_root.fetch_positioned())
                     {
                         _fixed_boxes.Clear();
@@ -108,18 +108,19 @@ namespace H3ml.Layout
                     }
                     _size.width = 0;
                     _size.height = 0;
+                    _size.depth = 0; //:h3ml
                     _root.calc_document_size(ref _size);
                 }
             }
             return ret;
         }
 
-        public void draw(object hdc, int x, int y, position clip)
+        public void draw(object hdc, int x, int y, int z, position clip) //:h3ml
         {
             if (_root != null)
             {
-                _root.draw(hdc, x, y, clip);
-                _root.draw_stacking_context(hdc, x, y, clip, true);
+                _root.draw(hdc, x, y, z, clip); //:h3ml
+                _root.draw_stacking_context(hdc, x, y, z, clip, true); //:h3ml
             }
         }
 
@@ -159,8 +160,8 @@ namespace H3ml.Layout
         }
 
         public int width => _size.width;
-
         public int height => _size.height;
+        public int depth => _size.depth; //:h3ml
 
         public void add_stylesheet(string str, string baseurl, string media)
         {
@@ -168,11 +169,11 @@ namespace H3ml.Layout
                 _css.Add(new css_text(str, baseurl, media));
         }
 
-        public bool on_mouse_over(int x, int y, int client_x, int client_y, IList<position> redraw_boxes)
+        public bool on_mouse_over(int x, int y, int z, int client_x, int client_y, int client_z, IList<position> redraw_boxes) //:h3ml
         {
             if (_root == null)
                 return false;
-            var over_el = _root.get_element_by_point(x, y, client_x, client_y);
+            var over_el = _root.get_element_by_point(x, y, z, client_x, client_y, client_z); //:h3ml
             var state_was_changed = false;
             if (over_el != _over_element)
             {
@@ -189,14 +190,14 @@ namespace H3ml.Layout
                 cursor = _over_element.get_cursor();
             }
             _container.set_cursor(cursor ?? "auto");
-            return state_was_changed ? _root.find_styles_changes(redraw_boxes, 0, 0) : false;
+            return state_was_changed ? _root.find_styles_changes(redraw_boxes, 0, 0, 0) : false; //:h3ml
         }
 
-        public bool on_lbutton_down(int x, int y, int client_x, int client_y, IList<position> redraw_boxes)
+        public bool on_lbutton_down(int x, int y, int z, int client_x, int client_y, int client_z, IList<position> redraw_boxes) //:h3ml
         {
             if (_root == null)
                 return false;
-            var over_el = _root.get_element_by_point(x, y, client_x, client_y);
+            var over_el = _root.get_element_by_point(x, y, z, client_x, client_y, client_z); //:h3ml
             var state_was_changed = false;
             if (over_el != _over_element)
             {
@@ -216,16 +217,16 @@ namespace H3ml.Layout
                 cursor = _over_element.get_cursor();
             }
             _container.set_cursor(cursor ?? "auto");
-            return state_was_changed ? _root.find_styles_changes(redraw_boxes, 0, 0) : false;
+            return state_was_changed ? _root.find_styles_changes(redraw_boxes, 0, 0, 0) : false; //:h3ml
         }
 
-        public bool on_lbutton_up(int x, int y, int client_x, int client_y, IList<position> redraw_boxes)
+        public bool on_lbutton_up(int x, int y, int z, int client_x, int client_y, int client_z, IList<position> redraw_boxes) //:h3ml
         {
             if (_root == null)
                 return false;
             if (_over_element != null)
                 if (_over_element.on_lbutton_up())
-                    return _root.find_styles_changes(redraw_boxes, 0, 0);
+                    return _root.find_styles_changes(redraw_boxes, 0, 0, 0); //:h3ml
             return false;
         }
 
@@ -235,7 +236,7 @@ namespace H3ml.Layout
                 return false;
             if (_over_element != null)
                 if (_over_element.on_mouse_leave())
-                    return _root.find_styles_changes(redraw_boxes, 0, 0);
+                    return _root.find_styles_changes(redraw_boxes, 0, 0, 0); //:h3ml
             return false;
         }
 

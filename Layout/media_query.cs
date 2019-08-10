@@ -44,6 +44,16 @@ namespace H3ml.Layout
                 case media_feature.max_height:
                     if (features.height <= val) return true;
                     break;
+                case media_feature.depth:
+                    if (check_as_bool) return features.depth != 0;
+                    else if (features.depth == val) return true;
+                    break;
+                case media_feature.min_depth:
+                    if (features.depth >= val) return true;
+                    break;
+                case media_feature.max_depth:
+                    if (features.depth <= val) return true;
+                    break;
 
                 case media_feature.device_width:
                     if (check_as_bool) return features.device_width != 0;
@@ -64,6 +74,16 @@ namespace H3ml.Layout
                     break;
                 case media_feature.max_device_height:
                     if (features.device_height <= val) return true;
+                    break;
+                case media_feature.device_depth:
+                    if (check_as_bool) return features.device_depth != 0;
+                    else if (features.device_depth == val) return true;
+                    break;
+                case media_feature.min_device_depth:
+                    if (features.device_depth >= val) return true;
+                    break;
+                case media_feature.max_device_depth:
+                    if (features.device_depth <= val) return true;
                     break;
 
                 case media_feature.orientation:

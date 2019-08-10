@@ -65,6 +65,7 @@ namespace H3ml.Layout
         public size image_size;
         public int position_x;
         public int position_y;
+        public int position_z; //:h3ml
         public bool is_root;
 
         public background_paint()
@@ -72,6 +73,7 @@ namespace H3ml.Layout
             color = new web_color(0, 0, 0, 0);
             position_x = 0;
             position_y = 0;
+            position_z = 0; //:h3ml
             attachment = background_attachment.scroll;
             repeat = background_repeat.repeat;
             is_root = false;
@@ -90,6 +92,7 @@ namespace H3ml.Layout
             image_size = val.image_size;
             position_x = val.position_x;
             position_y = val.position_y;
+            position_z = val.position_z; //:h3ml
             is_root = val.is_root;
         }
 

@@ -14,11 +14,14 @@ namespace H3ml.Layout
     {
         protected int _box_top;
         protected int _box_left;
+        protected int _box_front; //:h3ml
         protected int _box_right;
-        public box(int top, int left, int right)
+
+        public box(int top, int left, int front, int right)
         {
             _box_top = top;
             _box_left = left;
+            _box_front = front; //:h3ml
             _box_right = right;
         }
 
@@ -26,10 +29,13 @@ namespace H3ml.Layout
         public int top => _box_top;
         public int right => _box_left + width;
         public int left => _box_left;
+        public int front => _box_front; //:h3ml
+        public int back => _box_front + depth; //:h3ml
 
         public abstract box_type get_type { get; }
         public abstract int height { get; }
         public abstract int width { get; }
+        public abstract int depth { get; } //:h3ml
         public abstract void add_element(element el);
         public abstract bool can_hold(element el, white_space ws);
         public abstract void finish(bool last_box = false);
@@ -45,11 +51,12 @@ namespace H3ml.Layout
     public class block_box : box
     {
         element _element;
-        public block_box(int top, int left, int right) : base(top, left, right) { }
+        public block_box(int top, int left, int front, int right) : base(top, left, front, right) { } //:h3ml
 
         public override box_type get_type => box_type.block;
         public override int height => _element.height;
         public override int width => _element.width;
+        public override int depth => _element.depth; //:h3ml
         public override void add_element(element el) { _element = el; el._box = this; }
         public override bool can_hold(element el, white_space ws) => _element != null || el.is_inline_box ? false : true;
         public override void finish(bool last_box = false)
@@ -78,15 +85,17 @@ namespace H3ml.Layout
         List<element> _items = new List<element>();
         int _height;
         int _width;
+        int _depth; //:h3ml
         int _line_height;
         font_metrics _font_metrics;
         int _baseline;
         text_align _text_align;
 
-        public line_box(int top, int left, int right, int line_height, font_metrics fm, text_align align) : base(top, left, right)
+        public line_box(int top, int left, int front, int right, int line_height, font_metrics fm, text_align align) : base(top, left, front, right) //:h3ml
         {
             _height = 0;
             _width = 0;
+            _depth = 0; //:h3ml
             _font_metrics = fm;
             _line_height = line_height;
             _baseline = 0;
@@ -96,6 +105,7 @@ namespace H3ml.Layout
         public override box_type get_type => box_type.line;
         public override int height => _height;
         public override int width => _width;
+        public override int depth => _depth; //:h3ml
         public override void add_element(element el)
         {
             el._skip = false;
@@ -119,7 +129,9 @@ namespace H3ml.Layout
                     var el_shift_right = el.get_inline_shift_right();
                     el._pos.x = _box_left + _width + el_shift_left + el.content_margins_left;
                     el._pos.y = _box_top + el.content_margins_top;
+                    el._pos.z = _box_front + el.content_margins_front; //:h3ml
                     _width += el.width + el_shift_left + el_shift_right;
+                    //_depth += el.depth + el_shift_front + el_shift_back; //:h3ml
                 }
             }
         }
@@ -142,7 +154,6 @@ namespace H3ml.Layout
             }
 
             foreach (var i in _items)
-            {
                 if (i.is_white_space() || i.is_break())
                 {
                     if (!i._skip)
@@ -152,7 +163,6 @@ namespace H3ml.Layout
                     }
                 }
                 else break;
-            }
 
             var base_line = _font_metrics.base_line;
             var line_height = _line_height;
@@ -219,7 +229,6 @@ namespace H3ml.Layout
                 }
 
             //css_offsets offsets;
-
             foreach (var el in _items)
             {
                 el._pos.y -= y1;

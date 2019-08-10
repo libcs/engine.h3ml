@@ -12,87 +12,103 @@ namespace H3ml.Layout
         public const uint font_decoration_overline = 0x04;
     }
 
-    [DebuggerDisplay("margins: {left} {right} {top} {bottom}")]
+    [DebuggerDisplay("margins: {left},{right}x{top},{bottom}")]
     public struct margins
     {
         public int left;
         public int right;
         public int top;
         public int bottom;
+        public int front; //:h3ml
+        public int back; //:h3ml
 
         public int width => left + right;
         public int height => top + bottom;
+        public int depth => front + back; //:h3ml
     }
 
-    [DebuggerDisplay("size: {width} {height}")]
+    [DebuggerDisplay("size: {width}x{height}")]
     public struct size
     {
         public int width;
         public int height;
+        public int depth; //:h3ml
     }
 
-    [DebuggerDisplay("position: {x},{y} {width},{height}")]
+    [DebuggerDisplay("position: {x},{y}:{width}x{height}")]
     public struct position
     {
         public int x;
         public int y;
+        public int z; //:h3ml
         public int width;
         public int height;
+        public int depth; //:h3ml
 
-        public position(int x, int y, int width, int height)
+        public position(int x, int y, int z, int width, int height, int depth)
         {
             this.x = x;
             this.y = y;
+            this.z = z; //:h3ml
             this.width = width;
             this.height = height;
+            this.depth = depth;
         }
 
         public int right => x + width;
         public int bottom => y + height;
         public int left => x;
         public int top => y;
+        public int front => z; //:h3ml
+        public int back => z + depth; //:h3ml
 
         public static position operator +(position t, margins mg)
         {
             t.x -= mg.left;
             t.y -= mg.top;
+            t.z -= mg.front; //:h3ml
             t.width += mg.left + mg.right;
             t.height += mg.top + mg.bottom;
+            t.depth += mg.front + mg.back; //:h3ml
             return t;
         }
         public static position operator -(position t, margins mg)
         {
             t.x += mg.left;
             t.y += mg.top;
+            t.z += mg.front; //:h3ml
             t.width -= mg.left + mg.right;
             t.height -= mg.top + mg.bottom;
+            t.depth -= mg.front + mg.back; //:h3ml
             return t;
         }
 
-        public void clear() => x = y = width = height = 0;
+        public void clear() => x = y = z = width = height = depth = 0; //:h3ml
 
         public void assignTo(size sz)
         {
-        	width = sz.width;
-        	height = sz.height;
+            width = sz.width;
+            height = sz.height;
+            depth = sz.depth; //:h3ml
         }
 
-        public void move_to(int x, int y)
+        public void move_to(int x, int y, int z)
         {
             this.x = x;
             this.y = y;
+            this.z = z; //:h3ml
         }
 
         public bool does_intersect(position val)
         {
             //if (val == null) return true;
-            return (left <= val.right && right >= val.left && bottom >= val.top && top <= val.bottom)
-            || (val.left <= right && val.right >= left && val.bottom >= top && val.top <= bottom);
+            return (left <= val.right && right >= val.left && bottom >= val.top && top <= val.bottom && front >= val.back && back <= val.front) //:h3ml
+            || (val.left <= right && val.right >= left && val.bottom >= top && val.top <= bottom && val.front >= back && val.back <= front); //:h3ml
         }
 
-        public bool empty => width == 0 && height == 0;
+        public bool empty => width == 0 && height == 0 && depth == 0; //:h3ml
 
-        public bool is_point_inside(int x, int y) => x >= left && x <= right && y >= top && y <= bottom;
+        public bool is_point_inside(int x, int y, int z) => x >= left && x <= right && y >= top && y <= bottom && z >= front && z <= back; //:h3ml
     }
 
     [DebuggerDisplay("font_metrics: {height}")]
@@ -521,7 +537,6 @@ namespace H3ml.Layout
         public element_clear clear_floats;
         public element el;
 
-        //public floated_box() { }
         public floated_box(floated_box val)
         {
             pos = val.pos;
@@ -600,7 +615,7 @@ namespace H3ml.Layout
 
     partial class types
     {
-        public const string media_feature_strings = "none;width;min-width;max-width;height;min-height;max-height;device-width;min-device-width;max-device-width;device-height;min-device-height;max-device-height;orientation;aspect-ratio;min-aspect-ratio;max-aspect-ratio;device-aspect-ratio;min-device-aspect-ratio;max-device-aspect-ratio;color;min-color;max-color;color-index;min-color-index;max-color-index;monochrome;min-monochrome;max-monochrome;resolution;min-resolution;max-resolution";
+        public const string media_feature_strings = "none;width;min-width;max-width;height;min-height;max-height;depth;min-depth;max-depth;device-width;min-device-width;max-device-width;device-height;min-device-height;max-device-height;device-depth;min-device-depth;max-device-depth;orientation;aspect-ratio;min-aspect-ratio;max-aspect-ratio;device-aspect-ratio;min-device-aspect-ratio;max-device-aspect-ratio;color;min-color;max-color;color-index;min-color-index;max-color-index;monochrome;min-monochrome;max-monochrome;resolution;min-resolution;max-resolution";
     }
     public enum media_feature
     {
@@ -614,6 +629,10 @@ namespace H3ml.Layout
         [Description("min-height")] min_height,
         [Description("max-height")] max_height,
 
+        [Description("depth")] depth, //:h3ml
+        [Description("min-depth")] min_depth, //:h3ml
+        [Description("max-depth")] max_depth, //:h3ml
+
         [Description("device-width")] device_width,
         [Description("min-device-width")] min_device_width,
         [Description("max-device-width")] max_device_width,
@@ -621,6 +640,10 @@ namespace H3ml.Layout
         [Description("device-height")] device_height,
         [Description("min-device-height")] min_device_height,
         [Description("max-device-height")] max_device_height,
+
+        [Description("device-depth")] device_depth, //:h3ml
+        [Description("min-device-depth")] min_device_depth, //:h3ml
+        [Description("max-device-depth")] max_device_depth, //:h3ml
 
         [Description("orientation")] orientation,
 
@@ -683,8 +706,10 @@ namespace H3ml.Layout
         public media_type type;
         public int width;          // (pixels) For continuous media, this is the width of the viewport including the size of a rendered scroll bar (if any). For paged media, this is the width of the page box.
         public int height;         // (pixels) The height of the targeted display area of the output device. For continuous media, this is the height of the viewport including the size of a rendered scroll bar (if any). For paged media, this is the height of the page box.
+        public int depth; //:h3ml // (pixels) The height of the targeted display area of the output device. For continuous media, this is the height of the viewport including the size of a rendered scroll bar (if any). For paged media, this is the height of the page box.
         public int device_width;   // (pixels) The width of the rendering surface of the output device. For continuous media, this is the width of the screen. For paged media, this is the width of the page sheet size.
         public int device_height;  // (pixels) The height of the rendering surface of the output device. For continuous media, this is the height of the screen. For paged media, this is the height of the page sheet size.
+        public int device_depth; //:h3ml // (pixels) The height of the rendering surface of the output device. For continuous media, this is the height of the screen. For paged media, this is the height of the page sheet size.
         public int color;          // The number of bits per color component of the output device. If the device is not a color device, the value is zero.
         public int color_index;    // The number of entries in the color lookup table of the output device. If the device does not use a color lookup table, the value is zero.
         public int monochrome;     // The number of bits per pixel in a monochrome frame buffer. If the device is not a monochrome device, the output device value will be 0.

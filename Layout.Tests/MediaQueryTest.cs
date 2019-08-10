@@ -21,6 +21,12 @@ namespace H3ml.Layout
             Assert.IsFalse(e.check(new media_features { height = 0 })); Assert.IsTrue(e.check(new media_features { height = 100 })); Assert.IsTrue(e.check(new media_features { height = 500 }));
             e = new media_query_expression { feature = media_feature.max_height, val = 100 };
             Assert.IsTrue(e.check(new media_features { height = 0 })); Assert.IsTrue(e.check(new media_features { height = 100 })); Assert.IsFalse(e.check(new media_features { height = 500 }));
+            e = new media_query_expression { feature = media_feature.depth, val = 100 };
+            Assert.IsFalse(e.check(new media_features { depth = 0 })); Assert.IsTrue(e.check(new media_features { depth = 100 })); Assert.IsFalse(e.check(new media_features { depth = 500 }));
+            e = new media_query_expression { feature = media_feature.min_depth, val = 100 };
+            Assert.IsFalse(e.check(new media_features { depth = 0 })); Assert.IsTrue(e.check(new media_features { depth = 100 })); Assert.IsTrue(e.check(new media_features { depth = 500 }));
+            e = new media_query_expression { feature = media_feature.max_depth, val = 100 };
+            Assert.IsTrue(e.check(new media_features { depth = 0 })); Assert.IsTrue(e.check(new media_features { depth = 100 })); Assert.IsFalse(e.check(new media_features { depth = 500 }));
 
             e = new media_query_expression { feature = media_feature.device_width, val = 100 };
             Assert.IsFalse(e.check(new media_features { device_width = 0 })); Assert.IsTrue(e.check(new media_features { device_width = 100 })); Assert.IsFalse(e.check(new media_features { device_width = 500 }));
@@ -34,6 +40,12 @@ namespace H3ml.Layout
             Assert.IsFalse(e.check(new media_features { device_height = 0 })); Assert.IsTrue(e.check(new media_features { device_height = 100 })); Assert.IsTrue(e.check(new media_features { device_height = 500 }));
             e = new media_query_expression { feature = media_feature.max_device_height, val = 100 };
             Assert.IsTrue(e.check(new media_features { device_height = 0 })); Assert.IsTrue(e.check(new media_features { device_height = 100 })); Assert.IsFalse(e.check(new media_features { device_height = 500 }));
+            e = new media_query_expression { feature = media_feature.device_depth, val = 100 };
+            Assert.IsFalse(e.check(new media_features { device_depth = 0 })); Assert.IsTrue(e.check(new media_features { device_depth = 100 })); Assert.IsFalse(e.check(new media_features { device_depth = 500 }));
+            e = new media_query_expression { feature = media_feature.min_device_depth, val = 100 };
+            Assert.IsFalse(e.check(new media_features { device_depth = 0 })); Assert.IsTrue(e.check(new media_features { device_depth = 100 })); Assert.IsTrue(e.check(new media_features { device_depth = 500 }));
+            e = new media_query_expression { feature = media_feature.max_device_depth, val = 100 };
+            Assert.IsTrue(e.check(new media_features { device_depth = 0 })); Assert.IsTrue(e.check(new media_features { device_depth = 100 })); Assert.IsFalse(e.check(new media_features { device_depth = 500 }));
 
             e = new media_query_expression { feature = media_feature.orientation, val = (int)media_orientation.portrait };
             Assert.IsTrue(e.check(new media_features { width = 0, height = 100 })); Assert.IsTrue(e.check(new media_features { width = 100, height = 100 })); Assert.IsFalse(e.check(new media_features { width = 500, height = 100 }));

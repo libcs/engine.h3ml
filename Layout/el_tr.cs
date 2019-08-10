@@ -22,8 +22,10 @@ namespace H3ml.Layout
 				{
 					pos.x = el.left + el.margin_left;
 					pos.y = el.top - _padding.top - _borders.top;
+					pos.z = el.front - _padding.front - _borders.front;
 					pos.width = el.right - pos.x - el.margin_right - el.margin_left;
-					pos.height = el.height + _padding.top + _padding.bottom + _borders.top + _borders.bottom;
+					pos.height = el.height + _padding.top + _padding.bottom + _borders.top + _borders.bottom; //:h3ml
+                    pos.depth = el.depth + _padding.front + _padding.back + _borders.front + _borders.back; //:h3ml
 					boxes.Add(pos);
 				}
 		}

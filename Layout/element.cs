@@ -29,38 +29,52 @@ namespace H3ml.Layout
         public int right => left + width;
         public int top => _pos.top - margin_top - _padding.top - _borders.top;
         public int bottom => top + height;
+        public int front => _pos.front - margin_front - _padding.front - _borders.front; //:h3ml
+        public int back => front + depth; //:h3ml
         public int height => _pos.height + margin_top + margin_bottom + _padding.height + _borders.height;
         public int width => _pos.width + margin_left + margin_right + _padding.width + _borders.width;
+        public int depth => _pos.depth + margin_front + margin_back + _padding.depth + _borders.depth; //:h3ml
 
         public int content_margins_top => margin_top + _padding.top + _borders.top;
         public int content_margins_bottom => margin_bottom + _padding.bottom + _borders.bottom;
         public int content_margins_left => margin_left + _padding.left + _borders.left;
         public int content_margins_right => margin_right + _padding.right + _borders.right;
+        public int content_margins_front => margin_front + _padding.front + _borders.front; //:h3ml
+        public int content_margins_back => margin_back + _padding.back + _borders.back; //:h3ml
         public int content_margins_width => content_margins_left + content_margins_right;
         public int content_margins_height => content_margins_top + content_margins_bottom;
+        public int content_margins_depth => content_margins_front + content_margins_back; //:h3ml
 
         public int margin_top => _margins.top;
         public int margin_bottom => _margins.bottom;
         public int margin_left => _margins.left;
         public int margin_right => _margins.right;
+        public int margin_front => _margins.front; //:h3ml
+        public int margin_back => _margins.back; //:h3ml
         public margins get_margins => new margins
         {
             left = margin_left,
             right = margin_right,
             top = margin_top,
-            bottom = margin_bottom
+            bottom = margin_bottom,
+            front = margin_front, //:h3ml
+            back = margin_back, //:h3ml
         };
 
         public int padding_top => _padding.top;
         public int padding_bottom => _padding.bottom;
         public int padding_left => _padding.left;
         public int padding_right => _padding.right;
+        public int padding_front => _padding.front; //:h3ml
+        public int padding_back => _padding.back; //:h3ml
         public margins get_paddings => _padding;
 
         public int border_top => _borders.top;
         public int border_bottom => _borders.bottom;
         public int border_left => _borders.left;
         public int border_right => _borders.right;
+        public int border_front => _borders.front; //:h3ml
+        public int border_back => _borders.back; //:h3ml
         public margins get_borders => _borders;
 
         public bool in_normal_flow => get_element_position(out var junk) != element_position.absolute && get_display != style_display.none;
@@ -85,6 +99,7 @@ namespace H3ml.Layout
             {
                 pos.x += cur_el._pos.x;
                 pos.y += cur_el._pos.y;
+                pos.z += cur_el._pos.z; //:h3ml
                 cur_el = cur_el.parent();
             }
             return pos;
@@ -190,7 +205,7 @@ namespace H3ml.Layout
                     {
                         var el_parent = parent();
                         if (el_parent != null)
-                            el_parent.get_predefined_height(h);
+                            el_parent.get_predefined_height(out h);
                     }
                     _pos.y += offsets.top.calc_percent(h);
                 }
@@ -201,9 +216,33 @@ namespace H3ml.Layout
                     {
                         var el_parent = parent();
                         if (el_parent != null)
-                            el_parent.get_predefined_height(h);
+                            el_parent.get_predefined_height(out h);
                     }
                     _pos.y -= offsets.bottom.calc_percent(h);
+                }
+                //: h3ml
+                else if (!offsets.front.is_predefined) //: h3ml
+                {
+                    var d = 0; //: h3ml
+                    if (offsets.front.units == css_units.percentage) //: h3ml
+                    {
+                        var el_parent = parent(); //: h3ml
+                        if (el_parent != null) //: h3ml
+                            el_parent.get_predefined_depth(out d); //: h3ml
+                    }
+                    _pos.z += offsets.front.calc_percent(d); //: h3ml
+                }
+                //: h3ml
+                else if (!offsets.back.is_predefined) //: h3ml
+                {
+                    var d = 0; //: h3ml
+                    if (offsets.back.units == css_units.percentage) //: h3ml
+                    {
+                        var el_parent = parent(); //: h3ml
+                        if (el_parent != null) //: h3ml
+                            el_parent.get_predefined_depth(out d); //: h3ml
+                    }
+                    _pos.z -= offsets.bottom.calc_percent(d); //: h3ml
                 }
             }
         }
@@ -217,7 +256,7 @@ namespace H3ml.Layout
         public virtual element select_one(string selector) => null;
         public virtual element select_one(css_selector selector) => null;
 
-        public virtual int render(int x, int y, int max_width, bool second_pass = false) => 0;
+        public virtual int render(int x, int y, int z, int max_width, bool second_pass = false) => 0; //:h3ml
         public virtual int render_inline(element container, int max_width) => 0;
         public virtual int place_element(element el, int max_width) => 0;
         public virtual void calc_outlines(int parent_width) { }
@@ -245,10 +284,13 @@ namespace H3ml.Layout
         public virtual css_length get_css_right() => new css_length();
         public virtual css_length get_css_top() => new css_length();
         public virtual css_length get_css_bottom() => new css_length();
+        public virtual css_length get_css_front() => new css_length(); //:h3ml
+        public virtual css_length get_css_back() => new css_length(); //:h3ml
         public virtual css_offsets get_css_offsets() => new css_offsets();
         public virtual css_length get_css_width() => new css_length();
         public virtual void set_css_width(css_length w) { }
         public virtual css_length get_css_height() => new css_length();
+        public virtual css_length get_css_depth() => new css_length(); //:h3ml
 
         public virtual void set_attr(string name, string val) { }
         public virtual string get_attr(string name, string def = null) => def;
@@ -263,24 +305,24 @@ namespace H3ml.Layout
         public virtual bool on_lbutton_down() => false;
         public virtual bool on_lbutton_up() => false;
         public virtual void on_click() { }
-        public virtual bool find_styles_changes(IList<position> redraw_boxes, int x, int y) => false;
+        public virtual bool find_styles_changes(IList<position> redraw_boxes, int x, int y, int z) => false; //:h3ml
         public virtual string get_cursor() => null;
         public virtual void init_font() { }
-        public virtual bool is_point_inside(int x, int y)
+        public virtual bool is_point_inside(int x, int y, int z) //:h3ml
         {
             if (get_display != style_display.inline && get_display != style_display.table_row)
             {
                 var pos = _pos;
                 pos += _padding;
                 pos += _borders;
-                return pos.is_point_inside(x, y);
+                return pos.is_point_inside(x, y, z); //:h3ml
             }
             else
             {
                 var boxes = new List<position>();
                 get_inline_boxes(boxes);
                 foreach (var box in boxes)
-                    if (box.is_point_inside(x, y))
+                    if (box.is_point_inside(x, y, z)) //:h3ml
                         return true;
             }
             return false;
@@ -296,8 +338,8 @@ namespace H3ml.Layout
         public virtual element_position get_element_position(out css_offsets offsets) { offsets = default(css_offsets); return element_position.@static; }
         public virtual void get_inline_boxes(IList<position> boxes) { }
         public virtual void parse_styles(bool is_reparse = false) { }
-        public virtual void draw(object hdc, int x, int y, position clip) { }
-        public virtual void draw_background(object hdc, int x, int y, position clip) { }
+        public virtual void draw(object hdc, int x, int y, int z, position clip) { } //:h3ml
+        public virtual void draw_background(object hdc, int x, int y, int z, position clip) { } //:h3ml
         public virtual string get_style_property(string name, bool inherited, string def = null) => null;
         public virtual object get_font(out font_metrics fm) { fm = default(font_metrics); return null; }
         public virtual int get_font_size => 0;
@@ -328,17 +370,17 @@ namespace H3ml.Layout
         public virtual int get_line_left(int y) => 0;
         public virtual int get_line_right(int y, int def_right) => def_right;
         public virtual void get_line_left_right(int y, int def_right, ref int ln_left, ref int ln_right) { }
-        public virtual void add_float(element el, int x, int y) { }
+        public virtual void add_float(element el, int x, int y, int z) { } //:h3ml
         public virtual void update_floats(int dy, element parent) { }
         public virtual void add_positioned(element el) { }
         public virtual int find_next_line_top(int top, int width, int def_right) => 0;
         public virtual int get_zindex => 0;
-        public virtual void draw_stacking_context(object hdc, int x, int y, position clip, bool with_positioned) { }
-        public virtual void draw_children(object hdc, int x, int y, position clip, draw_flag flag, int zindex) { }
+        public virtual void draw_stacking_context(object hdc, int x, int y, int z, position clip, bool with_positioned) { } //:h3ml
+        public virtual void draw_children(object hdc, int x, int y, int z, position clip, draw_flag flag, int zindex) { } //:h3ml
         public virtual bool is_nth_child(element el, int num, int off, bool of_type) => false;
         public virtual bool is_nth_last_child(element el, int num, int off, bool of_type) => false;
         public virtual bool is_only_child(element el, bool of_type) => false;
-        public virtual bool get_predefined_height(int p_height)
+        public virtual bool get_predefined_height(out int p_height)
         {
             var h = get_css_height();
             if (h.is_predefined)
@@ -357,8 +399,7 @@ namespace H3ml.Layout
                 }
                 else
                 {
-                    var ph = 0;
-                    if (el_parent.get_predefined_height(ph))
+                    if (el_parent.get_predefined_height(out var ph))
                     {
                         p_height = h.calc_percent(ph);
                         if (is_body())
@@ -375,15 +416,53 @@ namespace H3ml.Layout
             p_height = get_document().cvt_units(h, get_font_size);
             return true;
         }
-        public virtual void calc_document_size(ref size sz, int x = 0, int y = 0)
+        //:h3ml
+        public virtual bool get_predefined_depth(out int p_depth) //:h3ml
+        {
+            var d = get_css_depth(); //:h3ml
+            if (d.is_predefined) //:h3ml
+            {
+                p_depth = _pos.depth; //:h3ml
+                return false; //:h3ml
+            }
+            if (d.units == css_units.percentage) //:h3ml
+            {
+                var el_parent = parent(); //:h3ml
+                if (el_parent == null) //:h3ml
+                {
+                    get_document().container.get_client_rect(out var client_pos); //:h3ml
+                    p_depth = d.calc_percent(client_pos.depth); //:h3ml
+                    return true; //:h3ml
+                }
+                else //:h3ml
+                {
+                    if (el_parent.get_predefined_depth(out var pd)) //:h3ml
+                    {
+                        p_depth = d.calc_percent(pd); //:h3ml
+                        if (is_body()) //:h3ml
+                            p_depth -= content_margins_depth; //:h3ml
+                        return true; //:h3ml
+                    }
+                    else //:h3ml
+                    {
+                        p_depth = _pos.depth; //:h3ml
+                        return false; //:h3ml
+                    }
+                }
+            }
+            p_depth = get_document().cvt_units(d, get_font_size); //:h3ml
+            return true; //:h3ml
+        }
+        public virtual void calc_document_size(ref size sz, int x = 0, int y = 0, int z = 0) //:h3ml
         {
             if (is_visible)
             {
                 sz.width = Math.Max(sz.width, x + right);
                 sz.height = Math.Max(sz.height, y + bottom);
+                sz.depth = Math.Max(sz.depth, z + back); //:h3ml
             }
         }
-        public virtual void get_redraw_box(ref position pos, int x = 0, int y = 0)
+        public virtual void get_redraw_box(ref position pos, int x = 0, int y = 0, int z = 0) //:h3ml
         {
             if (is_visible)
             {
@@ -391,16 +470,20 @@ namespace H3ml.Layout
                 var p_right = Math.Max(pos.right, x + _pos.right + _padding.left + _borders.left);
                 var p_top = Math.Min(pos.top, y + _pos.top - _padding.top - _borders.top);
                 var p_bottom = Math.Max(pos.bottom, y + _pos.bottom + _padding.bottom + _borders.bottom);
+                var p_front = Math.Max(pos.front, y + _pos.front + _padding.front + _borders.front); //:h3ml
+                var p_back = Math.Max(pos.back, y + _pos.back + _padding.back + _borders.back); //:h3ml
                 pos.x = p_left;
                 pos.y = p_top;
+                pos.z = p_front; //:h3ml
                 pos.width = p_right - p_left;
                 pos.height = p_bottom - p_top;
+                pos.depth = p_back - p_front; //:h3ml
             }
         }
 
         public virtual void add_style(style st) { }
-        public virtual element get_element_by_point(int x, int y, int client_x, int client_y) => null;
-        public virtual element get_child_by_point(int x, int y, int client_x, int client_y, draw_flag flag, int zindex) => null;
+        public virtual element get_element_by_point(int x, int y, int z, int client_x, int client_y, int client_z) => null; //:h3ml
+        public virtual element get_child_by_point(int x, int y, int z, int client_x, int client_y, int client_z, draw_flag flag, int zindex) => null; //:h3ml
         public virtual background get_background(bool own_only = false) => null;
     }
 }

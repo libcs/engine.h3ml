@@ -139,16 +139,23 @@ namespace H3ml.Layout
             style.add_property("border-right", "5px solid red", null, false);
             style.add_property("border-top", "5px solid red", null, false);
             style.add_property("border-bottom", "5px solid red", null, false);
+            style.add_property("border-front", "5px solid red", null, false); //:h3ml
+            style.add_property("border-back", "5px solid red", null, false); //:h3ml
             style.add_property("border-bottom-left-radius", "1", null, false);
             style.add_property("border-bottom-left-radius", "1 2", null, false);
+            style.add_property("border-bottom-left-radius", "1 2 3", null, false); //:h3ml
             style.add_property("border-bottom-right-radius", "1", null, false);
             style.add_property("border-bottom-right-radius", "1 2", null, false);
+            style.add_property("border-bottom-right-radius", "1 2 3", null, false); //:h3ml
             style.add_property("border-top-right-radius", "1", null, false);
             style.add_property("border-top-right-radius", "1 2", null, false);
+            style.add_property("border-top-right-radius", "1 2 3", null, false); //:h3ml
             style.add_property("border-top-left-radius", "1", null, false);
             style.add_property("border-top-left-radius", "1 2", null, false);
+            style.add_property("border-top-left-radius", "1 2 3", null, false); //:h3ml
             style.add_property("border-radius", "1", null, false);
             style.add_property("border-radius", "1 2", null, false);
+            style.add_property("border-radius", "1 2 3", null, false); //:h3ml
             style.add_property("border-radius-x", "1", null, false);
             style.add_property("border-radius-x", "1 2", null, false);
             style.add_property("border-radius-x", "1 2 3", null, false);
@@ -157,6 +164,10 @@ namespace H3ml.Layout
             style.add_property("border-radius-y", "1 2", null, false);
             style.add_property("border-radius-y", "1 2 3", null, false);
             style.add_property("border-radius-y", "1 2 3 4", null, false);
+            style.add_property("border-radius-z", "1", null, false); //:h3ml
+            style.add_property("border-radius-z", "1 2", null, false); //:h3ml
+            style.add_property("border-radius-z", "1 2 3", null, false); //:h3ml
+            style.add_property("border-radius-z", "1 2 3 4", null, false); //:h3ml
             style.add_property("list-style-image", "value", "base", false);
             style.add_property("background", "url(value)", "base", false);
             style.add_property("background", "repeat", null, false);
@@ -194,6 +205,14 @@ namespace H3ml.Layout
             style.add_property("border-bottom", "TBD", null, false);
             style.add_property("border-bottom", "TBD", null, false);
             style.add_property("border-bottom", "TBD", null, false);
+            style.add_property("border-front", "TBD", null, false); //:h3ml
+            style.add_property("border-front", "TBD", null, false); //:h3ml
+            style.add_property("border-front", "TBD", null, false); //:h3ml
+            style.add_property("border-front", "TBD", null, false); //:h3ml
+            style.add_property("border-back", "TBD", null, false); //:h3ml
+            style.add_property("border-back", "TBD", null, false); //:h3ml
+            style.add_property("border-back", "TBD", null, false); //:h3ml
+            style.add_property("border-back", "TBD", null, false); //:h3ml
             style.add_property("border-width", "1", null, false);
             style.add_property("border-width", "1 2", null, false);
             style.add_property("border-width", "1 2 3", null, false);

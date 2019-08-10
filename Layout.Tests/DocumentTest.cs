@@ -30,7 +30,7 @@ namespace H3ml.Layout
         public void DrawTest()
         {
             var doc = document.createFromString("<html>Body</html>", new container_test(), new context());
-            doc.draw(null, 0, 0, new position(0, 0, 100, 100));
+            doc.draw(null, 0, 0, 0, new position(0, 0, 0, 100, 100, 0)); //:h3ml
         }
 
         [Test]
@@ -57,9 +57,9 @@ namespace H3ml.Layout
         {
             var doc = new document(new container_test(), null);
             var redraw_boxes = new List<position>();
-            doc.on_mouse_over(0, 0, 0, 0, redraw_boxes);
-            doc.on_lbutton_down(0, 0, 0, 0, redraw_boxes);
-            doc.on_lbutton_up(0, 0, 0, 0, redraw_boxes);
+            doc.on_mouse_over(0, 0, 0, 0, 0, 0, redraw_boxes);
+            doc.on_lbutton_down(0, 0, 0, 0, 0, 0, redraw_boxes);
+            doc.on_lbutton_up(0, 0, 0, 0, 0, 0, redraw_boxes);
             doc.on_mouse_leave(redraw_boxes);
         }
 
