@@ -12,8 +12,6 @@ namespace H3ml.Layout.Containers
         readonly List<position> _clips = new List<position>();
         Rectangle _hClipRect;
 
-        //public object get_temp_dc() => CreateGraphics(); // _getDC()
-        //public void release_temp_dc(object hdc) => ((Graphics)hdc).Dispose();
         //public void fill_rect(object hdc, position pos, web_color color, css_border_radius radius)
         //{
         //    var gdi = (Graphics)hdc;
@@ -42,26 +40,36 @@ namespace H3ml.Layout.Containers
                 fontStyle |= FontStyle.Strikeout;
             if ((decoration & types.font_decoration_underline) != 0)
                 fontStyle |= FontStyle.Underline;
-            return new Font(fonts[0], weight, fontStyle);
+            var fnt = new Font(fonts[0], weight, fontStyle);
+            var fntFamily = fnt.FontFamily;
+            fm.ascent = 15;
+            fm.descent = 4;
+            fm.height = 19;
+            fm.x_height = 7;
+            //fm.ascent = fntFamily.GetCellAscent(fontStyle) / size;
+            //fm.descent = fntFamily.GetCellDescent(fontStyle) / size;
+            //fm.x_height = fntFamily.GetEmHeight(fontStyle) / size;
+            //fm.height = fntFamily.GetEmHeight(fontStyle) / size;
+            fm.draw_spaces = italic == font_style.italic || decoration != 0;
+            return fnt;
         }
 
         public void delete_font(object hFont) => ((Font)hFont).Dispose();
 
-        //public int line_height(object hdc, object hFont) => ((Font)hFont).FontFamily.GetEmHeight(FontStyle.Regular);
-        //public int get_text_base_line(object hdc, object hFont) => ((Font)hFont).FontFamily.GetCellDescent(FontStyle.Regular);
-        public int text_width(string text, object hFont) => TextRenderer.MeasureText(text, (Font)hFont).Width;  //(int)((Graphics)hdc).MeasureString(text, (Font)hFont).Width;
+        public int text_width(string text, object hFont) => TextRenderer.MeasureText(text, (Font)hFont).Width;
 
         public void draw_text(object hdc, string text, object hFont, web_color color, position pos)
         {
             // https://stackoverflow.com/questions/6391911/c-sharp-winforms-anyone-know-of-a-c-sharp-gdi-library-not-slow-gdi
-            apply_clip((Graphics)hdc);
+            var gdi = (Graphics)hdc;
+            apply_clip(gdi);
             var rcText = new Rectangle(pos.left, pos.top, pos.right, pos.bottom);
-            TextRenderer.DrawText((Graphics)hdc, text, (Font)hFont, rcText, Color.FromArgb(color.red, color.green, color.blue));
+            TextRenderer.DrawText(gdi, text, (Font)hFont, rcText, Color.FromArgb(color.red, color.green, color.blue));
             //var rcText = new RectangleF(pos.left, pos.top, pos.right, pos.bottom);
             //var format = new StringFormat();
             //using (var brush = new SolidBrush(Color.FromArgb(color.red, color.green, color.blue)))
             //    ((Graphics)hdc).DrawString(text, (Font)hFont, brush, rcText, format);
-            release_clip((Graphics)hdc);
+            release_clip(gdi);
         }
 
         public int pt_to_px(int pt)
@@ -312,7 +320,7 @@ namespace H3ml.Layout.Containers
             _images.Clear();
         }
 
-        public string get_default_font_name() => "Times New Roman";
+        public string get_default_font_name() => "sans-serif";
 
         public element create_element(string tag_name, Dictionary<string, string> attributes, document doc) => null;
 

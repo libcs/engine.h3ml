@@ -41,7 +41,7 @@ namespace H3ml.Layout
             if (name == "background-image")
             {
                 add_parsed_property(name, val, important);
-                if (baseurl != null)
+                if (!string.IsNullOrEmpty(baseurl))
                     add_parsed_property("background-image-baseurl", baseurl, important);
             }
             else
@@ -335,7 +335,7 @@ namespace H3ml.Layout
                         else if (val.StartsWith("url"))
                         {
                             add_parsed_property("list-style-image", tok, important);
-                            if (baseurl != null)
+                            if (!string.IsNullOrEmpty(baseurl))
                                 add_parsed_property("list-style-image-baseurl", baseurl, important);
                         }
                     }
@@ -528,7 +528,7 @@ namespace H3ml.Layout
                 if (tok.StartsWith("url"))
                 {
                     add_parsed_property("background-image", tok, important);
-                    if (baseurl != null)
+                    if (!string.IsNullOrEmpty(baseurl))
                         add_parsed_property("background-image-baseurl", baseurl, important);
                 }
                 else if (html.value_in_list(tok, types.background_repeat_strings))

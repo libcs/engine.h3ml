@@ -57,11 +57,13 @@ namespace H3ml.Layout
             }
         }
 
-        public void sort_selectors() => _selectors.Sort((v1, v2) => v1 < v2 ? 1 : 0);
+        public void sort_selectors() => _selectors.Sort((v1, v2) => v1 < v2 ? -1 : 0);
 
         public static void parse_css_url(string str, out string url)
         {
             url = string.Empty;
+            if (string.IsNullOrEmpty(str))
+                return;
             var pos1 = str.IndexOf('(');
             var pos2 = str.IndexOf(')');
             if (pos1 != -1 && pos2 != -1)

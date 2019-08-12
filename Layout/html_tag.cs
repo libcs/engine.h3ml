@@ -2347,7 +2347,7 @@ namespace H3ml.Layout
         {
             if (is_visible)
             {
-                get_redraw_box(ref pos, x, y, z); //:h3ml
+                base.get_redraw_box(ref pos, x, y, z); //:h3ml
                 if (_overflow == overflow.visible)
                     foreach (var el in _children)
                         if (el.get_element_position(out var junk) != element_position.@fixed)
@@ -2728,8 +2728,7 @@ namespace H3ml.Layout
                 var w = calc_width(parent_width);
                 if (_box_sizing == box_sizing.border_box)
                     w -= _padding.width + _borders.width;
-                ret_width = max_width = w;
-                block_width.assignTo(w);
+                ret_width = max_width = w; /*block_width = w*/ block_width.assignTo(w);
             }
             else
             {

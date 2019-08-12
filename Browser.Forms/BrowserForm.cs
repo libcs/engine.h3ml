@@ -19,10 +19,17 @@ namespace Browser.Forms
         public BrowserForm(context ctx)
         {
             InitializeComponent();
-            html.set(ctx, this);
-            on_go_clicked(null, null);
             _widthAdjust = Width - html.Width;
             _heightAdjust = Height - html.Height;
+            SetSize(840, 640);
+            html.set(ctx, this);
+            on_go_clicked(null, null);
+        }
+
+        void SetSize(int width, int height)
+        {
+            Width = width; Height = height;
+            BrowserForm_Resize(null, null);
         }
 
         void on_go_clicked(object sender, EventArgs e) => html.open_page(address_bar.Text);

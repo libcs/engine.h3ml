@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.FormsContainer", "La
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Browser.Forms", "Browser.Forms\Browser.Forms.csproj", "{59EBEF4C-B55F-444F-A69A-FAC35FE0D200}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Script", "Script\Script.csproj", "{3ABBBCBC-4D93-4C0A-AE26-05313A8F6874}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Script.Tests", "Script.Tests\Script.Tests.csproj", "{17098255-FDA0-43CE-B57C-7473BE6E3597}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,14 @@ Global
 		{59EBEF4C-B55F-444F-A69A-FAC35FE0D200}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59EBEF4C-B55F-444F-A69A-FAC35FE0D200}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59EBEF4C-B55F-444F-A69A-FAC35FE0D200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ABBBCBC-4D93-4C0A-AE26-05313A8F6874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABBBCBC-4D93-4C0A-AE26-05313A8F6874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABBBCBC-4D93-4C0A-AE26-05313A8F6874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABBBCBC-4D93-4C0A-AE26-05313A8F6874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17098255-FDA0-43CE-B57C-7473BE6E3597}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17098255-FDA0-43CE-B57C-7473BE6E3597}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17098255-FDA0-43CE-B57C-7473BE6E3597}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17098255-FDA0-43CE-B57C-7473BE6E3597}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
