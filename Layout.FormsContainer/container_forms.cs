@@ -11,6 +11,8 @@ namespace H3ml.Layout.Containers
         readonly Dictionary<string, object> _images = new Dictionary<string, object>();
         readonly List<position> _clips = new List<position>();
         Rectangle _hClipRect;
+        bool _preload;
+        float _dpi;
 
         //public void fill_rect(object hdc, position pos, web_color color, css_border_radius radius)
         //{
@@ -19,6 +21,13 @@ namespace H3ml.Layout.Containers
         //    fill_rect(gdi, pos.x, pos.y, pos.width, pos.height, color, radius);
         //    release_clip(gdi);
         //}
+
+        void PreLoad()
+        {
+            _preload = true;
+            using (var dc = CreateGraphics())
+                _dpi = dc.DpiY;
+        }
 
         public virtual void get_client_rect(out position client) => throw new NotImplementedException();
         public virtual void import_css(out string text, string url, string baseurl) => throw new NotImplementedException();
@@ -42,14 +51,11 @@ namespace H3ml.Layout.Containers
                 fontStyle |= FontStyle.Underline;
             var fnt = new Font(fonts[0], weight, fontStyle);
             var fntFamily = fnt.FontFamily;
-            fm.ascent = 15;
-            fm.descent = 4;
-            fm.height = 19;
-            fm.x_height = 7;
-            //fm.ascent = fntFamily.GetCellAscent(fontStyle) / size;
-            //fm.descent = fntFamily.GetCellDescent(fontStyle) / size;
-            //fm.x_height = fntFamily.GetEmHeight(fontStyle) / size;
-            //fm.height = fntFamily.GetEmHeight(fontStyle) / size;
+            if (!_preload) PreLoad();
+            var dpi = (int)_dpi;
+            fm.ascent = fntFamily.GetCellAscent(fontStyle) / dpi;
+            fm.descent = fntFamily.GetCellDescent(fontStyle) / dpi;
+            fm.x_height = fm.height = fntFamily.GetEmHeight(fontStyle) / dpi;
             fm.draw_spaces = italic == font_style.italic || decoration != 0;
             return fnt;
         }
@@ -74,8 +80,8 @@ namespace H3ml.Layout.Containers
 
         public int pt_to_px(int pt)
         {
-            using (var dc = CreateGraphics())
-                return (int)(pt * dc.DpiY / 72);
+            if (!_preload) PreLoad();
+            return (int)(pt * _dpi / 72);
         }
 
         public int get_default_font_size() => 16;

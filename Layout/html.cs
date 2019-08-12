@@ -120,8 +120,6 @@ namespace H3ml.Layout
             }
         }
 
-        //public static void join_string(string str, IList<string> tokens, string delims) => string.Join(delims, tokens);
-
         public static int FindFirstNotOf(this string source, string chars, int pos = 0)
         {
             if (source.Length != 0)

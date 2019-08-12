@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gumbo.Net", "Gumbo.Net", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.Tests", "Layout.Tests\Layout.Tests.csproj", "{535E4648-96CB-4896-B9ED-293308D84E15}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Browser", "Browser\Browser.csproj", "{A1E822DD-81C8-41DD-972E-682CD23527C5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Browser.Unity", "Browser.Unity\Browser.Unity.csproj", "{1295DE1F-82CD-43FB-BC9E-84DC24F35456}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.CairoContainer", "Layout.CairoContainer\Layout.CairoContainer.csproj", "{0F234627-F940-4258-BF93-3035EAC7A0F9}"
@@ -55,10 +53,6 @@ Global
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A1E822DD-81C8-41DD-972E-682CD23527C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A1E822DD-81C8-41DD-972E-682CD23527C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A1E822DD-81C8-41DD-972E-682CD23527C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A1E822DD-81C8-41DD-972E-682CD23527C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1295DE1F-82CD-43FB-BC9E-84DC24F35456}.Release|Any CPU.ActiveCfg = Release|Any CPU
