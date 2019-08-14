@@ -32,7 +32,7 @@ namespace H3ml.Layout
         void on_anchor_click(string url, element el);
         void set_cursor(string cursor);
         void transform_text(string text, text_transform tt);
-        void import_css(out string text, string url, string baseurl);
+        void import_css(out string text, string url, ref string baseurl);
         void set_clip(position pos, border_radiuses bdr_radius, bool valid_x, bool valid_y);
         void del_clip();
         void get_client_rect(out position client);

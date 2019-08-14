@@ -103,7 +103,7 @@ namespace H3ml.Layout
                         if (doc_cont != null)
                         {
                             var css_baseurl = baseurl ?? string.Empty;
-                            doc_cont.import_css(out var css_text, url, css_baseurl);
+                            doc_cont.import_css(out var css_text, url, ref css_baseurl);
                             if (!string.IsNullOrEmpty(css_text))
                             {
                                 var new_media = media;

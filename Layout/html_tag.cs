@@ -1309,7 +1309,9 @@ namespace H3ml.Layout
             pos.x += x;
             pos.y += y;
             pos.z += z; //:h3ml
+
             draw_background(hdc, x, y, z, clip); //:h3ml
+
             if (_display == style_display.list_item && _list_style_type != list_style_type.none)
             {
                 if (_overflow > overflow.visible)
@@ -1334,9 +1336,11 @@ namespace H3ml.Layout
             pos.x += x;
             pos.y += y;
             pos.z += z; //:h3ml
+
             var el_pos = pos;
             el_pos += _padding;
             el_pos += _borders;
+
             if (_display != style_display.inline && _display != style_display.table_row)
             {
                 if (el_pos.does_intersect(clip))
@@ -1431,9 +1435,7 @@ namespace H3ml.Layout
             if (el_parent != null)
                 if ((ret != null && string.Equals(ret, "inherit", StringComparison.OrdinalIgnoreCase)) || (ret == null && inherited))
                     ret = el_parent.get_style_property(name, inherited, def);
-            if (ret == null)
-                ret = def;
-            return ret;
+            return ret ?? def;
         }
 
         public override object get_font(out font_metrics fm)
@@ -2605,7 +2607,9 @@ namespace H3ml.Layout
             pos.x += x;
             pos.y += y;
             pos.z += z; //:h3ml
+
             var doc = get_document();
+
             if (_overflow > overflow.visible)
             {
                 var border_box = pos;
@@ -3354,24 +3358,28 @@ namespace H3ml.Layout
         protected void init_background_paint(position pos, background_paint bg_paint, background bg)
         {
             if (bg == null) return;
+
             bg_paint.assignTo(bg);
             var content_box = pos;
             var padding_box = pos;
             padding_box += _padding;
             var border_box = padding_box;
             border_box += _borders;
+
             switch (bg._clip)
             {
                 case background_box.padding_box: bg_paint.clip_box = padding_box; break;
                 case background_box.content_box: bg_paint.clip_box = content_box; break;
                 default: bg_paint.clip_box = border_box; break;
             }
+
             switch (bg._origin)
             {
                 case background_box.border_box: bg_paint.origin_box = border_box; break;
                 case background_box.content_box: bg_paint.origin_box = content_box; break;
                 default: bg_paint.origin_box = padding_box; break;
             }
+
             if (!string.IsNullOrEmpty(bg_paint.image))
             {
                 get_document().container.get_image_size(bg_paint.image, bg_paint.baseurl, out bg_paint.image_size);

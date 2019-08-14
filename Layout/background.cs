@@ -24,18 +24,18 @@ namespace H3ml.Layout
             _color.blue = 0;
         }
 
-        public background(background val)
-        {
-            _image = val._image;
-            _baseurl = val._baseurl;
-            _color = val._color;
-            _attachment = val._attachment;
-            _position = val._position;
-            _repeat = val._repeat;
-            _clip = val._clip;
-            _origin = val._origin;
-            _radius = val._radius;
-        }
+        //public background(background val)
+        //{
+        //    _image = val._image;
+        //    _baseurl = val._baseurl;
+        //    _color = val._color;
+        //    _attachment = val._attachment;
+        //    _position = val._position;
+        //    _repeat = val._repeat;
+        //    _clip = val._clip;
+        //    _origin = val._origin;
+        //    _radius = val._radius;
+        //}
 
         //public background assignTo(background val)
         //{

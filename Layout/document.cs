@@ -423,7 +423,6 @@ namespace H3ml.Layout
                     break;
                 case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_TEXT:
                     {
-                        elements.Add(new el_space(textNode.Value, this));
                         var str = string.Empty;
                         var str_in = textNode.Value;
                         char c;

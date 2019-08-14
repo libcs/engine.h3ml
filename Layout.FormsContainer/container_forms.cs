@@ -30,7 +30,7 @@ namespace H3ml.Layout.Containers
         }
 
         public virtual void get_client_rect(out position client) => throw new NotImplementedException();
-        public virtual void import_css(out string text, string url, string baseurl) => throw new NotImplementedException();
+        public virtual void import_css(out string text, string url, ref string baseurl) => throw new NotImplementedException();
         public virtual void on_anchor_click(string url, element el) => throw new NotImplementedException();
         public string resolve_color(string color) => null;
         public virtual void set_base_url(string base_url) => throw new NotImplementedException();
@@ -69,12 +69,12 @@ namespace H3ml.Layout.Containers
             // https://stackoverflow.com/questions/6391911/c-sharp-winforms-anyone-know-of-a-c-sharp-gdi-library-not-slow-gdi
             var gdi = (Graphics)hdc;
             apply_clip(gdi);
-            var rcText = new Rectangle(pos.left, pos.top, pos.right, pos.bottom);
-            TextRenderer.DrawText(gdi, text, (Font)hFont, rcText, Color.FromArgb(color.red, color.green, color.blue));
+            //var rcText = new Rectangle(pos.left, pos.top, pos.right, pos.bottom);
+            TextRenderer.DrawText(gdi, text, (Font)hFont, new Point(pos.left, pos.top), Color.FromArgb(color.red, color.green, color.blue));
             //var rcText = new RectangleF(pos.left, pos.top, pos.right, pos.bottom);
             //var format = new StringFormat();
             //using (var brush = new SolidBrush(Color.FromArgb(color.red, color.green, color.blue)))
-            //    ((Graphics)hdc).DrawString(text, (Font)hFont, brush, rcText, format);
+            //    gdi.DrawString(text, (Font)hFont, brush, rcText, format);
             release_clip(gdi);
         }
 

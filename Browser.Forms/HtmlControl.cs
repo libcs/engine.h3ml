@@ -83,8 +83,9 @@ namespace Browser.Forms
             }
         }
 
-        public override void import_css(out string text, string url, string baseurl)
+        public override void import_css(out string text, string url, ref string baseurl)
         {
+            baseurl = string.Empty;
             make_url(url, baseurl, out var css_url);
             load_text_file(css_url, out text);
             if (!string.IsNullOrEmpty(text))

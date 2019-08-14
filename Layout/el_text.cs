@@ -49,6 +49,7 @@ namespace H3ml.Layout
                 if (_text == "\t") { _transformed_text = "    "; _use_transformed = true; }
                 if (_text == "\n" || _text == "\r") { _transformed_text = ""; _use_transformed = true; }
             }
+
             object font = null; font_metrics fm;
             var el_parent = parent();
             if (el_parent != null)
@@ -79,10 +80,12 @@ namespace H3ml.Layout
         {
             if (is_white_space() && !_draw_spaces)
                 return;
+
             var pos = _pos;
             pos.x += x;
             pos.y += y;
             pos.z += z; //:h3ml
+
             if (pos.does_intersect(clip))
             {
                 var el_parent = parent();
@@ -102,8 +105,8 @@ namespace H3ml.Layout
         {
             var el_parent = parent();
             if (el_parent != null) return el_parent.get_font(out fm);
-            fm = default(font_metrics);
-            return IntPtr.Zero;
+            else fm = default(font_metrics);
+            return null;
         }
 
         public override style_display get_display => style_display.inline_text;

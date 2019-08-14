@@ -114,7 +114,7 @@ namespace H3ml.Layout.Containers
         public void get_image_size(string src, string baseurl, out size sz) { sz = default(size); }
         public void get_language(out string language, out string culture) { language = "en"; culture = string.Empty; }
         public void get_media_features(media_features media) { }
-        public void import_css(out string text, string url, string baseurl) { text = null; }
+        public void import_css(out string text, string url, ref string baseurl) { text = null; }
         public void link(document doc, element el) { }
         public void load_image(string src, string baseurl, bool redraw_on_ready) { }
         public void on_anchor_click(string url, element el) { }

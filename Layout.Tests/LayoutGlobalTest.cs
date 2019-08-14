@@ -7,6 +7,8 @@ namespace H3ml.Layout
         [Test]
         public void Test()
         {
+            var doc = document.createFromString("<html>Body</html>", new container_test(), new context());
+            doc.render(500, render_type.all);
         }
     }
 }

@@ -81,7 +81,7 @@ namespace H3ml.Layout
         public web_color get_color(string prop_name, bool inherited, web_color def_color = new web_color())
         {
             var clrstr = get_style_property(prop_name, inherited, null);
-            return clrstr != null ? def_color : web_color.from_string(clrstr, get_document().container);
+            return clrstr == null ? def_color : web_color.from_string(clrstr, get_document().container);
         }
         public bool is_inline_box
         {

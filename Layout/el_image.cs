@@ -99,7 +99,7 @@ namespace H3ml.Layout
 
         public override void parse_attributes()
         {
-            _src = get_attr("src", "");
+            _src = get_attr("src", string.Empty);
             var attr_height = get_attr("height"); if (attr_height != null) _style.add_property("height", attr_height, null, false);
             var attr_width = get_attr("width"); if (attr_width != null) _style.add_property("width", attr_width, null, false);
         }

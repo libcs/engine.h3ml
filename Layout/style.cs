@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace H3ml.Layout
 {
     [DebuggerDisplay("{_value}{_important ? \"!important\" : null}")]
-    public struct property_value
+    public class property_value
     {
         public string _value;
         public bool _important;
