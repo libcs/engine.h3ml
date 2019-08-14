@@ -1,67 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Gumbo
 {
     public static class GumboExtensions
     {
-        public static string MarshalToString(this GumboStringPiece stringPiece) => NativeUtf8Helper.StringFromNativeUtf8(stringPiece.data, (int)stringPiece.length);
-        public static IEnumerable<GumboNode> GetChildren(this GumboElementNode node) => MarshalToPtrArray(node.element.children).Select(MarshalToSpecificNode);
-        public static IEnumerable<GumboNode> GetChildren(this GumboDocumentNode node) => MarshalToPtrArray(node.document.children).Select(MarshalToSpecificNode);
-        public static IEnumerable<GumboAttribute> GetAttributes(this GumboElementNode node) => MarshalToPtrArray(node.element.attributes).Select(Marshal.PtrToStructure<GumboAttribute>);
-        public static GumboDocumentNode GetDocument(this GumboOutput output) => Marshal.PtrToStructure<GumboDocumentNode>(output.document);
-        public static GumboElementNode GetRoot(this GumboOutput output) => Marshal.PtrToStructure<GumboElementNode>(output.root);
-        public static IEnumerable<GumboErrorContainer> GetErrors(this GumboOutput output) => MarshalToPtrArray(output.errors).Select(MarshalToSpecificErrorContainer);
+        public static XDocument ToXDocument(this GumboDocumentNode docNode) => (XDocument)CreateXNode(docNode);
 
-        static GumboErrorContainer MarshalToSpecificErrorContainer(IntPtr errorPointer)
+        static XNode CreateXNode(GumboNode node)
         {
-            var error = Marshal.PtrToStructure<GumboErrorContainer>(errorPointer);
-            switch (error.type)
-            {
-                case GumboErrorType.GUMBO_ERR_UTF8_INVALID:
-                case GumboErrorType.GUMBO_ERR_UTF8_TRUNCATED:
-                case GumboErrorType.GUMBO_ERR_NUMERIC_CHAR_REF_WITHOUT_SEMICOLON:
-                case GumboErrorType.GUMBO_ERR_NUMERIC_CHAR_REF_INVALID: return Marshal.PtrToStructure<GumboCodepointErrorContainer>(errorPointer);
-                case GumboErrorType.GUMBO_ERR_NAMED_CHAR_REF_WITHOUT_SEMICOLON:
-                case GumboErrorType.GUMBO_ERR_NAMED_CHAR_REF_INVALID: return Marshal.PtrToStructure<GumboNamedCharErrorContainer>(errorPointer);
-                case GumboErrorType.GUMBO_ERR_DUPLICATE_ATTR: return Marshal.PtrToStructure<GumboDuplicateAttrErrorContainer>(errorPointer);
-                case GumboErrorType.GUMBO_ERR_PARSER:
-                case GumboErrorType.GUMBO_ERR_UNACKNOWLEDGED_SELF_CLOSING_TAG: return Marshal.PtrToStructure<GumboParserErrorContainer>(errorPointer);
-                default: return Marshal.PtrToStructure<GumboTokenizerErrorContainer>(errorPointer);
-            }
-
-        }
-
-        /// <summary>
-        /// Dealing with C unions, we need a two-step marshalling to get an actual instance.
-        /// </summary>
-        /// <param name="nodePointer"></param>
-        /// <returns></returns>
-        static GumboNode MarshalToSpecificNode(IntPtr nodePointer)
-        {
-            var node = Marshal.PtrToStructure<GumboNode>(nodePointer);
             switch (node.type)
             {
-                case GumboNodeType.GUMBO_NODE_DOCUMENT: return Marshal.PtrToStructure<GumboDocumentNode>(nodePointer);
+                case GumboNodeType.GUMBO_NODE_DOCUMENT: return new XDocument(((GumboDocumentNode)node).GetChildren().Select(CreateXNode));
                 case GumboNodeType.GUMBO_NODE_ELEMENT:
-                case GumboNodeType.GUMBO_NODE_TEMPLATE: return Marshal.PtrToStructure<GumboElementNode>(nodePointer);
-                case GumboNodeType.GUMBO_NODE_TEXT:
-                case GumboNodeType.GUMBO_NODE_CDATA:
-                case GumboNodeType.GUMBO_NODE_COMMENT:
-                case GumboNodeType.GUMBO_NODE_WHITESPACE: return Marshal.PtrToStructure<GumboTextNode>(nodePointer);
+                case GumboNodeType.GUMBO_NODE_TEMPLATE:
+                    var elementNode = (GumboElementNode)node;
+                    var elementName = GetName(elementNode.element.tag);
+                    var attributes = elementNode.GetAttributes().Select(x => new XAttribute(NativeUtf8.StringFromNativeUtf8(x.name), NativeUtf8.StringFromNativeUtf8(x.value)));
+                    return new XElement(elementName, attributes, elementNode.GetChildren().Select(CreateXNode));
+                case GumboNodeType.GUMBO_NODE_TEXT: return new XText(NativeUtf8.StringFromNativeUtf8(((GumboTextNode)node).text.text));
+                case GumboNodeType.GUMBO_NODE_CDATA: return new XCData(NativeUtf8.StringFromNativeUtf8(((GumboTextNode)node).text.text));
+                case GumboNodeType.GUMBO_NODE_COMMENT: return new XComment(NativeUtf8.StringFromNativeUtf8(((GumboTextNode)node).text.text));
+                case GumboNodeType.GUMBO_NODE_WHITESPACE: return new XText(NativeUtf8.StringFromNativeUtf8(((GumboTextNode)node).text.text));
                 default: throw new NotImplementedException($"Node type '{node.type}' is not implemented");
             }
         }
 
-        static IntPtr[] MarshalToPtrArray(GumboVector vector)
-        {
-            if (vector.data == IntPtr.Zero)
-                return new IntPtr[0];
-            var ptrs = new IntPtr[vector.length];
-            Marshal.Copy(vector.data, ptrs, 0, ptrs.Length);
-            return ptrs;
-        }
+        static string GetName(GumboTag tag) => tag.ToString().Substring("GUMBO_TAG_".Length).ToLower().Replace('_', '-');
     }
 }

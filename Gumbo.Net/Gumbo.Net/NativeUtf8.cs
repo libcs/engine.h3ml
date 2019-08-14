@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gumbo
 {
-    public class NativeUtf8Helper
+    public class NativeUtf8
     {
         /// <summary>
         /// Determines the length of the specified string (not including the terminating null character).

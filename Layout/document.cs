@@ -324,7 +324,7 @@ namespace H3ml.Layout
         {
             var doc = new document(objPainter, ctx); // Create litehtml::document
             var root_elements = new List<element>();
-            using (var gumbo = new GumboWrapper(str))  // parse document into GumboOutput
+            using (var gumbo = new Gumbo.Gumbo(str))  // parse document into GumboOutput
                 doc.create_node(gumbo.Document.Root, root_elements); // Create litehtml::elements.
             if (root_elements.Count != 0)
                 doc._root = root_elements.Back();
@@ -394,11 +394,11 @@ namespace H3ml.Layout
             return ret;
         }
 
-        void create_node(NodeWrapper node, List<element> elements)
+        void create_node(Node node, List<element> elements)
         {
             switch (node)
             {
-                case ElementWrapper elementNode when node.Type == GumboNodeType.GUMBO_NODE_ELEMENT:
+                case Element elementNode when node.Type == GumboNodeType.GUMBO_NODE_ELEMENT:
                     {
                         var attrs = new Dictionary<string, string>();
                         foreach (var attr in elementNode.Attributes)
@@ -421,7 +421,7 @@ namespace H3ml.Layout
                         }
                     }
                     break;
-                case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_TEXT:
+                case Text textNode when node.Type == GumboNodeType.GUMBO_NODE_TEXT:
                     {
                         var str = string.Empty;
                         var str_in = textNode.Value;
@@ -459,21 +459,21 @@ namespace H3ml.Layout
                             elements.Add(new el_text(str, this));
                     }
                     break;
-                case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_CDATA:
+                case Text textNode when node.Type == GumboNodeType.GUMBO_NODE_CDATA:
                     {
                         var ret = new el_cdata(this);
                         ret.set_data(textNode.Value);
                         elements.Add(ret);
                     }
                     break;
-                case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_COMMENT:
+                case Text textNode when node.Type == GumboNodeType.GUMBO_NODE_COMMENT:
                     {
                         var ret = new el_comment(this);
                         ret.set_data(textNode.Value);
                         elements.Add(ret);
                     }
                     break;
-                case TextWrapper textNode when node.Type == GumboNodeType.GUMBO_NODE_WHITESPACE:
+                case Text textNode when node.Type == GumboNodeType.GUMBO_NODE_WHITESPACE:
                     {
                         var str = textNode.Value;
                         for (var i = 0; i < str.Length; i++)

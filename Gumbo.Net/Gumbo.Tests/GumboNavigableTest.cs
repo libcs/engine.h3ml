@@ -9,7 +9,7 @@ namespace Gumbo
         [Test]
         public void TestSelectSingleNodeAttribute()
         {
-            using (var gumbo = new GumboWrapper(TestHtml))
+            using (var gumbo = new Gumbo(TestHtml))
             {
                 var nav = gumbo.CreateNavigator();
                 var node = nav.SelectSingleNode("/html/body/@class");
@@ -23,7 +23,7 @@ namespace Gumbo
         [Test]
         public void TestSelectSingleNodeForElement()
         {
-            using (var gumbo = new GumboWrapper(TestHtml))
+            using (var gumbo = new Gumbo(TestHtml))
             {
                 var nav = gumbo.CreateNavigator();
                 var node = nav.SelectSingleNode("/html/body/span");
@@ -37,7 +37,7 @@ namespace Gumbo
         [Test]
         public void TestMoveToId()
         {
-            using (var gumbo = new GumboWrapper(TestHtml))
+            using (var gumbo = new Gumbo(TestHtml))
             {
                 var nav = gumbo.CreateNavigator();
                 nav.MoveToId("tag123");

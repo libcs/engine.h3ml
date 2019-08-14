@@ -4,31 +4,31 @@ using System.Runtime.InteropServices;
 
 namespace Gumbo
 {
-    public static class UnmanagedLibraryHelper
+    public static class NativeLibrary
     {
-        public static IUnmanagedLibrary Create(string name)
+        public static INativeLibrary Create(string name)
         {
 #if CORECLR
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return new WindowsUnmanagedLibrary(name);
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return new LinuxUnmanagedLibrary(name);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return new WindowsNativeLibrary(name);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return new LinuxNativeLibrary(name);
             else throw new NotImplementedException("Unmanaged library loading is not implemented on this platform");
 #else
-            return new WindowsUnmanagedLibrary(name);
+            return new WindowsNativeLibrary(name);
 #endif
         }
     }
 
-    public interface IUnmanagedLibrary : IDisposable
+    public interface INativeLibrary : IDisposable
     {
         T MarshalStructure<T>(string name);
     }
 
-    internal sealed class WindowsUnmanagedLibrary : IUnmanagedLibrary
+    internal sealed class WindowsNativeLibrary : INativeLibrary
     {
         readonly IntPtr _LibarayHandle;
         bool _IsDisposed = false;
 
-        public WindowsUnmanagedLibrary(string name)
+        public WindowsNativeLibrary(string name)
         {
             var library = IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}";
             _LibarayHandle = LoadLibrary(library);
@@ -52,20 +52,20 @@ namespace Gumbo
             return ptr != IntPtr.Zero ? Marshal.PtrToStructure<T>(ptr) : throw new InvalidOperationException($"function {name} not found");
         }
 
-        ~WindowsUnmanagedLibrary() { Dispose(); }
+        ~WindowsNativeLibrary() { Dispose(); }
 
         [DllImport("kernel32.dll")] static extern IntPtr LoadLibrary(string fileName);
         [DllImport("kernel32.dll")] static extern int FreeLibrary(IntPtr handle);
         [DllImport("kernel32.dll")] static extern IntPtr GetProcAddress(IntPtr handle, string procedureName);
     }
 
-    internal sealed class LinuxUnmanagedLibrary : IUnmanagedLibrary
+    internal sealed class LinuxNativeLibrary : INativeLibrary
     {
         readonly IntPtr _LibarayHandle;
         const int RTLD_NOW = 2;
         bool _IsDisposed = false;
 
-        public LinuxUnmanagedLibrary(string name)
+        public LinuxNativeLibrary(string name)
         {
             var library = IntPtr.Size == 8 ? $"x64\\{name}" : $"x86\\{name}";
             _LibarayHandle = dlopen(library, RTLD_NOW);
@@ -94,7 +94,7 @@ namespace Gumbo
             return Marshal.PtrToStructure<T>(ptr);
         }
 
-        ~LinuxUnmanagedLibrary() { Dispose(); }
+        ~LinuxNativeLibrary() { Dispose(); }
 
         [DllImport("libdl.so")] static extern IntPtr dlopen(string fileName, int flags);
         [DllImport("libdl.so")] static extern IntPtr dlsym(IntPtr handle, string symbol);
