@@ -9,17 +9,6 @@ namespace Gumbo.DefGen
 {
     class Program
     {
-        /// <summary>
-        /// This is a .DEF file generator to produce a .DLL with exports.
-        /// Without it PInvokes won't work.
-        /// Setps:
-        /// Build .LIB. 
-        /// Put it in a project. 
-        /// Generate .DEF file. 
-        /// Set .DEF file path in Project properties -> Linker -> Input -> Module Definition File.
-        /// Build .DLL instead of .LIB.
-        /// </summary>
-        /// <param name="args"></param>
         static int Main(string[] args)
         {
             var r = ParseArgs(args, out var bitness, out var libFile);
@@ -74,13 +63,13 @@ Gumbo.DefGen x64 [path to lib]
             GenerateDefinitionFile(library, defFile, exportedNames);
         }
 
-        static IEnumerable<string> GetExportableNames(string libFilePath, int clip)
+        static IEnumerable<string> GetExportableNames(string libFile, int clip)
         {
-            var linkermemberFileName = Path.GetTempFileName();
-            var args = $@"/LINKERMEMBER:2 /OUT:""{linkermemberFileName}"" ""{libFilePath}""";
+            var tmpFile = Path.GetTempFileName();
+            var args = $@"/LINKERMEMBER:2 /OUT:""{tmpFile}"" ""{libFile}""";
             Process.Start("dumpbin.exe", args).WaitForExit();
-            var lines = File.ReadAllLines(linkermemberFileName);
-            File.Delete(linkermemberFileName);
+            var lines = File.ReadAllLines(tmpFile);
+            File.Delete(tmpFile);
             return lines
                 .SkipWhile(x => !x.Contains("public symbols"))
                 .Skip(2)
