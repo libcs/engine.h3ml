@@ -5,14 +5,6 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout", "Layout\Layout.csproj", "{5ACE53DC-F177-4CE7-96AC-C36250BBA34B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.Net", "Gumbo.Net\Gumbo.Net\Gumbo.Net.csproj", "{06C04D3D-61D5-49AE-838C-4E11B744D983}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.Tests", "Gumbo.Net\Gumbo.Tests\Gumbo.Tests.csproj", "{92B906E6-DA18-43BA-A63C-0A089DEFE173}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gumbo.DefGen", "Gumbo.Net\Gumbo.DefGen\Gumbo.DefGen.csproj", "{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gumbo.Net", "Gumbo.Net", "{4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout.Tests", "Layout.Tests\Layout.Tests.csproj", "{535E4648-96CB-4896-B9ED-293308D84E15}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Browser.Unity", "Browser.Unity\Browser.Unity.csproj", "{1295DE1F-82CD-43FB-BC9E-84DC24F35456}"
@@ -37,18 +29,6 @@ Global
 		{5ACE53DC-F177-4CE7-96AC-C36250BBA34B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5ACE53DC-F177-4CE7-96AC-C36250BBA34B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5ACE53DC-F177-4CE7-96AC-C36250BBA34B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06C04D3D-61D5-49AE-838C-4E11B744D983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06C04D3D-61D5-49AE-838C-4E11B744D983}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06C04D3D-61D5-49AE-838C-4E11B744D983}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06C04D3D-61D5-49AE-838C-4E11B744D983}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92B906E6-DA18-43BA-A63C-0A089DEFE173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92B906E6-DA18-43BA-A63C-0A089DEFE173}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92B906E6-DA18-43BA-A63C-0A089DEFE173}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92B906E6-DA18-43BA-A63C-0A089DEFE173}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{535E4648-96CB-4896-B9ED-293308D84E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -80,11 +60,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{06C04D3D-61D5-49AE-838C-4E11B744D983} = {4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}
-		{92B906E6-DA18-43BA-A63C-0A089DEFE173} = {4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}
-		{01AF6DC6-AE1E-4C3B-BF07-36D1498377A3} = {4E27FBE1-D33D-4C2C-8807-4EEEF9941A7A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A394811D-DB6E-4E59-8209-50AC7E9B8BE5}

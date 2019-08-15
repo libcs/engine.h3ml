@@ -90,10 +90,6 @@
     <EmbeddedResource Include="master.css" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Gumbo.Net\Gumbo.Net\Gumbo.Net.csproj">
-      <Project>{06c04d3d-61d5-49ae-838c-4e11b744d983}</Project>
-      <Name>Gumbo.Net</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Layout.FormsContainer\Layout.FormsContainer.csproj">
       <Project>{5571fc90-0f97-4d96-8ad2-3e3a2116d3bc}</Project>
       <Name>Layout.FormsContainer</Name>

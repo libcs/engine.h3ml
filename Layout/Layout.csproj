@@ -5,12 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Gumbo.Net" Version="1.0.0" />
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Gumbo.Net\Gumbo.Net\Gumbo.Net.csproj" />
   </ItemGroup>
 
   <ItemGroup>
